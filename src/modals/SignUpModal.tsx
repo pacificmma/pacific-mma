@@ -20,7 +20,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../firebase';
+import { auth, db } from '../utils/fireBaseAuthProvider';
 import { doc, setDoc } from 'firebase/firestore';
 import GoogleIcon from '@mui/icons-material/Google';
 

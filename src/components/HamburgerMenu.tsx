@@ -1,3 +1,4 @@
+// src/components/HamburgerMenu.tsx
 import { useState } from 'react';
 import { Box, Typography, IconButton, Button, useTheme, Collapse } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -6,9 +7,10 @@ import Facebook from '@mui/icons-material/Facebook';
 import Twitter from '@mui/icons-material/Twitter';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import menuItems from '../utils/menuItems.json';
-import { useLocation } from 'react-router-dom';
+// Removed: import { useLocation } from 'react-router-dom';
 import logo from '../../assets/logo/pacific_mma_logo.jpg';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router'; // Next.js router
+import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 type HamburgerMenuProps = {
   toggleDrawer: () => void;
@@ -16,11 +18,11 @@ type HamburgerMenuProps = {
 
 const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
   const theme = useTheme();
-  const router = useRouter();
-  const location = useLocation();
-  const currentPath = location.pathname;
+  const router = useRouter(); // Initialize useRouter
+  // Removed: const location = useLocation();
+  const currentPath = router.pathname; // Use router.pathname
 
-  // Kullanıcı menüsü açma kapama durumu
+  // User menu open/close state
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const toggleUserMenu = () => setUserMenuOpen((prev) => !prev);
 
@@ -63,7 +65,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
         }}
       >
         <img
-          src={logo}
+          src={(logo as StaticImageData).src} // Corrected: Access the .src property
           alt="Pacific MMA Logo"
           style={{ height: '80px', marginBottom: '1rem', objectFit: 'contain' }}
         />
@@ -172,7 +174,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           ))}
       </Box>
 
-      {/* Kullanıcı Menüsü Başlangıcı */}
+      {/* User Menu Start */}
       <Box sx={{ width: '100%', maxWidth: '300px', mt: 2 }}>
         <Button
           fullWidth
@@ -229,7 +231,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           </Button>
         </Collapse>
       </Box>
-      {/* Kullanıcı Menüsü Sonu */}
+      {/* User Menu End */}
 
       <Box sx={{ textAlign: 'center', mb: 3 }}>
         <Typography variant="body2" fontWeight="bold" sx={{ mb: 1, color: theme.palette.text.primary }}>

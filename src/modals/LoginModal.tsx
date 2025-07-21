@@ -13,7 +13,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../utils/fireBaseAuthProvider';
 import ResetPasswordModal from './ResetPasswordModal';
 
 const style = {

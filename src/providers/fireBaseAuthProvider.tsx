@@ -13,7 +13,7 @@ import React, {
     GoogleAuthProvider,
     signInWithPopup,
   } from 'firebase/auth';
-  import { auth, db } from '../firebase';
+  import { auth, db } from '../utils/fireBaseAuthProvider';
   import { doc, setDoc, getDoc } from 'firebase/firestore';
   
   interface UserProfile {

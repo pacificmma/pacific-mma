@@ -1,4 +1,5 @@
-import { useState, useEffect, useContext } from 'react';
+// src/components/Header.tsx
+import React, { useState, useEffect, useContext } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -17,18 +18,18 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { useLocation } from 'react-router-dom';
+// Removed: import { useLocation } from 'react-router-dom';
 import menuItems from '../utils/menuItems.json';
 import HamburgerMenu from './HamburgerMenu';
 import { CartContext } from '../providers/cartProvider';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
+import Link from 'next/link'; // next/link import
+import { useRouter } from 'next/router'; // next/router import
 
 const Header = () => {
   const theme = useTheme();
-  const router = useRouter();
-  const location = useLocation();
+  const router = useRouter(); // Initialize useRouter hook
+  // Removed: const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -36,13 +37,13 @@ const Header = () => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const cartContext = useContext(CartContext);
 
-  // Firebase Auth hook'undan gelen değerler
+  // Firebase Auth hook values
   const { user, loading, logout, showLoginModal, showSignUpModal } = useFirebaseAuth();
 
-  // Cart item sayısı
+  // Cart item count
   const cartItemCount = cartContext?.state?.items.reduce((total, item) => total + item.quantity, 0) || 0;
 
-  // Scroll pozisyonu için effect
+  // Scroll position effect
   useEffect(() => {
     const onScroll = () => setScrollPosition(window.scrollY);
     window.addEventListener('scroll', onScroll);
@@ -50,7 +51,7 @@ const Header = () => {
   }, []);
 
   // Drawer toggle
-  const toggleDrawer = () => setIsDrawerOpen(prev => !prev);
+  const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
 
   // Menu handlers
   const handleMenuOpenCamps = (e: React.MouseEvent<HTMLElement>) => setAnchorElCamps(e.currentTarget);
@@ -58,15 +59,16 @@ const Header = () => {
   const handleMenuOpenUser = (e: React.MouseEvent<HTMLElement>) => setAnchorElUser(e.currentTarget);
   const handleMenuCloseUser = () => setAnchorElUser(null);
 
-  const currentPath = location.pathname;
+  // Use router.pathname for current path
+  const currentPath = router.pathname;
 
-  // Firebase Auth işlemleri
+  // Firebase Auth operations
   const handleLogout = async () => {
     handleMenuCloseUser();
     
     try {
       await logout();
-      router.push('/')
+      router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -82,13 +84,13 @@ const Header = () => {
     showSignUpModal();
   };
 
-  // Kullanıcı display name'i al
+  // Get user display name
   const getUserDisplayName = () => {
     if (!user) return '';
     return user.fullName || user.email?.split('@')[0] || 'User';
   };
 
-  // User authenticated mi kontrol et
+  // Check if user is authenticated
   const isAuthenticated = !!user && !loading;
 
   return (
@@ -113,8 +115,9 @@ const Header = () => {
             </IconButton>
           )}
 
+          {/* Logo/Site Title Link */}
           <Link
-            href="/"
+            href="/" // Use href
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -138,22 +141,25 @@ const Header = () => {
 
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Button
-                component={Link}
-                to="/"
-                sx={{
-                  color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.text.secondary,
-                  fontWeight: theme.typography.button.fontWeight,
-                  fontSize: theme.typography.button.fontSize,
-                  borderRadius: '20px',
-                  px: 2,
-                  minHeight: '40px',
-                  '&:hover': { color: theme.palette.secondary.main },
-                }}
-              >
-                Home
-              </Button>
+              {/* Home Button */}
+              <Link href="/" passHref>
+                <Button
+                  component="a" // Use component="a" when wrapping Link around MUI Button
+                  sx={{
+                    color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.text.secondary,
+                    fontWeight: theme.typography.button.fontWeight,
+                    fontSize: theme.typography.button.fontSize,
+                    borderRadius: '20px',
+                    px: 2,
+                    minHeight: '40px',
+                    '&:hover': { color: theme.palette.secondary.main },
+                  }}
+                >
+                  Home
+                </Button>
+              </Link>
 
+              {/* Camps Dropdown */}
               <Box>
                 <Button
                   onClick={handleMenuOpenCamps}
@@ -179,60 +185,63 @@ const Header = () => {
                   onClose={handleMenuCloseCamps}
                   MenuListProps={{ onMouseLeave: handleMenuCloseCamps }}
                 >
-                  <MenuItem
-                    component={Link}
-                    to="/camp"
-                    onClick={handleMenuCloseCamps}
-                    sx={{
-                      color: currentPath === '/camp' 
-                        ? theme.palette.secondary.main 
-                        : theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    Adult Camps
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to="/youth-camp"
-                    onClick={handleMenuCloseCamps}
-                    sx={{
-                      color: currentPath === '/youth-camp' 
-                        ? theme.palette.secondary.main 
-                        : theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    Youth Camps
-                  </MenuItem>
+                  <Link href="/camp" passHref>
+                    <MenuItem
+                      component="a" // Use component="a"
+                      onClick={handleMenuCloseCamps}
+                      sx={{
+                        color: currentPath === '/camp' 
+                          ? theme.palette.secondary.main 
+                          : theme.palette.text.primary,
+                        fontWeight: theme.typography.button.fontWeight,
+                        fontSize: theme.typography.button.fontSize,
+                        '&:hover': { color: theme.palette.secondary.main },
+                      }}
+                    >
+                      Adult Camps
+                    </MenuItem>
+                  </Link>
+                  <Link href="/youth-camp" passHref>
+                    <MenuItem
+                      component="a" // Use component="a"
+                      onClick={handleMenuCloseCamps}
+                      sx={{
+                        color: currentPath === '/youth-camp' 
+                          ? theme.palette.secondary.main 
+                          : theme.palette.text.primary,
+                        fontWeight: theme.typography.button.fontWeight,
+                        fontSize: theme.typography.button.fontSize,
+                        '&:hover': { color: theme.palette.secondary.main },
+                      }}
+                    >
+                      Youth Camps
+                    </MenuItem>
+                  </Link>
                 </Menu>
               </Box>
 
+              {/* Other Menu Items */}
               {menuItems
                 .filter((item) => !['Home', 'Camp', 'Youth Camp'].includes(item.label))
                 .map((item, index) => (
-                  <Button
-                    key={index}
-                    component={Link}
-                    to={item.link}
-                    sx={{
-                      color: currentPath === item.link 
-                        ? theme.palette.secondary.main 
-                        : theme.palette.text.secondary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      borderRadius: '20px',
-                      px: 2,
-                      minHeight: '40px',
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    {item.label}
-                  </Button>
+                  <Link href={item.link} passHref key={index}>
+                    <Button
+                      component="a" // Use component="a"
+                      sx={{
+                        color: currentPath === item.link 
+                          ? theme.palette.secondary.main 
+                          : theme.palette.text.secondary,
+                        fontWeight: theme.typography.button.fontWeight,
+                        fontSize: theme.typography.button.fontSize,
+                        borderRadius: '20px',
+                        px: 2,
+                        minHeight: '40px',
+                        '&:hover': { color: theme.palette.secondary.main },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  </Link>
                 ))}
             </Box>
           )}
@@ -284,36 +293,38 @@ const Header = () => {
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                  <MenuItem
-                    component={Link}
-                    to="/profile"
-                    onClick={handleMenuCloseUser}
-                    sx={{
-                      color: currentPath === '/profile' 
-                        ? theme.palette.secondary.main 
-                        : theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    Profile
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to="/orders"
-                    onClick={handleMenuCloseUser}
-                    sx={{
-                      color: currentPath === '/orders' 
-                        ? theme.palette.secondary.main 
-                        : theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    My Orders
-                  </MenuItem>
+                  <Link href="/profile" passHref>
+                    <MenuItem
+                      component="a" // Use component="a"
+                      onClick={handleMenuCloseUser}
+                      sx={{
+                        color: currentPath === '/profile' 
+                          ? theme.palette.secondary.main 
+                          : theme.palette.text.primary,
+                        fontWeight: theme.typography.button.fontWeight,
+                        fontSize: theme.typography.button.fontSize,
+                        '&:hover': { color: theme.palette.secondary.main },
+                      }}
+                    >
+                      Profile
+                    </MenuItem>
+                  </Link>
+                  <Link href="/orders" passHref>
+                    <MenuItem
+                      component="a" // Use component="a"
+                      onClick={handleMenuCloseUser}
+                      sx={{
+                        color: currentPath === '/orders' 
+                          ? theme.palette.secondary.main 
+                          : theme.palette.text.primary,
+                        fontWeight: theme.typography.button.fontWeight,
+                        fontSize: theme.typography.button.fontSize,
+                        '&:hover': { color: theme.palette.secondary.main },
+                      }}
+                    >
+                      My Orders
+                    </MenuItem>
+                  </Link>
                   <MenuItem
                     onClick={handleLogout}
                     sx={{

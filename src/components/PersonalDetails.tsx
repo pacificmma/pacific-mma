@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../utils/fireBaseAuthProvider';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
 
 interface Address {

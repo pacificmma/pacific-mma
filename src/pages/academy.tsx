@@ -1,13 +1,21 @@
+// src/pages/academy.tsx
 import React, { useEffect } from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, useTheme } from '@mui/material'; // useTheme imported
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BrendaWStudents from '../assets/img/academy/brendaWstudents.jpg';
 import BrendaWAlone from '../assets/img/academy/brendaWalone.jpg';
 import BrendaWTraining from '../assets/img/academy/brendaWtraining.jpg';
-import theme from '../theme';
+import theme from '../theme'; // Corrected import path for theme
+import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 const AcademyPage = () => {
+    // theme is already available via useTheme hook
+    // If you need the theme object globally outside of a component,
+    // you would typically import it directly or pass it down.
+    // For component usage, useTheme() is standard.
+    const currentTheme = useTheme(); // Use currentTheme variable for clarity
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
@@ -21,13 +29,13 @@ const AcademyPage = () => {
                 sx={{
                     width: '100%',
                     minHeight: '70vh',
-                    backgroundImage: `url(${BrendaWStudents})`,
+                    backgroundImage: `url(${(BrendaWStudents as StaticImageData).src})`, // Corrected
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderBottom: `5px solid ${theme.palette.secondary.main}`,
+                    borderBottom: `5px solid ${currentTheme.palette.secondary.main}`,
                     position: 'relative',
                 }}
             >
@@ -42,7 +50,7 @@ const AcademyPage = () => {
                 <Box
                     sx={{
                         zIndex: 1,
-                        color: theme.palette.primary.contrastText,
+                        color: currentTheme.palette.primary.contrastText,
                         textAlign: 'center',
                         p: 2,
                     }}
@@ -53,16 +61,16 @@ const AcademyPage = () => {
                             fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
                             lineHeight: { xs: 1.4, sm: 1.4 },
                             letterSpacing: '1px',
-                            color: theme.palette.primary.contrastText,
+                            color: currentTheme.palette.primary.contrastText,
                             textTransform: 'none',
                             maxWidth: '900px',
                             margin: '0 auto',
-                            fontFamily: theme.typography.fontFamily,
+                            fontFamily: currentTheme.typography.fontFamily,
                         }}
                     >
                         Pacific MMA Academy
                     </Typography>
-                    <Typography variant="h5" sx={{ mb: 3, color: theme.palette.text.secondary }}>
+                    <Typography variant="h5" sx={{ mb: 3, color: currentTheme.palette.text.secondary }}>
                         A legacy of excellence — training law enforcement, children, and martial artists across disciplines.
                     </Typography>
                 </Box>
@@ -71,8 +79,8 @@ const AcademyPage = () => {
             {/* About Section */}
             <Box
                 sx={{
-                    backgroundColor: theme.palette.background.paper,
-                    color: theme.palette.text.primary,
+                    backgroundColor: currentTheme.palette.background.paper,
+                    color: currentTheme.palette.text.primary,
                     p: { xs: 3, md: 6 },
                     textAlign: 'center',
                 }}
@@ -83,11 +91,11 @@ const AcademyPage = () => {
                         fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
                         lineHeight: { xs: 1.4, sm: 1.4 },
                         letterSpacing: '1px',
-                        color: theme.palette.text.primary,
+                        color: currentTheme.palette.text.primary,
                         textTransform: 'none',
                         maxWidth: '900px',
                         margin: '0 auto',
-                        fontFamily: theme.typography.fontFamily,
+                        fontFamily: currentTheme.typography.fontFamily,
                     }}
                 >
                     About Brenda King
@@ -105,22 +113,22 @@ const AcademyPage = () => {
                 sx={{
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'stretch', // Ensures children stretch to fill the container
-                    backgroundColor: theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText,
-                    borderTop: `5px solid ${theme.palette.secondary.main}`,
+                    alignItems: 'stretch',
+                    backgroundColor: currentTheme.palette.primary.main,
+                    color: currentTheme.palette.primary.contrastText,
+                    borderTop: `5px solid ${currentTheme.palette.secondary.main}`,
                     p: { xs: 3, md: 6 },
-                    minHeight: { xs: 'auto', md: '400px' }, // Consistent minHeight for both sections
+                    minHeight: { xs: 'auto', md: '400px' },
                 }}
             >
                 <Box
                     component="img"
-                    src={BrendaWAlone}
+                    src={(BrendaWAlone as StaticImageData).src} // Corrected
                     alt="Brenda Alone"
                     sx={{
                         width: { xs: '100%', md: '50%' },
-                        height: '100%', // Ensures image stretches to fill the container height
-                        objectFit: 'cover', // Maintains aspect ratio while filling the area
+                        height: '100%',
+                        objectFit: 'cover',
                         borderRadius: '12px',
                         mb: { xs: 3, md: 0 },
                         mr: { md: 4 },
@@ -132,10 +140,10 @@ const AcademyPage = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
-                        minHeight: '100%', // Ensures text container matches the section height
+                        minHeight: '100%',
                     }}
                 >
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.contrastText }}>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: currentTheme.palette.primary.contrastText }}>
                         Brenda's Martial Arts Journey
                     </Typography>
                     <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
@@ -152,12 +160,12 @@ const AcademyPage = () => {
                 sx={{
                     display: 'flex',
                     flexDirection: { xs: 'column-reverse', md: 'row' },
-                    alignItems: 'stretch', // Ensures children stretch to fill the container
-                    backgroundColor: theme.palette.background.paper,
-                    borderTop: `5px solid ${theme.palette.secondary.main}`,
-                    color: theme.palette.text.primary,
+                    alignItems: 'stretch',
+                    backgroundColor: currentTheme.palette.background.paper,
+                    borderTop: `5px solid ${currentTheme.palette.secondary.main}`,
+                    color: currentTheme.palette.text.primary,
                     p: { xs: 3, md: 6 },
-                    minHeight: { xs: 'auto', md: '400px' }, // Consistent minHeight for both sections
+                    minHeight: { xs: 'auto', md: '400px' },
                 }}
             >
                 <Box
@@ -166,10 +174,10 @@ const AcademyPage = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
-                        minHeight: '100%', // Ensures text container matches the section height
+                        minHeight: '100%',
                     }}
                 >
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.text.primary }}>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: currentTheme.palette.text.primary }}>
                         A Space for All Ages
                     </Typography>
                     <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
@@ -181,12 +189,12 @@ const AcademyPage = () => {
                 </Box>
                 <Box
                     component="img"
-                    src={BrendaWTraining}
+                    src={(BrendaWTraining as StaticImageData).src} // Corrected
                     alt="Brenda Training"
                     sx={{
-                        width: { xs: '100%', md: '50%' }, // Adjusted xs width to 100% for consistency on mobile
-                        height: '100%', // Matches Brenda Alone Section for equal height
-                        objectFit: 'cover', // Ensures image fills the area without distortion
+                        width: { xs: '100%', md: '50%' },
+                        height: '100%',
+                        objectFit: 'cover',
                         borderRadius: '12px',
                         mb: { xs: 3, md: 0 },
                         ml: { md: 4 },

@@ -1,3 +1,4 @@
+// src/components/HeroWPartners.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Box,
@@ -15,6 +16,13 @@ import { gsap } from 'gsap';
 import trainingImage from '../../assets/img/home_page/training_1.jpg';
 import strikingImage from '../../assets/img/home_page/striking_1.jpg';
 import grapplingImage from '../../assets/img/home_page/grappling.jpg';
+import { StaticImageData } from 'next/image'; // Import StaticImageData
+
+interface AccordionItem {
+  title: string;
+  items: string[];
+  image: StaticImageData; // Explicitly type image as StaticImageData
+}
 
 const HeroWPartners = () => {
   const theme = useTheme();
@@ -46,6 +54,24 @@ const HeroWPartners = () => {
     'United Wrestling Academy',
   ];
 
+  const accordionData: AccordionItem[] = [ // Apply the AccordionItem interface
+    {
+      title: 'Mixed Martial Arts',
+      items: gyms,
+      image: trainingImage,
+    },
+    {
+      title: 'Striking',
+      items: strikingItems,
+      image: strikingImage,
+    },
+    {
+      title: 'Grappling',
+      items: grapplingItems,
+      image: grapplingImage,
+    },
+  ];
+
   useEffect(() => {
     gsap.fromTo(
       sectionRef.current,
@@ -63,24 +89,6 @@ const HeroWPartners = () => {
       );
     }
   }, [activeAccordion]);
-
-  const accordionData = [
-    {
-      title: 'Mixed Martial Arts',
-      items: gyms,
-      image: trainingImage,
-    },
-    {
-      title: 'Striking',
-      items: strikingItems,
-      image: strikingImage,
-    },
-    {
-      title: 'Grappling',
-      items: grapplingItems,
-      image: grapplingImage,
-    },
-  ];
 
   const handleAccordionChange = (index: number) => {
     setActiveAccordion(activeAccordion === index ? null : index);
@@ -120,7 +128,7 @@ const HeroWPartners = () => {
           <Box
             ref={imageRef}
             component="img"
-            src={accordionData[activeAccordion !== null ? activeAccordion : 0].image}
+            src={accordionData[activeAccordion !== null ? activeAccordion : 0].image.src} // Corrected: Access the .src property
             alt={accordionData[activeAccordion !== null ? activeAccordion : 0].title}
             sx={{
               width: '100%',

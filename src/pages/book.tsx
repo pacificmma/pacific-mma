@@ -1,4 +1,4 @@
-// src/pages/BookingPage.tsx
+// src/pages/book.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Box, Typography, Container, Grid, Button, Paper,
@@ -24,10 +24,29 @@ import JapanPhoto from '../assets/img/home_page/photo-japan.jpg';
 import ThailandPhoto from '../assets/img/home_page/photo-thailand.jpg';
 import { destinations as originalDestinations } from '../utils/destinations';
 import CustomTripForm from '../components/CustomBookingForm';
+import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 const animatedComponents = makeAnimated();
 
-const customExperience = {
+// Define a new interface for destinations specifically for this page
+interface BookingPageDestination {
+  country: string;
+  title: string;
+  nights: string;
+  price?: number; // price is optional for custom experience
+  image: StaticImageData | StaticImageData[]; // Can be a single StaticImageData or an array
+  date?: string; // date is optional for custom experience
+  videoUrl?: string; // videoUrl is optional for custom experience
+  isSlideshow: boolean;
+  description?: string;
+  whatYouWillEnjoy?: string[];
+  generalInfo?: string[];
+  descriptionPage?: string;
+  gyms?: string[];
+  disciplines?: string[];
+}
+
+const customExperience: BookingPageDestination = { // Apply the new interface
   country: 'Custom Experience',
   title: 'Design Your Custom Trip',
   nights: 'Flexible',
@@ -50,11 +69,19 @@ const BookingPage = () => {
     }, 100);
   }
 
-  const destinations = [customExperience, ...originalDestinations];
+  // Combine customExperience with originalDestinations, ensuring type compatibility
+  const destinations: BookingPageDestination[] = [
+    customExperience,
+    ...originalDestinations.map(d => ({ // Map originalDestinations to BookingPageDestination
+      ...d,
+      image: d.image as StaticImageData, // Ensure image is StaticImageData for single images
+      isSlideshow: false, // Explicitly set isSlideshow for original destinations
+    }))
+  ];
 
   const gyms = Array.from(new Set(originalDestinations.flatMap(d => d.gyms)));
   const countries = Array.from(new Set(originalDestinations.map(d => d.country)));
-  const trainings = Array.from(new Set(originalDestinations.flatMap(d => d.disciplines)));;
+  const trainings = Array.from(new Set(originalDestinations.flatMap(d => d.disciplines)));
 
   const [formData, setFormData] = useState({
     name: '',
@@ -72,7 +99,7 @@ const BookingPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     const interval = setInterval(() => {
-      setSlideshowIndex((prev) => (prev + 1) % customExperience.image.length);
+      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as StaticImageData[]).length); // Cast to array
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -104,7 +131,7 @@ const BookingPage = () => {
         <Box
           sx={{
             height: '60vh',
-            backgroundImage: `url(${BookingHeroPhoto})`,
+            backgroundImage: `url(${(BookingHeroPhoto as StaticImageData).src})`, // Access .src property
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
@@ -167,7 +194,11 @@ const BookingPage = () => {
                         sx={{
                           width: '100%',
                           height: '100%',
-                          backgroundImage: `url(${dest.isSlideshow ? dest.image[slideshowIndex] : dest.image})`,
+                          backgroundImage: `url(${
+                            dest.isSlideshow
+                              ? (dest.image as StaticImageData[])[slideshowIndex].src // Correctly access src from array item
+                              : (dest.image as StaticImageData).src // Correctly access src from single image
+                          })`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
                         }}

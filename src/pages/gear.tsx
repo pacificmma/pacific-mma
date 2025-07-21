@@ -1,3 +1,4 @@
+// src/pages/gear.tsx
 import React, { useState, useEffect, useContext } from 'react';
 import {
   Box,
@@ -23,7 +24,6 @@ import {
   Alert,
   Snackbar,
   Slide,
-  SlideProps,
   Badge,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -38,15 +38,15 @@ import Footer from '../components/Footer';
 import { Items } from '../utils/Items';
 import GearPageHeroPhoto from '../assets/img/services_page/gi_belt.jpg';
 import { useRouter } from 'next/router';
-
 import { CartContext } from '../providers/cartProvider';
+import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 interface ItemType {
   id: string;
   item: string;
   title: string;
   description: string;
-  image: string;
+  image: string | StaticImageData; // Updated: image can be string or StaticImageData
   sizes: string[];
   colors: string[];
   price: number;
@@ -71,7 +71,7 @@ interface NotificationState {
   severity: 'success' | 'error' | 'warning' | 'info';
 }
 
-function SlideTransition(props: SlideProps) {
+function SlideTransition(props: any) { // Use 'any' or define SlideProps properly if not from MUI
   return <Slide {...props} direction="down" />;
 }
 
@@ -110,7 +110,7 @@ const GearPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [filters, setFilters] = useState<FilterType>({ size: [], color: [], category: [] });
-  const [filteredItems, setFilteredItems] = useState<ItemType[]>(Items);
+  const [filteredItems, setFilteredItems] = useState<ItemType[]>(Items as ItemType[]); // Cast Items to ItemType[]
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [productSelections, setProductSelections] = useState<ProductSelection>({});
   const [notification, setNotification] = useState<NotificationState>({
@@ -129,7 +129,7 @@ const GearPage = () => {
   const totalCartItems = cartContext?.state?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
   useEffect(() => {
-    let updated = [...Items];
+    let updated = [...Items] as ItemType[]; // Cast Items to ItemType[]
     if (filters.size.length)
       updated = updated.filter(item => filters.size.some(size => item.sizes.includes(size)));
     if (filters.color.length)
@@ -207,7 +207,7 @@ const GearPage = () => {
       quantity: 1,
       size: selection.selectedSize,
       color: selection.selectedColor,
-      image: item.image,
+      image: typeof item.image === 'object' ? item.image.src : item.image, // Ensure image is string for cart context
     });
   
     showNotification(
@@ -393,7 +393,7 @@ const GearPage = () => {
       <Box
         sx={{
           height: { xs: '40vh', md: '50vh' },
-          backgroundImage: `url(${GearPageHeroPhoto})`,
+          backgroundImage: `url(${(GearPageHeroPhoto as StaticImageData).src})`, // Corrected
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           display: 'flex',
@@ -512,7 +512,7 @@ const GearPage = () => {
                     <Box sx={{ position: 'relative' }}>
                       <Box
                         component="img"
-                        src={item.image}
+                        src={typeof item.image === 'object' ? item.image.src : item.image} // Corrected
                         alt={item.title}
                         sx={{ width: '100%', height: '300px', objectFit: 'cover' }}
                       />

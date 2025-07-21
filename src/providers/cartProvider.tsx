@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, useEffect, ReactNode, Dispatch, useCallback } from 'react';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
-import { db } from '../firebase';
+import { auth, db } from '../utils/fireBaseAuthProvider';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // 🎯 Sepet ürün tipi

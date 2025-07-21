@@ -1,6 +1,6 @@
 // src/pages/destination/[slug].tsx
 import React, { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/router'; // Correct Next.js router import
+import { useRouter } from 'next/router';
 import {
   Box,
   Typography,
@@ -13,11 +13,29 @@ import {
   Alert,
 } from '@mui/material';
 import { destinations } from '../../utils/destinations';
-import Header from '../../components/Header'; // Adjusted import path for Header
-import Footer from '../../components/Footer'; // Adjusted import path for Footer
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 const slugify = (text: string) =>
   text.toLowerCase().replace(/\s+/g, '-');
+
+// It's good practice to define an interface for destination if not already defined in destinations.ts
+// Based on destinations.ts content, a basic structure for type inference:
+interface DestinationType {
+  country: string;
+  title: string;
+  nights: string;
+  price: number;
+  image: StaticImageData; // Image is StaticImageData based on utils/destinations.ts imports
+  date: string;
+  videoUrl?: string; // Optional as not all destinations might have it
+  isSlideshow?: boolean; // Optional, defaults to false if not present
+  whatYouWillEnjoy: string[];
+  generalInfo: string[];
+  descriptionPage: string;
+}
+
 
 const DestinationDetails = () => {
   const [showForm, setShowForm] = useState(false);
@@ -36,8 +54,10 @@ const DestinationDetails = () => {
   const formRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const router = useRouter();
-  const { slug } = router.query; // Correctly accessing slug from router.query
-  const destination = destinations.find((d: any) => slugify(d.country) === slug);
+  const { slug } = router.query;
+  // Cast destinations to array of DestinationType for better type safety
+  const destination = (destinations as DestinationType[]).find((d: any) => slugify(d.country) === slug);
+
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -91,10 +111,6 @@ const DestinationDetails = () => {
   };
 
   if (!destination) {
-    // In Next.js, for dynamic routes, you might want to return a 404 page
-    // if the slug does not match any destination.
-    // For now, returning null or a loading state is fine during development.
-    // You could also use router.isFallback if you implemented getStaticPaths.
     return null;
   }
 
@@ -116,7 +132,7 @@ const DestinationDetails = () => {
           >
             <Box
               component="img"
-              src={destination.image}
+              src={(destination.image as StaticImageData).src} // Corrected: Access the .src property
               alt={destination.country}
               sx={{
                 width: 520,

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
-import firstHeroVideo from '../../assets/videos/first_hero_video.mp4';
+import firstHeroVideo from '../assets/videos/first_hero_video.mp4';
 
 const Hero = () => {
   const theme = useTheme();

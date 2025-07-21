@@ -1,18 +1,36 @@
-import React, { useState } from 'react';
-import { Box, Typography, useTheme, Tooltip, Button } from '@mui/material';
+// src/components/EventCalendar.tsx
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
+import {
+  Box,
+  Typography,
+  Button,
+  useTheme,
+  Tooltip,
+  TextField,
+  MenuItem,
+  Snackbar,
+  Alert,
+  Container,
+} from '@mui/material';
 import { destinations } from '../utils/destinations';
+import Header from './Header'; // Corrected import path
+import Footer from './Footer'; // Corrected import path
+import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 interface Destination {
   country: string;
   title: string;
   date: string;
-  image: string;
+  image: string | StaticImageData; // Updated: image can be string or StaticImageData
 }
 
 interface EventsMap {
   [key: string]: Destination[];
 }
+
+const slugify = (text: string) =>
+  text.toLowerCase().replace(/\s+/g, '-');
 
 const EventCalendar = () => {
   const theme = useTheme();
@@ -41,7 +59,7 @@ const EventCalendar = () => {
     }
   };
 
-  const eventsMap: Record<string, Destination[]> = destinations.reduce((map, dest) => {
+  const eventsMap: Record<string, Destination[]> = destinations.reduce((map, dest: any) => { // dest: any added to resolve initial type mismatch from external source
     const date = new Date(dest.date);
     const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
     if (!map[key]) map[key] = [];
@@ -60,7 +78,7 @@ const EventCalendar = () => {
           color: theme.palette.text.primary,
           textTransform: 'none',
           maxWidth: '900px',
-          mt:'1rem',
+          mt: '1rem',
           mx: 'auto',
           fontFamily: theme.typography.fontFamily,
         }}>
@@ -100,7 +118,12 @@ const EventCalendar = () => {
                   border: `1px solid ${theme.palette.divider}`,
                   borderRadius: 1,
                   position: 'relative',
-                  backgroundImage: events[0] ? `url(${events[0].image})` : 'none',
+                  backgroundImage: events[0]
+                    ? `url(${typeof events[0].image === 'object'
+                      ? events[0].image.src // If it's StaticImageData (an object), use .src
+                      : events[0].image // Otherwise (if it's a string), use it directly
+                    })`
+                    : 'none',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   cursor: events.length ? 'pointer' : 'default',

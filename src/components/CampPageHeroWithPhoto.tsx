@@ -1,6 +1,8 @@
+// src/components/CampPageHeroWithPhoto.tsx
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import CampHeroPhoto from '../../assets/img/camp_page/youthCampHero.jpg';
+import { StaticImageData } from 'next/image'; // Import StaticImageData type
 
 const CampHeroWPhoto = () => {
   const theme = useTheme();
@@ -19,7 +21,7 @@ const CampHeroWPhoto = () => {
       {/* Background Image */}
       <Box
         component="img"
-        src={CampHeroPhoto}
+        src={(CampHeroPhoto as StaticImageData).src} // Corrected: Access the .src property
         alt="Pacific MMA Youth Camp"
         sx={{
           position: 'absolute',

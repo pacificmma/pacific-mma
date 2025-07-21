@@ -1,4 +1,4 @@
-import { db } from '../firebase';
+import { auth, db } from '../utils/fireBaseAuthProvider';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { CartItem } from './cartProvider'; // doğru path'e göre güncelle
 

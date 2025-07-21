@@ -1,8 +1,10 @@
+// src/components/HeroWTrainer.tsx
 import React from 'react';
 import { Box, Typography, Button, useTheme } from '@mui/material';
 import BrendaWBrothers from '../assets/img/home_page/brenda_brothers.jpeg';
 import backgroundVideo from '../assets/videos/trainingWhero.mp4';
 import { useRouter } from 'next/router';
+import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 const HeroWTrainer = () => {
   const theme = useTheme();
@@ -191,7 +193,7 @@ const HeroWTrainer = () => {
         >
           <Box
             component="img"
-            src={BrendaWBrothers}
+            src={(BrendaWBrothers as StaticImageData).src} // Corrected: Access the .src property
             alt="Brenda King with Fighters"
             sx={{
               width: '100%',

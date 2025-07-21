@@ -9,9 +9,9 @@ import {
   useTheme,
 } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
-import Header from '../../components/HomePageComponents/Header';
-import Footer from '../../components/HomePageComponents/Footer';
-import MultiStepForm from '../../components/CheckoutPageComponents/AccountCreationForm';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import MultiStepForm from '../components/AccountCreationForm';
 
 const CheckoutPage = () => {
   const theme = useTheme();

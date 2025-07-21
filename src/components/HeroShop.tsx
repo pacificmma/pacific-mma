@@ -1,3 +1,4 @@
+// src/components/HeroShop.tsx
 import React from 'react';
 import { Box, Typography, Button, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -7,10 +8,24 @@ import giImage from '../../assets/img/home_page/gi.jpg';
 import rashGuardImage from '../../assets/img/home_page/shirt.jpg';
 import glovesImage from '../../assets/img/home_page/gloves.jpg';
 import { useRouter } from 'next/router';
+import { StaticImageData } from 'next/image'; // Import StaticImageData
+
+interface ShopItem {
+  src: StaticImageData; // Explicitly define src as StaticImageData
+  alt: string;
+  price: string;
+  description: string;
+}
 
 const HeroShop = () => {
   const theme = useTheme();
   const router = useRouter();
+
+  const shopItems: ShopItem[] = [ // Apply the ShopItem interface
+    { src: giImage, alt: "Gi", price: "$120", description: "Premium Brazilian Jiu-Jitsu Gi" },
+    { src: rashGuardImage, alt: "Rashguard", price: "$50", description: "High-Quality Rashguard" },
+    { src: glovesImage, alt: "Gloves", price: "$80", description: "MMA Pro Gloves" },
+  ];
 
   return (
     <Box
@@ -77,11 +92,7 @@ const HeroShop = () => {
             mb: 2,
           }}
         >
-          {[
-            { src: giImage, alt: "Gi", price: "$120", description: "Premium Brazilian Jiu-Jitsu Gi" },
-            { src: rashGuardImage, alt: "Rashguard", price: "$50", description: "High-Quality Rashguard" },
-            { src: glovesImage, alt: "Gloves", price: "$80", description: "MMA Pro Gloves" },
-          ].map((item, index) => (
+          {shopItems.map((item, index) => ( // Use shopItems variable
             <motion.div
               key={index}
               whileHover={{ scale: 1.05 }}
@@ -94,7 +105,7 @@ const HeroShop = () => {
             >
               <Box
                 component="img"
-                src={item.src}
+                src={item.src.src} // Corrected: Access the .src property
                 alt={item.alt}
                 sx={{
                   width: '100%',
