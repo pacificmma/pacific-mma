@@ -1,12 +1,12 @@
 import React from 'react';
 import { Box, Typography, Button, useTheme } from '@mui/material';
-import BrendaWBrothers from '../../assets/img/home_page/brenda_brothers.jpeg';
-import backgroundVideo from '../../assets/videos/trainingWhero.mp4';
-import { useNavigate } from 'react-router-dom';
+import BrendaWBrothers from '../assets/img/home_page/brenda_brothers.jpeg';
+import backgroundVideo from '../assets/videos/trainingWhero.mp4';
+import { useRouter } from 'next/router';
 
 const HeroWTrainer = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <Box
@@ -159,7 +159,7 @@ const HeroWTrainer = () => {
           }}>
             <Button
               variant="contained"
-              onClick={() => navigate('/academy')}
+              onClick={() => router.push('/academy')}
               sx={{
                 backgroundColor: theme.palette.secondary.main,
                 color: theme.palette.primary.contrastText,

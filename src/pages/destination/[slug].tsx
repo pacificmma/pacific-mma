@@ -1,5 +1,6 @@
+// src/pages/destination/[slug].tsx
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useRouter } from 'next/router'; // Correct Next.js router import
 import {
   Box,
   Typography,
@@ -11,9 +12,9 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { destinations } from '../utils/destinations';
-import Header from '../components/HomePageComponents/Header';
-import Footer from '../components/HomePageComponents/Footer';
+import { destinations } from '../../utils/destinations';
+import Header from '../../components/Header'; // Adjusted import path for Header
+import Footer from '../../components/Footer'; // Adjusted import path for Footer
 
 const slugify = (text: string) =>
   text.toLowerCase().replace(/\s+/g, '-');
@@ -34,8 +35,9 @@ const DestinationDetails = () => {
 
   const formRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
-  const { slug } = useParams();
-  const destination = destinations.find((d) => slugify(d.country) === slug);
+  const router = useRouter();
+  const { slug } = router.query; // Correctly accessing slug from router.query
+  const destination = destinations.find((d: any) => slugify(d.country) === slug);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -88,7 +90,13 @@ const DestinationDetails = () => {
     }
   };
 
-  if (!destination) return null;
+  if (!destination) {
+    // In Next.js, for dynamic routes, you might want to return a 404 page
+    // if the slug does not match any destination.
+    // For now, returning null or a loading state is fine during development.
+    // You could also use router.isFallback if you implemented getStaticPaths.
+    return null;
+  }
 
   return (
     <>

@@ -6,8 +6,9 @@ import Facebook from '@mui/icons-material/Facebook';
 import Twitter from '@mui/icons-material/Twitter';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import menuItems from '../utils/menuItems.json';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import logo from '../../assets/logo/pacific_mma_logo.jpg';
+import { useRouter } from 'next/router';
 
 type HamburgerMenuProps = {
   toggleDrawer: () => void;
@@ -15,7 +16,7 @@ type HamburgerMenuProps = {
 
 const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const router = useRouter();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -89,7 +90,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
         <Button
           fullWidth
           onClick={() => {
-            navigate('/');
+            router.push('/');
             toggleDrawer();
           }}
           sx={{
@@ -109,7 +110,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
         <Button
           fullWidth
           onClick={() => {
-            navigate('/camp');
+            router.push('/camp');
             toggleDrawer();
           }}
           sx={{
@@ -128,7 +129,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
         <Button
           fullWidth
           onClick={() => {
-            navigate('/youth-camp');
+            router.push('/youth-camp');
             toggleDrawer();
           }}
           sx={{
@@ -153,7 +154,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
               key={index}
               fullWidth
               onClick={() => {
-                navigate(item.link);
+                router.push(item.link);
                 toggleDrawer();
               }}
               sx={{
@@ -193,7 +194,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           <Button
             fullWidth
             onClick={() => {
-              navigate('/login');
+              router.push('/login');
               toggleDrawer();
             }}
             sx={{
@@ -211,7 +212,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           <Button
             fullWidth
             onClick={() => {
-              navigate('/signup');
+              router.push('/signup');
               toggleDrawer();
             }}
             sx={{

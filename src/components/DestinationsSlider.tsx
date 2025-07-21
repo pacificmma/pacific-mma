@@ -1,7 +1,7 @@
 import { Box, Typography, IconButton, useTheme, useMediaQuery, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { destinations as originalDestinations } from '../utils/destinations';
@@ -27,7 +27,7 @@ const infiniteDestinations = [...destinations, ...destinations, ...destinations]
 
 const DestinationSlider = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [slideshowImageIndex, setSlideshowImageIndex] = useState(0);
@@ -238,7 +238,7 @@ const DestinationSlider = () => {
   // Kart tıklama handler
   const handleCardClick = (destination: any) => {
     if (!isDragging) {
-      navigate(
+      router.push(
         destination.isSlideshow
           ? '/book'
           : `/destination/${destination.country.toLowerCase().replace(/\s+/g, '-')}`
@@ -249,7 +249,7 @@ const DestinationSlider = () => {
   // Buton tıklama handler
   const handleButtonClick = (e: any, destination: any) => {
     e.stopPropagation();
-    navigate(
+    router.push(
       destination.isSlideshow
         ? '/book'
         : `/destination/${destination.country.toLowerCase().replace(/\s+/g, '-')}`

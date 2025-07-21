@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, useTheme, Tooltip, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 import { destinations } from '../utils/destinations';
 
 interface Destination {
@@ -16,7 +16,7 @@ interface EventsMap {
 
 const EventCalendar = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
@@ -119,7 +119,7 @@ const EventCalendar = () => {
         <Button
           variant="contained"
           onClick={() =>
-            navigate('/book')
+            router.push('/book')
           }
           sx={{
             backgroundColor: theme.palette.secondary.main,

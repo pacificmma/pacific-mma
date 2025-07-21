@@ -7,7 +7,7 @@ import featureImage3 from '../../assets/img/home_page/feature_3.jpg';
 import photoHero1 from '../../assets/img/home_page/photo-1-hero.jpg';
 import photoHero2 from '../../assets/img/home_page/photo-2-hero.jpg';
 import photoHero3 from '../../assets/img/home_page/photo-3-hero.jpg';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 
 const features = [
   {
@@ -35,7 +35,7 @@ const HeroWServices = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'));
-  const navigate = useNavigate();
+  const router = useRouter();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
@@ -212,7 +212,7 @@ const HeroWServices = () => {
       >
         <Button
           variant="contained"
-          onClick={() => navigate('/services')}
+          onClick={() => router.push('/services')}
           sx={{
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.primary.contrastText,

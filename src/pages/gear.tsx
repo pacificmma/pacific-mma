@@ -37,7 +37,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Items } from '../utils/Items';
 import GearPageHeroPhoto from '../assets/img/services_page/gi_belt.jpg';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 
 import { CartContext } from '../providers/cartProvider';
 
@@ -119,7 +119,7 @@ const GearPage = () => {
     severity: 'success'
   });
   
-  const navigate = useNavigate();
+  const router = useRouter();
   const cartContext = useContext(CartContext);
 
   // Check if there are active filters
@@ -185,7 +185,7 @@ const GearPage = () => {
   };
 
   const handleGoToCart = () => {
-    navigate('/cart');
+    router.push('/cart');
   };
 
   const handleAddToCart = (item: ItemType) => {

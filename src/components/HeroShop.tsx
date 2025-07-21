@@ -6,11 +6,11 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import giImage from '../../assets/img/home_page/gi.jpg';
 import rashGuardImage from '../../assets/img/home_page/shirt.jpg';
 import glovesImage from '../../assets/img/home_page/gloves.jpg';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 
 const HeroShop = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <Box
@@ -143,7 +143,7 @@ const HeroShop = () => {
           borderRadius: '30px',
           '&:hover': { backgroundColor: theme.palette.secondary.dark, color: 'white' },
         }}
-          onClick={() => (window.location.href = '/gear')}
+          onClick={() => (router.push('/gear'))}
         >
           Visit Shop
         </Button>

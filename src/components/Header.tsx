@@ -17,15 +17,17 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import menuItems from '../utils/menuItems.json';
 import HamburgerMenu from './HamburgerMenu';
 import { CartContext } from '../providers/cartProvider';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const Header = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const router = useRouter();
   const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -64,7 +66,7 @@ const Header = () => {
     
     try {
       await logout();
-      navigate('/')
+      router.push('/')
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -112,7 +114,7 @@ const Header = () => {
           )}
 
           <Link
-            to="/"
+            href="/"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -239,7 +241,7 @@ const Header = () => {
             {/* Shopping Cart */}
             <IconButton
               aria-label="cart"
-              onClick={() => navigate('/cart')}
+              onClick={() => router.push('/cart')}
               sx={{ 
                 color: theme.palette.text.secondary, 
                 '&:hover': { color: theme.palette.secondary.main } 
@@ -374,7 +376,7 @@ const Header = () => {
             {/* Book Now Button */}
             <Button
               variant="contained"
-              onClick={() => navigate('/book')}
+              onClick={() => router.push('/book')}
               sx={{
                 backgroundColor: theme.palette.secondary.main,
                 color: theme.palette.primary.contrastText,

@@ -16,13 +16,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SyncIcon from '@mui/icons-material/Sync';
 import CloudDoneIcon from '@mui/icons-material/CloudDone';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
-import Header from '../../components/HomePageComponents/Header';
-import { useCart, useCartItems, useCartTotal, useCartStatus } from '../../providers/cartProvider';
-import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
+import { useCart, useCartItems, useCartTotal, useCartStatus } from '../providers/cartProvider';
+import { useRouter } from 'next/router';
 
 function CartPage() {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const router = useRouter();
   const cartItems = useCartItems();
   const { totalPrice } = useCartTotal();
   const { updateQuantity, removeItem } = useCart();
@@ -222,7 +222,7 @@ function CartPage() {
                 variant="contained"
                 color="primary"
                 sx={{ mt: 2, borderRadius: '20px', px: 4 }}
-                onClick={() => navigate('/checkout')}
+                onClick={() => router.push('/checkout')}
                 disabled={isLoading || cartItems.length === 0}
               >
                 Proceed to Checkout
