@@ -1,0 +1,21 @@
+[
+    {
+      "name": "Brenda King",
+      "image": "brenda-king.jpg",
+      "description": "Expert in Brazilian Jiu-Jitsu and Muay Thai. Over 20 years of experience training world-class fighters.",
+      "detailsPage": "/trainers/brenda-king"
+    },
+    {
+      "name": "Carlos Mendes",
+      "image": "carlos-mendes.jpg",
+      "description": "Renowned coach for UFC champions. Specialist in grappling and wrestling techniques.",
+      "detailsPage": "/trainers/carlos-mendes"
+    },
+    {
+      "name": "Liam O'Connor",
+      "image": "liam-oconnor.jpg",
+      "description": "Former lightweight MMA champion. Now coaching striking and defensive techniques.",
+      "detailsPage": "/trainers/liam-oconnor"
+    }
+  ]
+  
