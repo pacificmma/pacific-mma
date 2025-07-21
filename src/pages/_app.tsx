@@ -1,12 +1,13 @@
-// pages/_app.tsx dosyanızda
+// src/pages/_app.tsx
 import React from 'react';
 import type { AppProps } from 'next/app';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import theme from '../src/theme'; // Kendi tema dosyanızın yolu
-import { FirebaseAuthProvider } from '../src/providers/fireBaseAuthProvider'; // Kendi Firebase sağlayıcınızın yolu
-import { CartProvider } from '../src/providers/cartProvider'; // Kendi sepet sağlayıcınızın yolu
+import theme from '../theme'; // Path to your theme.js
+import { FirebaseAuthProvider } from '../providers/fireBaseAuthProvider'; // Path to your Firebase Auth Provider
+import { CartProvider } from '../providers/cartProvider'; // Path to your Cart Provider
+import "@/styles/globals.css"; // Your global CSS imports
 
-function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <FirebaseAuthProvider>
       <ThemeProvider theme={theme}>
@@ -18,5 +19,3 @@ function MyApp({ Component, pageProps }: AppProps) {
     </FirebaseAuthProvider>
   );
 }
-
-export default MyApp;
