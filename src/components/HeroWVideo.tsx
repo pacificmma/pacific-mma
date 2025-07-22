@@ -1,3 +1,4 @@
+// src/components/HeroWVideo.tsx
 import React, { useEffect, useRef } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
@@ -10,13 +11,23 @@ const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    // ✅ FIX: Only run on client-side
+    if (typeof document === 'undefined') return;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && videoRef.current?.paused) {
         videoRef.current.play().catch(() => {});
       }
     };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      // ✅ FIX: Safe cleanup - check if document exists
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+    };
   }, []);
 
   return (
@@ -50,7 +61,7 @@ const Hero = () => {
         <Box
           component="video"
           ref={videoRef}
-          src={firstHeroVideo} // ✅ Direct string usage
+          src={firstHeroVideo}
           autoPlay
           loop
           muted
@@ -63,7 +74,7 @@ const Hero = () => {
           }}
         />
       </Box>
-      {/* Metin */}
+      {/* Text Content */}
       <Box
         sx={{
           position: 'absolute',
@@ -99,48 +110,6 @@ const Hero = () => {
           for fighters worldwide.
         </Typography>
       </Box>
-      {/* SVG wave */}
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: -5,
-          left: 0,
-          width: '100%',
-          lineHeight: 0,
-          zIndex: 3,
-        }}
-      >
-        <svg
-          viewBox="0 0 1440 120"
-          width="100%"
-          height="120px"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-          style={{ display: 'block' }}
-        >
-          <path
-            fill={theme.palette.background.paper}
-            d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z"
-          />
-          <path
-            fill="none"
-            stroke={theme.palette.secondary.main}
-            strokeWidth="8"
-            d="M0,60 C360,120 1080,120 1440,60"
-          />
-        </svg>
-      </Box>
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          height: '5px',
-          background: theme.palette.background.paper,
-          zIndex: 2,
-        }}
-      />
     </Box>
   );
 };

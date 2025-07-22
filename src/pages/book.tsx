@@ -1,15 +1,15 @@
 // src/pages/book.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Box, Typography, Container, Grid, Button, Paper, // eslint-disable-line @typescript-eslint/no-unused-vars
+  Box, Typography, Container, Grid, Button, Paper,
   useTheme,
-  TextField, // eslint-disable-line @typescript-eslint/no-unused-vars
-  MenuItem // eslint-disable-line @typescript-eslint/no-unused-vars
+  TextField,
+  MenuItem
 } from '@mui/material';
-import { motion } from 'framer-motion'; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { motion } from 'framer-motion';
 import Link from 'next/link';
-import DatePicker from 'react-datepicker'; // eslint-disable-line @typescript-eslint/no-unused-vars
-import Select from 'react-select'; // eslint-disable-line @typescript-eslint/no-unused-vars
+import DatePicker from 'react-datepicker';
+import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -24,19 +24,19 @@ import JapanPhoto from '../assets/img/home_page/photo-japan.jpg';
 import ThailandPhoto from '../assets/img/home_page/photo-thailand.jpg';
 import { destinations as originalDestinations } from '../utils/destinations';
 import CustomTripForm from '../components/CustomBookingForm';
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+import { StaticImageData } from 'next/image';
 
-const animatedComponents = makeAnimated(); // eslint-disable-line @typescript-eslint/no-unused-vars
+const animatedComponents = makeAnimated();
 
 // Define a new interface for destinations specifically for this page
 interface BookingPageDestination {
   country: string;
   title: string;
   nights: string;
-  price?: number; // price is optional for custom experience
-  image: StaticImageData | StaticImageData[]; // Can be a single StaticImageData or an array
-  date?: string; // date is optional for custom experience
-  videoUrl?: string; // videoUrl is optional for custom experience
+  price?: number;
+  image: StaticImageData | StaticImageData[];
+  date?: string;
+  videoUrl?: string;
   isSlideshow: boolean;
   description?: string;
   whatYouWillEnjoy?: string[];
@@ -65,7 +65,7 @@ interface SelectOption {
   label: string;
 }
 
-const customExperience: BookingPageDestination = { // Apply the new interface
+const customExperience: BookingPageDestination = {
   country: 'Custom Experience',
   title: 'Design Your Custom Trip',
   nights: 'Flexible',
@@ -75,34 +75,36 @@ const customExperience: BookingPageDestination = { // Apply the new interface
 
 const BookingPage = () => {
   const theme = useTheme();
-  const [showForm, setShowForm] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [showForm, setShowForm] = useState(false);
   const formRef = useRef<HTMLDivElement | null>(null);
 
   const [slideshowIndex, setSlideshowIndex] = useState(0);
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
 
-  const handleShowForm = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
+  const handleShowForm = () => {
     setShowForm(true);
     setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: 'smooth' });
+      if (typeof window !== 'undefined' && formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
     }, 100);
   }
 
   // Combine customExperience with originalDestinations, ensuring type compatibility
   const destinations: BookingPageDestination[] = [
     customExperience,
-    ...originalDestinations.map(d => ({ // Map originalDestinations to BookingPageDestination
+    ...originalDestinations.map(d => ({
       ...d,
-      image: d.image as StaticImageData, // Ensure image is StaticImageData for single images
-      isSlideshow: false, // Explicitly set isSlideshow for original destinations
+      image: d.image as StaticImageData,
+      isSlideshow: false,
     }))
   ];
 
-  const gyms = Array.from(new Set(originalDestinations.flatMap(d => d.gyms))); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const countries = Array.from(new Set(originalDestinations.map(d => d.country))); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const trainings = Array.from(new Set(originalDestinations.flatMap(d => d.disciplines))); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const gyms = Array.from(new Set(originalDestinations.flatMap(d => d.gyms)));
+  const countries = Array.from(new Set(originalDestinations.map(d => d.country)));
+  const trainings = Array.from(new Set(originalDestinations.flatMap(d => d.disciplines)));
 
-  const [formData, setFormData] = useState<FormData>({ // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     phone: '',
     email: '',
@@ -116,9 +118,13 @@ const BookingPage = () => {
   });
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // ✅ FIX: Only run on client-side
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+    
     const interval = setInterval(() => {
-      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as StaticImageData[]).length); // Cast to array
+      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as StaticImageData[]).length);
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -126,97 +132,114 @@ const BookingPage = () => {
   const handleCustomTripClick = () => {
     setShowForm(true);
     setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: 'smooth' });
+      // ✅ FIX: Only run on client-side
+      if (typeof window !== 'undefined' && formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
     }, 100);
   };
 
-  const handleSelectChange = (name: string) => (value: SelectOption[]) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+  const handleSelectChange = (name: string) => (value: SelectOption[]) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value.map((v: SelectOption) => v.value)
     }));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
     <>
       <Header />
-      <Box sx={{ backgroundColor: theme.palette.background.paper }}>
-        {/* Hero */}
+      <Box>
+        {/* Hero Section */}
         <Box
           sx={{
-            height: '60vh',
-            backgroundImage: `url(${(BookingHeroPhoto as StaticImageData).src})`, // Access .src property
+            position: 'relative',
+            width: '100vw',
+            height: { xs: '40vh', sm: '50vh', md: '60vh' },
+            backgroundImage: `url(${BookingHeroPhoto.src})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            textAlign: 'center',
-            borderBottom: `5px solid ${theme.palette.secondary.main}`
+            mb: 6,
           }}
         >
-          <Typography
-            variant="h6"
+          <Box
             sx={{
-              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
-              lineHeight: { xs: 1.4, sm: 1.4 },
-              letterSpacing: '1px',
-              color: theme.palette.primary.contrastText,
-              textTransform: 'none',
-              maxWidth: '900px',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}
+          />
+          <Typography
+            variant="h2"
+            sx={{
+              position: 'relative',
               zIndex: 1,
-              margin: '0 auto',
-              fontFamily: theme.typography.fontFamily,
+              color: theme.palette.primary.contrastText,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: { xs: '2rem', sm: '3rem', md: '4rem' },
             }}
           >
-            Design Your Own Martial Arts Journey
+            Book Your Experience
           </Typography>
         </Box>
 
-        {/* Destination Cards */}
-        <Container maxWidth="lg" sx={{ py: 10 }}>
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={3}>
-              <Typography variant="h3" fontWeight="bold" gutterBottom>
-                Our Favourite <br /> Luxury MMA Vacations
+        {/* Destinations Grid */}
+        <Container maxWidth="xl" sx={{ mb: 6 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography
+                variant="h4"
+                fontWeight="bold"
+                gutterBottom
+                sx={{
+                  textAlign: 'center',
+                  color: theme.palette.text.primary,
+                  mb: 4,
+                }}
+              >
+                Choose Your Adventure
               </Typography>
-              <Typography>
-                Your trip should be as unique as your journey. Start with a custom plan or explore one of our crafted experiences.
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={9}>
-              <Grid container spacing={4}>
+              <Grid container spacing={3}>
                 {destinations.map((dest, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
                     <Box
-                      onClick={dest.country === 'Custom Experience' ? handleCustomTripClick : undefined}
                       sx={{
-                        width: '100%',
-                        height: { xs: '300px', sm: '350px', md: '440px' },
+                        position: 'relative',
+                        height: '350px',
                         borderRadius: '12px',
                         overflow: 'hidden',
-                        position: 'relative',
                         cursor: 'pointer',
-                        boxShadow: '0px 4px 12px rgba(0,0,0,0.2)',
-                        transition: 'transform 0.2s',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                         '&:hover': {
-                          transform: 'scale(1.03)'
-                        }
+                          transform: 'translateY(-5px)',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                        },
                       }}
                     >
                       <Box
                         sx={{
-                          width: '100%',
-                          height: '100%',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
                           backgroundImage: `url(${
-                            dest.isSlideshow
-                              ? (dest.image as StaticImageData[])[slideshowIndex].src // Correctly access src from array item
-                              : (dest.image as StaticImageData).src // Correctly access src from single image
+                            dest.isSlideshow && Array.isArray(dest.image)
+                              ? (dest.image as StaticImageData[])[slideshowIndex].src
+                              : (dest.image as StaticImageData).src
                           })`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
@@ -229,7 +252,7 @@ const BookingPage = () => {
                           bottom: 0,
                           left: 0,
                           right: 0,
-                          height: '33.33%', // Kartın 1/3'ü kadar yükseklik
+                          height: '33.33%',
                           background: 'rgba(0, 0, 0, 0.7)',
                           color: '#fff',
                           p: { xs: 1, md: 1.5 },
@@ -240,7 +263,7 @@ const BookingPage = () => {
                           justifyContent: 'space-between',
                           overflow: 'hidden',
                           '&:hover': {
-                            height: '100%', // Hover'da tüm kart yüksekliğini kapla
+                            height: '100%',
                           }
                         }}
                       >
@@ -272,11 +295,11 @@ const BookingPage = () => {
                               fontSize: { xs: '0.75rem', sm: '0.9rem', md: '1rem' },
                               display: '-webkit-box',
                               color: theme.palette.primary.contrastText,
-                              WebkitLineClamp: 3, // Varsayılan olarak 3 satır göster
+                              WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
                               '.destination-info:hover &': {
-                                WebkitLineClamp: 'unset', // Hover durumunda tüm metni göster
+                                WebkitLineClamp: 'unset',
                               },
                             }}
                           >
@@ -294,7 +317,7 @@ const BookingPage = () => {
                           onClick={dest.country === 'Custom Experience' ? handleCustomTripClick : undefined}
                           variant="contained"
                           sx={{
-                            mt: 'auto', // Alt tarafa ittir
+                            mt: 'auto',
                             mb: { xs: 1, md: 1 },
                             borderRadius: '30px',
                             color: theme.palette.primary.contrastText,
@@ -303,10 +326,10 @@ const BookingPage = () => {
                             textTransform: 'none',
                             fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem' },
                             padding: { xs: '4px 8px', md: '6px 12px' },
-                            opacity: 0, // Varsayılan olarak gizli
+                            opacity: 0,
                             transition: 'opacity 0.3s ease',
                             '.destination-info:hover &': {
-                              opacity: 1, // Hover durumunda göster
+                              opacity: 1,
                             },
                             '&:hover': {
                               backgroundColor: theme.palette.secondary.dark,
