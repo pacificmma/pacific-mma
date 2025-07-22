@@ -136,7 +136,7 @@ const CheckoutPage = () => {
                   NEW CUSTOMER CHECKOUT
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 3 }}>
-                  Become a member for exclusive benefits — it's free.
+                  Become a member for exclusive benefits — it&apos;s free.
                 </Typography>
 
                 <Box sx={{ textAlign: 'left', mb: 4 }}>

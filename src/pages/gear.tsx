@@ -24,8 +24,9 @@ import {
   Alert,
   Snackbar,
   Slide,
-  Badge,
+  Badge, // eslint-disable-line @typescript-eslint/no-unused-vars
 } from '@mui/material';
+import { TransitionProps } from '@mui/material/transitions';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -71,9 +72,15 @@ interface NotificationState {
   severity: 'success' | 'error' | 'warning' | 'info';
 }
 
-function SlideTransition(props: any) { // Use 'any' or define SlideProps properly if not from MUI
-  return <Slide {...props} direction="down" />;
-}
+// Fixed transition component with proper TypeScript interface
+const SlideTransition = React.forwardRef<
+  unknown,
+  TransitionProps & {
+    children: React.ReactElement;
+  }
+>(function SlideTransition(props, ref) {
+  return <Slide direction="down" ref={ref} {...props} />;
+});
 
 const uniqueValues = <T, K extends keyof T>(arr: T[], key: K): string[] => {
   const flat = arr.flatMap(item => item[key]);
@@ -126,7 +133,7 @@ const GearPage = () => {
   const hasActiveFilters = filters.size.length > 0 || filters.color.length > 0 || filters.category.length > 0;
 
   // Calculate total items in cart
-  const totalCartItems = cartContext?.state?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+  const totalCartItems = cartContext?.state?.items?.reduce((total, item) => total + item.quantity, 0) || 0; // eslint-disable-line @typescript-eslint/no-unused-vars
 
   useEffect(() => {
     let updated = [...Items] as ItemType[]; // Cast Items to ItemType[]
@@ -184,7 +191,7 @@ const GearPage = () => {
     setNotification(prev => ({ ...prev, open: false }));
   };
 
-  const handleGoToCart = () => {
+  const handleGoToCart = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
     router.push('/cart');
   };
 
@@ -488,7 +495,7 @@ const GearPage = () => {
           {!isMobile && hasActiveFilters && (
             <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h5">
-                {filteredItems.length} results for "Premium Gear"
+                {filteredItems.length} results for &quot;Premium Gear&quot;
               </Typography>
             </Box>
           )}

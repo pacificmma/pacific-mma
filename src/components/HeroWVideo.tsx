@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
-import firstHeroVideo from '../assets/videos/first_hero_video.mp4';
+
+// ✅ Next.js compatible asset import - use public folder path
+const firstHeroVideo = '/assets/videos/first_hero_video.mp4';
 
 const Hero = () => {
   const theme = useTheme();
@@ -13,7 +15,6 @@ const Hero = () => {
         videoRef.current.play().catch(() => {});
       }
     };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
@@ -35,7 +36,6 @@ const Hero = () => {
       }}
     >
       <Header />
-
       {/* Video container */}
       <Box
         sx={{
@@ -50,7 +50,7 @@ const Hero = () => {
         <Box
           component="video"
           ref={videoRef}
-          src={firstHeroVideo}
+          src={firstHeroVideo} // ✅ Direct string usage
           autoPlay
           loop
           muted
@@ -63,7 +63,6 @@ const Hero = () => {
           }}
         />
       </Box>
-
       {/* Metin */}
       <Box
         sx={{
@@ -100,7 +99,6 @@ const Hero = () => {
           for fighters worldwide.
         </Typography>
       </Box>
-
       {/* SVG wave */}
       <Box
         sx={{
@@ -132,7 +130,6 @@ const Hero = () => {
           />
         </svg>
       </Box>
-
       <Box
         sx={{
           position: 'absolute',

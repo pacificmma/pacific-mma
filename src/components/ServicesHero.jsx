@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardMedia, CardContent } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import ServicesHeroPhoto from '../../assets/img/services_page/services_hero.jpg';
-import bagagePhoto from '../../assets/img/services_page/suitcase.jpg';
-import nutritionPhoto from '../../assets/img/services_page/chef.jpg';
-import mmaTraining from '../../assets/img/services_page/mma_training.jpg';
-import callCenterPhoto from '../../assets/img/services_page/call_center.jpg';
-import kidBoxingPhoto from '../../assets/img/services_page/kid_boxing.jpg';
-import glovesPhoto from '../../assets/img/services_page/gloves.jpg';
-import hotelRoomPhoto from '../../assets/img/services_page/hotel_room.jpg';
-import giPhoto from '../../assets/img/services_page/gi_belt.jpg';
 import servicesText from '../utils/servicesText.json';
+
+// ✅ Next.js compatible asset imports - use public folder paths
+const ServicesHeroPhoto = '/assets/img/services_page/services_hero.jpg';
+const bagagePhoto = '/assets/img/services_page/suitcase.jpg';
+const nutritionPhoto = '/assets/img/services_page/chef.jpg';
+const mmaTraining = '/assets/img/services_page/mma_training.jpg';
+const callCenterPhoto = '/assets/img/services_page/call_center.jpg';
+const kidBoxingPhoto = '/assets/img/services_page/kid_boxing.jpg';
+const glovesPhoto = '/assets/img/services_page/gloves.jpg';
+const hotelRoomPhoto = '/assets/img/services_page/hotel_room.jpg';
+const giPhoto = '/assets/img/services_page/gi_belt.jpg';
 
 const photoMap = [
   mmaTraining,
@@ -34,7 +36,7 @@ const ServicesHero = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          backgroundImage: `url(${ServicesHeroPhoto})`,
+          backgroundImage: `url(${ServicesHeroPhoto})`, // ✅ Direct string usage
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           height: '400px',

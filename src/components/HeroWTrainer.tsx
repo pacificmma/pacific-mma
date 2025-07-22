@@ -2,9 +2,11 @@
 import React from 'react';
 import { Box, Typography, Button, useTheme } from '@mui/material';
 import BrendaWBrothers from '../assets/img/home_page/brenda_brothers.jpeg';
-import backgroundVideo from '../assets/videos/trainingWhero.mp4';
 import { useRouter } from 'next/router';
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+import { StaticImageData } from 'next/image';
+
+// ✅ CHANGE: Video now references public folder
+const backgroundVideo = '/assets/videos/trainingWhero.mp4';
 
 const HeroWTrainer = () => {
   const theme = useTheme();
@@ -148,7 +150,7 @@ const HeroWTrainer = () => {
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            Affiliated with Eric Paulson's CSW Academy and frequently visited by top-tier mixed
+            Affiliated with Eric Paulson&apos;s CSW Academy and frequently visited by top-tier mixed
             martial artists, our academy fosters a friendly culture and nurturing environment for
             both adults and children. Visit our state-of-the-art facility in the Bay Area, California,
             to learn more about our classes, workshops, and schedule.
@@ -193,7 +195,7 @@ const HeroWTrainer = () => {
         >
           <Box
             component="img"
-            src={(BrendaWBrothers as StaticImageData).src} // Corrected: Access the .src property
+            src={(BrendaWBrothers as StaticImageData).src}
             alt="Brenda King with Fighters"
             sx={{
               width: '100%',

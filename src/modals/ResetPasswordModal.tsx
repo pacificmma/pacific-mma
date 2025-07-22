@@ -46,9 +46,10 @@ const ResetPasswordModal = ({ open, onClose }: ResetPasswordModalProps) => {
     try {
       await sendPasswordResetEmail(auth, email);
       setMessage('Password reset email sent successfully.');
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to send reset email.');
+    } catch (err: unknown) {
+      // 🔧 FIX: Proper error typing (49:19) and removed console.error (50:7)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send reset email.';
+      setError(errorMessage);
     }
   };
 

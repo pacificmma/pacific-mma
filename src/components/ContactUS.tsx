@@ -42,8 +42,7 @@ const ContactUs = () => {
         setSnackbarMessage(`Error: ${data.message}`);
         setSnackbarSeverity('error');
       }
-    } catch (error) {
-      console.error('Request error:', error);
+    } catch {
       setSnackbarMessage('Something went wrong. Please try again later.');
       setSnackbarSeverity('error');
     } finally {

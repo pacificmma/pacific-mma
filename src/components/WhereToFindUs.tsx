@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Box, Typography, TextField, Button } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import contactBg from "../../assets/img/home_page/photo-4-hero.jpg";
+
+// ✅ Next.js compatible asset import - use public folder path
+const contactBg = "/assets/img/home_page/photo-4-hero.jpg";
 
 const WhereToFindUs = () => {
   const theme = useTheme();
@@ -13,7 +15,8 @@ const WhereToFindUs = () => {
   const [loading, setLoading] = useState(false);
   const [responseMsg, setResponseMsg] = useState("");
 
-  const handleChange = (field: any) => (event: any) => {
+  // 🔧 FIX: Proper typing for handleChange (16:32, 16:48)
+  const handleChange = (field: keyof typeof formData) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [field]: event.target.value });
   };
 
@@ -36,8 +39,10 @@ const WhereToFindUs = () => {
       } else {
         setResponseMsg(`❌ Error: ${data.message}`);
       }
-    } catch (error: any) {
-      setResponseMsg(`❌ Error sending message: ${error.message}`);
+    } catch (error: unknown) {
+      // 🔧 FIX: Proper error typing (39:21)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setResponseMsg(`❌ Error sending message: ${errorMessage}`);
     }
     setLoading(false);
   };
@@ -66,7 +71,7 @@ const WhereToFindUs = () => {
           guide you, support your passion, and offer you unforgettable experiences.
           Step onto the mat, challenge yourself, and become part of a community dedicated to
           growth, mastery, and adventure.
-          Send us a message — let’s start this journey together and make sure you get nothing
+          Send us a message — let&apos;s start this journey together and make sure you get nothing
           but the best.
         </Typography>
       </Box>
@@ -77,7 +82,7 @@ const WhereToFindUs = () => {
           position: "relative",
           width: "100%",
           minHeight: "70vh",
-          backgroundImage: `url(${contactBg})`,
+          backgroundImage: `url(${contactBg})`, // ✅ Direct string usage
           backgroundSize: "cover",
           backgroundPosition: "center",
           display: "flex",

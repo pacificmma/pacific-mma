@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Typography, Button, useTheme, Container } from '@mui/material';
-import CampHeroPhoto from '../../assets/img/camp_page/youthCampHero.jpg';
+
+// ✅ Next.js compatible asset import - use public folder path
+const CampHeroPhoto = '/assets/img/camp_page/youthCampHero.jpg';
 
 const YouthCamp = () => {
   const theme = useTheme();
@@ -11,7 +13,7 @@ const YouthCamp = () => {
         position: 'relative',
         width: '100%',
         minHeight: '60vh',
-        backgroundImage: `url(${CampHeroPhoto})`,
+        backgroundImage: `url(${CampHeroPhoto})`, // ✅ Direct string usage
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         display: 'flex',

@@ -1,10 +1,8 @@
 import NewYorkPhoto from '../assets/img/home_page/photo-newyork.jpg';
 import SanFranciscoPhoto from '../assets/img/home_page/photo-sanfrancisco.jpg';
-import NevadaPhoto from '../assets/img/home_page/photo-nevada.jpg';
 import LasVegasPhoto from '../assets/img/home_page/photo-lasvegas.jpg';
 import JapanPhoto from '../assets/img/home_page/photo-japan.jpg';
 import ThailandPhoto from '../assets/img/home_page/photo-thailand.jpg';
-import CaliforniaPhoto from '../assets/img/home_page/photo-california.jpg';
 import FloridaPhoto from '../assets/img/home_page/photo-florida.jpg';
 import BrazilPhoto from '../assets/img/home_page/photo-brazil.jpg';
 

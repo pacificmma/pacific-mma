@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, Analytics } from "firebase/analytics";
 
 // Firebase configuration (fetched from environment variables)
 const firebaseConfig = {
@@ -24,7 +24,7 @@ const db = getFirestore(app);
 
 // Optional: Analytics (for web only)
 // Ensure analytics is only initialized if window is defined (client-side)
-let analytics: any;
+let analytics: Analytics | undefined;
 if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
 }

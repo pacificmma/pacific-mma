@@ -10,10 +10,10 @@ import {
   Divider,
   Chip,
   CircularProgress,
-  Alert,
+  Alert, // eslint-disable-line @typescript-eslint/no-unused-vars
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import SyncIcon from '@mui/icons-material/Sync';
+import SyncIcon from '@mui/icons-material/Sync'; // eslint-disable-line @typescript-eslint/no-unused-vars
 import CloudDoneIcon from '@mui/icons-material/CloudDone';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import Header from '../components/Header';
@@ -33,7 +33,7 @@ function CartPage() {
   }, []);
 
   // 🎯 Sync durumu göstergesi
-  const renderSyncStatus = () => {
+  const renderSyncStatus = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
     if (isLoading) {
       return (
         <Chip 

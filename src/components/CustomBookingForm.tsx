@@ -20,12 +20,35 @@ import makeAnimated from 'react-select/animated';
 
 const animatedComponents = makeAnimated();
 
+// 🔧 FIX: Type definitions
+interface SelectOption {
+  label: string;
+  value: string;
+}
+
+interface FormData {
+  name: string;
+  phone: string;
+  email: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  destination: SelectOption[];
+  training: SelectOption[];
+  gym: SelectOption[];
+  mealPlan: string;
+  comfort: string;
+  budget: string;
+  note: string;
+}
+
+type FormField = keyof FormData;
+
 const mealPlans = ['Vegetarian', 'Carnivore', 'No Preference', 'Pescatarian'];
 const comfortLevels = ['Basic', 'Deluxe', 'VIP'];
 const budgets = ['Standard', 'Premium'];
 const gymOptions = [
   'Alliance MMA Gym', 'American Kickboxing Academy', 'American Top Team', 'Brazilian Top Team',
-  'Cruz MMA', 'El Nino Training Center', "Eric Paulson's CSW Academy', 'Pacific MMA Academy",
+  'Cruz MMA', 'El Nino Training Center', "Eric Paulson's CSW Academy", 'Pacific MMA Academy',
   'Team Alpha Male', 'Tiger Muay Thai', 'UFC Gyms', 'World Team USA', 'Rise Combat Sports',
   'Woodenman Muay Thai', 'CJ Judo', 'Gracie Barra Jiu Jitsu', 'Nakano Judo Academy',
   'Ralph Gracie Jiu Jitsu', 'United Wrestling Academy',
@@ -37,7 +60,7 @@ const destinationOptions = [
 
 const CustomTripForm = () => {
   const theme = useTheme();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '', phone: '', email: '', startDate: null, endDate: null, destination: [],
     training: [], gym: [], mealPlan: '', comfort: '', budget: '', note: '',
   });
@@ -45,7 +68,8 @@ const CustomTripForm = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
-  const handleChange = (field: any, value: any) => {
+  // 🔧 FIX: Proper typing for handleChange (48:32, 48:44)
+  const handleChange = (field: FormField, value: FormData[FormField]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -74,7 +98,8 @@ const CustomTripForm = () => {
       setSnackbarMessage('Your custom trip request has been submitted!');
       setSnackbarSeverity('success');
       setFormData({ name: '', phone: '', email: '', startDate: null, endDate: null, destination: [], training: [], gym: [], mealPlan: '', comfort: '', budget: '', note: '' });
-    } catch (error) {
+    } catch {
+      // 🔧 FIX: Removed unused 'error' variable (77:14)
       setSnackbarMessage('Something went wrong. Please try again.');
       setSnackbarSeverity('error');
     } finally {
@@ -82,8 +107,9 @@ const CustomTripForm = () => {
     }
   };
 
+  // 🔧 FIX: Proper typing for select styles (86:21, 94:20, 94:32)
   const selectStyle = {
-    control: (base: any) => ({
+    control: (base: Record<string, unknown>) => ({
       ...base,
       backgroundColor: theme.palette.background.paper,
       borderColor: theme.palette.divider,
@@ -91,7 +117,7 @@ const CustomTripForm = () => {
       fontFamily: theme.typography.fontFamily,
       fontSize: theme.typography.body2.fontSize,
     }),
-    option: (base: any, state: any) => ({
+    option: (base: Record<string, unknown>, state: { isFocused: boolean }) => ({
       ...base,
       backgroundColor: state.isFocused ? theme.palette.action.hover : theme.palette.background.paper,
       color: theme.palette.text.primary,
@@ -170,7 +196,7 @@ const CustomTripForm = () => {
               isMulti
               options={destinationOptions.map((val) => ({ label: val, value: val }))}
               value={formData.destination}
-              onChange={(val) => handleChange('destination', val)}
+              onChange={(val) => handleChange('destination', val as SelectOption[])}
               styles={{
                 ...selectStyle,
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
@@ -187,7 +213,7 @@ const CustomTripForm = () => {
               isMulti
               options={trainingOptions.map((val) => ({ label: val, value: val }))}
               value={formData.training}
-              onChange={(val) => handleChange('training', val)}
+              onChange={(val) => handleChange('training', val as SelectOption[])}
               styles={{
                 ...selectStyle,
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
@@ -204,7 +230,7 @@ const CustomTripForm = () => {
               isMulti
               options={gymOptions.map((val) => ({ label: val, value: val }))}
               value={formData.gym}
-              onChange={(val) => handleChange('gym', val)}
+              onChange={(val) => handleChange('gym', val as SelectOption[])}
               styles={{
                 ...selectStyle,
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
@@ -282,7 +308,8 @@ const CustomTripForm = () => {
                 fontStyle: 'italic',
               }}
             >
-              We'll reach out shortly to help you design and book your perfect trip
+              {/* 🔧 FIX: Escaped apostrophe (285:17) */}
+              We&apos;ll reach out shortly to help you design and book your perfect trip
             </Typography>
             <Button
               onClick={handleSubmit}

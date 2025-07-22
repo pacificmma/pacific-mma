@@ -1,18 +1,37 @@
 import { Box, Typography, IconButton, useTheme, useMediaQuery, Button } from '@mui/material';
-import { motion } from 'framer-motion';
-import { useEffect, useState, useRef } from 'react';
+import { motion, PanInfo } from 'framer-motion';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { StaticImageData } from 'next/image';
 import { destinations as originalDestinations } from '../utils/destinations';
-import NewYorkPhoto from '../../assets/img/home_page/photo-newyork.jpg';
-import SanFranciscoPhoto from '../../assets/img/home_page/photo-sanfrancisco.jpg';
-import NevadaPhoto from '../../assets/img/home_page/photo-nevada.jpg';
-import LasVegasPhoto from '../../assets/img/home_page/photo-lasvegas.jpg';
-import JapanPhoto from '../../assets/img/home_page/photo-japan.jpg';
-import ThailandPhoto from '../../assets/img/home_page/photo-thailand.jpg';
+const NewYorkPhoto = '/assets/img/home_page/photo-newyork.jpg';
+const SanFranciscoPhoto = '/assets/img/home_page/photo-sanfrancisco.jpg';
+const NevadaPhoto = '/assets/img/home_page/photo-nevada.jpg';
+const LasVegasPhoto = '/assets/img/home_page/photo-lasvegas.jpg';
+const JapanPhoto = '/assets/img/home_page/photo-japan.jpg';
+const ThailandPhoto = '/assets/img/home_page/photo-thailand.jpg';
 
-const customExperience = {
+// 🔧 FIX: Updated type definitions to include StaticImageData
+interface Destination {
+  country: string;
+  title: string;
+  nights: string;
+  image: string | string[] | StaticImageData | StaticImageData[];
+  isSlideshow?: boolean;
+  description?: string;
+  price?: number;
+  date?: string;
+  videoUrl?: string;
+  whatYouWillEnjoy?: string[];
+  generalInfo?: string[];
+  descriptionPage?: string;
+  gyms?: string[];
+  disciplines?: string[];
+}
+
+const customExperience: Destination = {
   country: 'Custom Experience',
   title: 'Design Your Custom Trip',
   nights: 'Flexible',
@@ -20,10 +39,10 @@ const customExperience = {
   isSlideshow: true,
 };
 
-const destinations = [customExperience, ...originalDestinations];
+const destinations = [customExperience, ...originalDestinations] as Destination[];
 
 // Sonsuz döngü için kartları çoğaltıyoruz
-const infiniteDestinations = [...destinations, ...destinations, ...destinations];
+const infiniteDestinations: Destination[] = [...destinations, ...destinations, ...destinations];
 
 const DestinationSlider = () => {
   const theme = useTheme();
@@ -47,13 +66,8 @@ const DestinationSlider = () => {
   // Başlangıç pozisyonu - ortadaki set
   const initialPosition = -slidingDistance;
 
-  // Smooth animation için position update
-  const updatePosition = (newPosition: number) => {
-    setCurrentPosition(newPosition);
-  };
-
-  // Desktop sonsuz animasyon fonksiyonu
-  const startInfiniteAnimation = () => {
+  // 🔧 FIX: Desktop sonsuz animasyon fonksiyonu - useCallback ile wrap edildi (107:6, 124:6)
+  const startInfiniteAnimation = useCallback(() => {
     if (!isPaused && !isMobile && isMountedRef.current) {
       const animate = () => {
         if (isPaused || isMobile || !isMountedRef.current) return;
@@ -74,7 +88,7 @@ const DestinationSlider = () => {
       
       animationRef.current = requestAnimationFrame(animate);
     }
-  };
+  }, [isPaused, isMobile, slidingDistance]);
 
   // Animasyonu durdur
   const stopInfiniteAnimation = () => {
@@ -104,7 +118,7 @@ const DestinationSlider = () => {
       isMountedRef.current = false;
       stopInfiniteAnimation();
     };
-  }, [isMobile, initialPosition]);
+  }, [isMobile, initialPosition, startInfiniteAnimation]);
 
   // Pause durumu değiştiğinde animasyonu kontrol et
   useEffect(() => {
@@ -121,7 +135,7 @@ const DestinationSlider = () => {
         }, 100);
       }
     }
-  }, [isPaused, isMobile]);
+  }, [isPaused, isMobile, startInfiniteAnimation]);
 
   // Mouse event handlers - individual card hover
   const handleCardMouseEnter = (index: number) => {
@@ -185,14 +199,15 @@ const DestinationSlider = () => {
     }
   };
 
-  // Drag handlers (mobil için)
-  const handleDragStart = (event: any, info: any) => {
+  // 🔧 FIX: Drag handlers - proper typing and removed unused params (189:28, 189:35, 189:40, 189:46)
+  const handleDragStart = () => {
     if (isMobile) {
       setIsDragging(true);
     }
   };
 
-  const handleDragEnd = (event: any, info: any) => {
+  // 🔧 FIX: Proper typing for handleDragEnd with framer-motion PanInfo
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isMobile) {
       const dragDistance = info.offset.x;
       const threshold = 50;
@@ -230,13 +245,14 @@ const DestinationSlider = () => {
   // Slideshow resimleri
   useEffect(() => {
     const interval = setInterval(() => {
-      setSlideshowImageIndex((prev) => (prev + 1) % (customExperience.image.length || 1));
+      const imageArray = Array.isArray(customExperience.image) ? customExperience.image : [customExperience.image];
+      setSlideshowImageIndex((prev) => (prev + 1) % (imageArray.length || 1));
     }, 800);
     return () => clearInterval(interval);
   }, []);
 
-  // Kart tıklama handler
-  const handleCardClick = (destination: any) => {
+  // 🔧 FIX: Kart tıklama handler - proper typing (239:41)
+  const handleCardClick = (destination: Destination) => {
     if (!isDragging) {
       router.push(
         destination.isSlideshow
@@ -246,8 +262,8 @@ const DestinationSlider = () => {
     }
   };
 
-  // Buton tıklama handler
-  const handleButtonClick = (e: any, destination: any) => {
+  // 🔧 FIX: Buton tıklama handler - proper typing (250:33, 250:51)
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>, destination: Destination) => {
     e.stopPropagation();
     router.push(
       destination.isSlideshow
@@ -409,8 +425,16 @@ const DestinationSlider = () => {
                       width: '100%',
                       height: '100%',
                       backgroundImage: `url(${destination.isSlideshow && Array.isArray(destination.image)
-                        ? destination.image[slideshowImageIndex]
-                        : destination.image
+                        ? typeof destination.image[slideshowImageIndex] === 'string' 
+                          ? destination.image[slideshowImageIndex]
+                          : destination.image[slideshowImageIndex]?.src || ''
+                        : typeof destination.image === 'string'
+                          ? destination.image
+                          : Array.isArray(destination.image)
+                            ? typeof destination.image[0] === 'string' 
+                              ? destination.image[0]
+                              : destination.image[0]?.src || ''
+                            : destination.image?.src || ''
                         })`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',

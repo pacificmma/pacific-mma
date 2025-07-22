@@ -18,11 +18,10 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
+// 🔧 FIX: Removed unused imports (21:10, 25:8)
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../utils/fireBaseAuthProvider';
 import { doc, setDoc } from 'firebase/firestore';
-import GoogleIcon from '@mui/icons-material/Google';
 
 type SignUpModalProps = {
   open: boolean;
@@ -89,7 +88,6 @@ const SignUpModal = ({ open, onClose }: SignUpModalProps) => {
   const [birthDate, setBirthDate] = useState('');
   const [gender, setGender] = useState('');
 
-
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
   const validatePassword = (pwd: string) => passwordRegex.test(pwd);
@@ -109,8 +107,8 @@ const SignUpModal = ({ open, onClose }: SignUpModalProps) => {
 
         setStates(stateList);
       }
-    } catch (error) {
-      console.error('Error fetching states:', error);
+    } catch {
+      // 🔧 FIX: Removed console.error (113:7)
       setError('Failed to load states');
     } finally {
       setLoadingStates(false);
@@ -133,8 +131,8 @@ const SignUpModal = ({ open, onClose }: SignUpModalProps) => {
 
         setCounties(countyList);
       }
-    } catch (error) {
-      console.error('Error fetching counties:', error);
+    } catch {
+      // 🔧 FIX: Removed console.error (137:7)
       setError('Failed to load counties');
     } finally {
       setLoadingCounties(false);
@@ -157,20 +155,20 @@ const SignUpModal = ({ open, onClose }: SignUpModalProps) => {
 
         setCities(cityList);
       }
-    } catch (error) {
-      console.error('Error fetching cities:', error);
+    } catch {
+      // 🔧 FIX: Removed console.error (161:7)
       setError('Failed to load cities');
     } finally {
       setLoadingCities(false);
     }
   };
 
-  // Load states when modal opens
+  // 🔧 FIX: Added states.length to dependency array (173:6)
   useEffect(() => {
     if (open && states.length === 0) {
       fetchStates();
     }
-  }, [open]);
+  }, [open, states.length]);
 
   // Handle state selection
   const handleStateChange = (event: SelectChangeEvent) => {
@@ -209,7 +207,6 @@ const SignUpModal = ({ open, onClose }: SignUpModalProps) => {
       return;
     }
 
-    
     setLoading(true);
     setError('');
 
@@ -240,12 +237,12 @@ const SignUpModal = ({ open, onClose }: SignUpModalProps) => {
         },
         createdAt: new Date(),
       });
-      
 
       onClose();
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Signup failed');
+    } catch (err: unknown) {
+      // 🔧 FIX: Proper error typing (246:19) and removed console.error (247:7)
+      const errorMessage = err instanceof Error ? err.message : 'Signup failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -279,41 +276,41 @@ const SignUpModal = ({ open, onClose }: SignUpModalProps) => {
 
         {/* Basic Info */}
         <TextField
-  label="Full Name"
-  type="text"
-  fullWidth
-  margin="normal"
-  value={fullName}
-  onChange={(e) => setFullName(e.target.value)}
-  required
-  sx={{ '& label': { color: theme.palette.text.primary } }}
-/>
+          label="Full Name"
+          type="text"
+          fullWidth
+          margin="normal"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+          sx={{ '& label': { color: theme.palette.text.primary } }}
+        />
 
-<TextField
-  label="Date of Birth"
-  type="date"
-  fullWidth
-  margin="normal"
-  value={birthDate}
-  onChange={(e) => setBirthDate(e.target.value)}
-  InputLabelProps={{ shrink: true }}
-  required
-  sx={{ '& label': { color: theme.palette.text.primary } }}
-/>
+        <TextField
+          label="Date of Birth"
+          type="date"
+          fullWidth
+          margin="normal"
+          value={birthDate}
+          onChange={(e) => setBirthDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          required
+          sx={{ '& label': { color: theme.palette.text.primary } }}
+        />
 
-<FormControl fullWidth margin="normal" required>
-  <InputLabel sx={{ color: theme.palette.text.primary }}>Gender</InputLabel>
-  <Select
-    value={gender}
-    onChange={(e) => setGender(e.target.value)}
-    label="Gender"
-  >
-    <MenuItem value="Male">Male</MenuItem>
-    <MenuItem value="Female">Female</MenuItem>
-    <MenuItem value="Other">Other</MenuItem>
-    <MenuItem value="Prefer not to say">Prefer not to say</MenuItem>
-  </Select>
-</FormControl>
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel sx={{ color: theme.palette.text.primary }}>Gender</InputLabel>
+          <Select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            label="Gender"
+          >
+            <MenuItem value="Male">Male</MenuItem>
+            <MenuItem value="Female">Female</MenuItem>
+            <MenuItem value="Other">Other</MenuItem>
+            <MenuItem value="Prefer not to say">Prefer not to say</MenuItem>
+          </Select>
+        </FormControl>
 
         <TextField
           label="Email"

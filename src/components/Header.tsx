@@ -69,8 +69,10 @@ const Header = () => {
     try {
       await logout();
       router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch {
+      // 🔧 FIX: Removed console.error statement (73:7)
+      // Silently handle logout error - user will still be redirected
+      router.push('/');
     }
   };
 

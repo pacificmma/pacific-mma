@@ -4,14 +4,14 @@ import { Box, Typography, Button, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useTheme } from '@mui/material/styles';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import giImage from '../../assets/img/home_page/gi.jpg';
-import rashGuardImage from '../../assets/img/home_page/shirt.jpg';
-import glovesImage from '../../assets/img/home_page/gloves.jpg';
 import { useRouter } from 'next/router';
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+
+const giImage = '/assets/img/home_page/gi.jpg';
+const rashGuardImage = '/assets/img/home_page/shirt.jpg';
+const glovesImage = '/assets/img/home_page/gloves.jpg';
 
 interface ShopItem {
-  src: StaticImageData; // Explicitly define src as StaticImageData
+  src: string; // ✅ Changed from StaticImageData to string for Next.js public assets
   alt: string;
   price: string;
   description: string;
@@ -21,7 +21,7 @@ const HeroShop = () => {
   const theme = useTheme();
   const router = useRouter();
 
-  const shopItems: ShopItem[] = [ // Apply the ShopItem interface
+  const shopItems: ShopItem[] = [
     { src: giImage, alt: "Gi", price: "$120", description: "Premium Brazilian Jiu-Jitsu Gi" },
     { src: rashGuardImage, alt: "Rashguard", price: "$50", description: "High-Quality Rashguard" },
     { src: glovesImage, alt: "Gloves", price: "$80", description: "MMA Pro Gloves" },
@@ -92,7 +92,7 @@ const HeroShop = () => {
             mb: 2,
           }}
         >
-          {shopItems.map((item, index) => ( // Use shopItems variable
+          {shopItems.map((item, index) => (
             <motion.div
               key={index}
               whileHover={{ scale: 1.05 }}
@@ -105,7 +105,7 @@ const HeroShop = () => {
             >
               <Box
                 component="img"
-                src={item.src.src} // Corrected: Access the .src property
+                src={item.src} // ✅ Fixed: Direct string access, no .src property needed
                 alt={item.alt}
                 sx={{
                   width: '100%',

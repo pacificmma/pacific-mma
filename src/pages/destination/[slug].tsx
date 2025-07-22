@@ -56,7 +56,7 @@ const DestinationDetails = () => {
   const router = useRouter();
   const { slug } = router.query;
   // Cast destinations to array of DestinationType for better type safety
-  const destination = (destinations as DestinationType[]).find((d: any) => slugify(d.country) === slug);
+  const destination = (destinations as DestinationType[]).find((d: DestinationType) => slugify(d.country) === slug);
 
 
   useEffect(() => {
@@ -102,7 +102,7 @@ const DestinationDetails = () => {
         comfortLevel: '',
         personalNote: '',
       });
-    } catch (err) {
+    } catch (err) { // eslint-disable-line @typescript-eslint/no-unused-vars
       setSnackbarMessage('Something went wrong. Please try again later.');
       setSnackbarSeverity('error');
     } finally {

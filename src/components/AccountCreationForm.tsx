@@ -23,7 +23,30 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import LockIcon from '@mui/icons-material/Lock';
 import { CartContext, CartItem } from '../providers/cartProvider';
 
-const MultiStepForm = (props: any) => {
+// 🔧 FIX 1: Props interface tanımlaması (26:31 hatası)
+interface MultiStepFormProps {
+  email?: string;
+}
+
+// 🔧 FIX 2 & 3: Form data type interfaces
+interface FormData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  postalCode: string;
+}
+
+interface PaymentData {
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  cardholderName: string;
+}
+
+const MultiStepForm = (props: MultiStepFormProps) => {
   const theme = useTheme();
   const [expandedPanels, setExpandedPanels] = useState([0]); // İlk panel açık
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -33,8 +56,8 @@ const MultiStepForm = (props: any) => {
   const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   // Form data
-  const [formData, setFormData] = useState({
-    email: props.email,
+  const [formData, setFormData] = useState<FormData>({
+    email: props.email || '',
     password: '',
     firstName: '',
     lastName: '',
@@ -44,18 +67,20 @@ const MultiStepForm = (props: any) => {
   });
 
   // Payment form data
-  const [paymentData, setPaymentData] = useState({
+  const [paymentData, setPaymentData] = useState<PaymentData>({
     cardNumber: '',
     expiryDate: '',
     cvv: '',
     cardholderName: '',
   });
 
-  const updateField = (field: string, value: any) => {
+  // 🔧 FIX 2: updateField function (54:46 hatası)
+  const updateField = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const updatePaymentField = (field: string, value: any) => {
+  // 🔧 FIX 3: updatePaymentField function (58:53 hatası)
+  const updatePaymentField = (field: keyof PaymentData, value: string) => {
     setPaymentData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -381,7 +406,8 @@ const MultiStepForm = (props: any) => {
             </Typography>
             {cartItems.length > 0 ? (
               <>
-                {cartItems.map((item: CartItem, index: number) => (
+                {/* 🔧 FIX 4: index parametresini kaldırdık (384:49 hatası) */}
+                {cartItems.map((item: CartItem) => (
                   <Box key={`${item.id}-${item.size}-${item.color}`} sx={{ mb: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       {/* Sol tarafta: Ürün adı ve altındaki Quantity/Size/Color */}

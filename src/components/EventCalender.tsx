@@ -1,5 +1,5 @@
 // src/components/EventCalendar.tsx
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -7,30 +7,16 @@ import {
   Button,
   useTheme,
   Tooltip,
-  TextField,
-  MenuItem,
-  Snackbar,
-  Alert,
-  Container,
 } from '@mui/material';
 import { destinations } from '../utils/destinations';
-import Header from './Header'; // Corrected import path
-import Footer from './Footer'; // Corrected import path
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+import { StaticImageData } from 'next/image';
 
 interface Destination {
   country: string;
   title: string;
   date: string;
-  image: string | StaticImageData; // Updated: image can be string or StaticImageData
+  image: string | StaticImageData;
 }
-
-interface EventsMap {
-  [key: string]: Destination[];
-}
-
-const slugify = (text: string) =>
-  text.toLowerCase().replace(/\s+/g, '-');
 
 const EventCalendar = () => {
   const theme = useTheme();
@@ -59,11 +45,13 @@ const EventCalendar = () => {
     }
   };
 
-  const eventsMap: Record<string, Destination[]> = destinations.reduce((map, dest: any) => { // dest: any added to resolve initial type mismatch from external source
-    const date = new Date(dest.date);
+  // 🔧 FIX: Proper typing for destinations reduce (62:84)
+  const eventsMap: Record<string, Destination[]> = destinations.reduce((map, dest) => {
+    const destination = dest as Destination; // Type assertion for external data
+    const date = new Date(destination.date);
     const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
     if (!map[key]) map[key] = [];
-    map[key].push(dest);
+    map[key].push(destination);
     return map;
   }, {} as Record<string, Destination[]>);
 

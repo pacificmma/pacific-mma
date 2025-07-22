@@ -7,7 +7,7 @@ const ComingSoonPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = async (e: any) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
 
@@ -31,6 +31,7 @@ const ComingSoonPage = () => {
         setError('Incorrect password. Please try again.');
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Login error:', err);
       setError('Login failed. Please check your connection.');
     }

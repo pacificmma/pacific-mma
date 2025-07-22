@@ -13,15 +13,16 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { gsap } from 'gsap';
-import trainingImage from '../../assets/img/home_page/training_1.jpg';
-import strikingImage from '../../assets/img/home_page/striking_1.jpg';
-import grapplingImage from '../../assets/img/home_page/grappling.jpg';
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+
+// ✅ Next.js compatible asset imports - use public folder paths
+const trainingImage = '/assets/img/home_page/training_1.jpg';
+const strikingImage = '/assets/img/home_page/striking_1.jpg';
+const grapplingImage = '/assets/img/home_page/grappling.jpg';
 
 interface AccordionItem {
   title: string;
   items: string[];
-  image: StaticImageData; // Explicitly type image as StaticImageData
+  image: string; // ✅ Changed from StaticImageData to string for Next.js public assets
 }
 
 const HeroWPartners = () => {
@@ -37,7 +38,7 @@ const HeroWPartners = () => {
     'Brazilian Top Team',
     'Cruz MMA',
     'El Nino Training Center',
-    'Eric Paulson’s CSW Academy',
+    'Eric Paulson`s CSW Academy',
     'Pacific MMA Academy',
     'Team Alpha Male',
     'Tiger Muay Thai',
@@ -54,7 +55,7 @@ const HeroWPartners = () => {
     'United Wrestling Academy',
   ];
 
-  const accordionData: AccordionItem[] = [ // Apply the AccordionItem interface
+  const accordionData: AccordionItem[] = [
     {
       title: 'Mixed Martial Arts',
       items: gyms,
@@ -128,7 +129,7 @@ const HeroWPartners = () => {
           <Box
             ref={imageRef}
             component="img"
-            src={accordionData[activeAccordion !== null ? activeAccordion : 0].image.src} // Corrected: Access the .src property
+            src={accordionData[activeAccordion !== null ? activeAccordion : 0].image} // ✅ Fixed: Direct string access, no .src property needed
             alt={accordionData[activeAccordion !== null ? activeAccordion : 0].title}
             sx={{
               width: '100%',

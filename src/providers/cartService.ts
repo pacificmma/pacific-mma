@@ -1,5 +1,5 @@
-import { auth, db } from '../utils/fireBaseAuthProvider';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../utils/fireBaseAuthProvider';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { CartItem } from './cartProvider'; // doğru path'e göre güncelle
 
 export const getCartFromFirestore = async (userId: string): Promise<CartItem[]> => {

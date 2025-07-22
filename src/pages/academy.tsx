@@ -1,12 +1,12 @@
 // src/pages/academy.tsx
 import React, { useEffect } from 'react';
-import { Box, Typography, Button, useTheme } from '@mui/material'; // useTheme imported
+import { Box, Typography, useTheme } from '@mui/material'; // 🔧 FIX: Removed unused Button import (3:27)
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BrendaWStudents from '../assets/img/academy/brendaWstudents.jpg';
 import BrendaWAlone from '../assets/img/academy/brendaWalone.jpg';
 import BrendaWTraining from '../assets/img/academy/brendaWtraining.jpg';
-import theme from '../theme'; // Corrected import path for theme
+// 🔧 FIX: Removed unused theme import (9:8)
 import { StaticImageData } from 'next/image'; // Import StaticImageData
 
 const AcademyPage = () => {
@@ -103,7 +103,8 @@ const AcademyPage = () => {
                 <Typography variant="body1" sx={{ maxWidth: '800px', mx: 'auto', lineHeight: 1.8 }}>
                     Located in Redwood City, CA, Pacific MMA Academy ranks among the TOP 20 Bay Area martial arts schools.
                     We offer top-tier classes in Brazilian Jiu-Jitsu, STX Kickboxing, Jeet Kune Do, Kali-Escrima, and a
-                    remarkable children’s program. Our renowned Striking Coach, Brenda King, brings over 30 years of experience,
+                    {/* 🔧 FIX: Escaped apostrophe (147:31) */}
+                    remarkable children&apos;s program. Our renowned Striking Coach, Brenda King, brings over 30 years of experience,
                     holding certifications under Guro Dan Inosanto, Sensei Eric Paulson, and Guro Daniel Sullivan.
                 </Typography>
             </Box>
@@ -144,12 +145,13 @@ const AcademyPage = () => {
                     }}
                 >
                     <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: currentTheme.palette.primary.contrastText }}>
-                        Brenda's Martial Arts Journey
+                        {/* 🔧 FIX: Escaped apostrophe (186:36) */}
+                        Brenda&apos;s Martial Arts Journey
                     </Typography>
                     <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-                        Brenda is not only a coach but a lifelong student of the arts. She’s authorized to teach Jeet Kune Do and Filipino
+                        Brenda is not only a coach but a lifelong student of the arts. She&apos;s authorized to teach Jeet Kune Do and Filipino
                         Martial Arts under Guro Dan Inosanto, a Pro Coach in Combat Submission Wrestling under Sensei Eric Paulson, and a
-                        Purple Belt in Brazilian Jiu-Jitsu. Brenda’s rich background ensures every class is packed with authentic techniques
+                        Purple Belt in Brazilian Jiu-Jitsu. Brenda&apos;s rich background ensures every class is packed with authentic techniques
                         and modern applications.
                     </Typography>
                 </Box>
@@ -183,7 +185,7 @@ const AcademyPage = () => {
                     <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
                         Our academy is a trusted training ground for law enforcement, corporate teams, and children alike. We offer specialized
                         self-defense programs tailored for companies like Twitter, Scandinavian Airlines, and the US Navy Sea Cadets.
-                        Whether you're stepping on the mat for fitness, competition, or personal growth, you’ll find an encouraging
+                        Whether you&apos;re stepping on the mat for fitness, competition, or personal growth, you&apos;ll find an encouraging
                         and inclusive community here.
                     </Typography>
                 </Box>

@@ -9,11 +9,11 @@ import {
     TextField,
 } from '@mui/material';
 import { Theme } from '@mui/material/styles';
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion'; // 🔧 FIX: Removed unused 'useAnimation' import (12:18)
 import Link from 'next/link'; // Import Link from next/link
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import Select, { MultiValue, ActionMeta } from 'react-select';
+import Select from 'react-select'; // 🔧 FIX: Removed unused 'MultiValue' and 'ActionMeta' imports (16:18, 16:30)
 import makeAnimated from 'react-select/animated';
 import { destinations as originalDestinations } from '../utils/destinations'; // Renamed to avoid conflict
 import { StaticImageData } from 'next/image'; // Import StaticImageData

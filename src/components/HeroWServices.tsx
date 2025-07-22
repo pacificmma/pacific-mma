@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Box, Typography, Button, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
-import featureImage1 from '../../assets/img/home_page/feature_1.jpeg';
-import featureImage2 from '../../assets/img/home_page/feature_2.jpeg';
-import featureImage3 from '../../assets/img/home_page/feature_3.jpg';
-import photoHero1 from '../../assets/img/home_page/photo-1-hero.jpg';
-import photoHero2 from '../../assets/img/home_page/photo-2-hero.jpg';
-import photoHero3 from '../../assets/img/home_page/photo-3-hero.jpg';
 import { useRouter } from 'next/router';
+
+// ✅ Next.js compatible asset imports - use public folder paths
+const featureImage1 = '/assets/img/home_page/feature_1.jpeg';
+const featureImage2 = '/assets/img/home_page/feature_2.jpeg';
+const featureImage3 = '/assets/img/home_page/feature_3.jpg';
+const photoHero1 = '/assets/img/home_page/photo-1-hero.jpg';
+const photoHero2 = '/assets/img/home_page/photo-2-hero.jpg';
+const photoHero3 = '/assets/img/home_page/photo-3-hero.jpg';
 
 const features = [
   {
@@ -32,8 +34,7 @@ const features = [
 
 const HeroWServices = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  // 🔧 FIX: Removed unused isMobile (35:9) and isTablet (36:9) variables
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'));
   const router = useRouter();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);

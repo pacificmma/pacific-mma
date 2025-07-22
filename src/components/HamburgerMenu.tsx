@@ -7,10 +7,8 @@ import Facebook from '@mui/icons-material/Facebook';
 import Twitter from '@mui/icons-material/Twitter';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import menuItems from '../utils/menuItems.json';
-// Removed: import { useLocation } from 'react-router-dom';
-import logo from '../../assets/logo/pacific_mma_logo.jpg';
-import { useRouter } from 'next/router'; // Next.js router
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+import { useRouter } from 'next/router';
+const logo = '/assets/logo/pacific_mma_logo.jpg';
 
 type HamburgerMenuProps = {
   toggleDrawer: () => void;
@@ -64,8 +62,10 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           width: '100%',
         }}
       >
+        {/* 🔧 FIX: Added eslint-disable for Next.js img warning (67:9) */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={(logo as StaticImageData).src} // Corrected: Access the .src property
+          src={logo} // ✅ Fixed: Direct string access, no .src property needed
           alt="Pacific MMA Logo"
           style={{ height: '80px', marginBottom: '1rem', objectFit: 'contain' }}
         />
@@ -83,7 +83,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             fontFamily: theme.typography.fontFamily,
           }}
         >
-          "Travel the world and train martial arts"
+          {/* 🔧 FIX: Escaped quotes (86:11, 86:51) */}
+          &ldquo;Travel the world and train martial arts&rdquo;
         </Typography>
       </Box>
 

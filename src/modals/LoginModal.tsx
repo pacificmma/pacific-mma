@@ -7,13 +7,10 @@ import {
   Button,
   IconButton,
   useTheme,
-  Divider,
   Link,
-} from '@mui/material';
+} from '@mui/material'; // 🔧 FIX: Removed unused 'Divider' import (10:3)
 import CloseIcon from '@mui/icons-material/Close';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../utils/fireBaseAuthProvider';
 import ResetPasswordModal from './ResetPasswordModal';
 
 const style = {
@@ -42,28 +39,14 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
   const [resetError, setResetError] = useState('');
   const [resetOpen, setResetOpen] = useState(false);
 
-
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     await login(email, password);
     onClose();
   };
 
-  const handlePasswordReset = async () => {
-    if (!email) {
-      setResetError('Please enter your email address to reset your password.');
-      return;
-    }
-
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setResetMessage('A password reset email has been sent.');
-      setResetError('');
-    } catch (err: any) {
-      setResetError(err.message || 'Failed to send reset email.');
-      setResetMessage('');
-    }
-  };
+  // 🔧 FIX: Removed unused handlePasswordReset function (52:9)
+  // Reset password functionality is handled by ResetPasswordModal
 
   const handleClose = () => {
     setEmail('');
