@@ -1,17 +1,11 @@
 // src/pages/book.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Box, Typography, Container, Grid, Button, Paper,
+  Box, Typography, Container, Grid, Button,
   useTheme,
-  TextField,
-  MenuItem
 } from '@mui/material';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import DatePicker from 'react-datepicker';
-import Select from 'react-select';
-import makeAnimated from 'react-select/animated';
-import 'react-datepicker/dist/react-datepicker.css';
+import dynamic from 'next/dynamic';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -23,10 +17,13 @@ import LasVegasPhoto from '../assets/img/home_page/photo-lasvegas.jpg';
 import JapanPhoto from '../assets/img/home_page/photo-japan.jpg';
 import ThailandPhoto from '../assets/img/home_page/photo-thailand.jpg';
 import { destinations as originalDestinations } from '../utils/destinations';
-import CustomTripForm from '../components/CustomBookingForm';
 import { StaticImageData } from 'next/image';
 
-const animatedComponents = makeAnimated();
+// ✅ FIX: Dynamically import CustomTripForm to avoid SSR issues
+const CustomTripForm = dynamic(() => import('../components/CustomBookingForm'), {
+  ssr: false,
+  loading: () => <div>Loading...</div>
+});
 
 // Define a new interface for destinations specifically for this page
 interface BookingPageDestination {
@@ -46,98 +43,102 @@ interface BookingPageDestination {
   disciplines?: string[];
 }
 
-// Define types for form data and select options
-interface FormData {
-  name: string;
-  phone: string;
-  email: string;
-  destinations: string[];
-  gyms: string[];
-  trainings: string[];
-  mealPlan: string;
-  comfort: string;
-  budget: string;
-  note: string;
-}
+// ✅ FIX: Import the shared hook instead
+import { useBrowser } from '../hooks/useBrowser';
 
-interface SelectOption {
-  value: string;
-  label: string;
-}
-
-const customExperience: BookingPageDestination = {
-  country: 'Custom Experience',
-  title: 'Design Your Custom Trip',
-  nights: 'Flexible',
-  image: [NewYorkPhoto, SanFranciscoPhoto, NevadaPhoto, LasVegasPhoto, JapanPhoto, ThailandPhoto],
-  isSlideshow: true,
-};
-
-const BookingPage = () => {
+const BookPage = () => {
   const theme = useTheme();
-  const [showForm, setShowForm] = useState(false);
-  const formRef = useRef<HTMLDivElement | null>(null);
-
+  const formRef = useRef<HTMLDivElement>(null);
   const [slideshowIndex, setSlideshowIndex] = useState(0);
+  const [showForm, setShowForm] = useState(false);
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+  
+  // ✅ FIX: Use the shared browser hook
+  const { isBrowser } = useBrowser();
+
+  // Convert destinations for this specific page
+  const destinations: BookingPageDestination[] = [
+    {
+      country: 'New York',
+      title: 'Experience the city that never sleeps while training with top MMA athletes',
+      nights: '7 days, 6 nights',
+      image: NewYorkPhoto,
+      isSlideshow: false,
+    },
+    {
+      country: 'San Francisco',
+      title: 'Train by the bay with world-class coaches and stunning views',
+      nights: '7 days, 6 nights',
+      image: SanFranciscoPhoto,
+      isSlideshow: false,
+    },
+    {
+      country: 'Nevada',
+      title: 'Desert training camps with professional fighters',
+      nights: '7 days, 6 nights',
+      image: NevadaPhoto,
+      isSlideshow: false,
+    },
+    {
+      country: 'Las Vegas',
+      title: 'Train in the fight capital of the world',
+      nights: '7 days, 6 nights',
+      image: LasVegasPhoto,
+      isSlideshow: false,
+    },
+    {
+      country: 'Japan',
+      title: 'Traditional martial arts meets modern MMA in the land of the rising sun',
+      nights: '10 days, 9 nights',
+      image: JapanPhoto,
+      isSlideshow: false,
+    },
+    {
+      country: 'Thailand',
+      title: 'Muay Thai paradise with authentic training experiences',
+      nights: '10 days, 9 nights',
+      image: ThailandPhoto,
+      isSlideshow: false,
+    },
+  ];
+
+  // Custom slideshow destination
+  const customExperience: BookingPageDestination = {
+    country: 'Custom Experience',
+    title: 'Create your personalized MMA adventure anywhere in the world',
+    nights: 'Customizable duration',
+    image: [NewYorkPhoto, SanFranciscoPhoto, NevadaPhoto, LasVegasPhoto, JapanPhoto, ThailandPhoto],
+    isSlideshow: true,
+  };
+
+  const allDestinations = [...destinations, customExperience];
 
   const handleShowForm = () => {
     setShowForm(true);
-    setTimeout(() => {
-      if (typeof window !== 'undefined' && formRef.current) {
-        formRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  }
+  };
 
-  // Combine customExperience with originalDestinations, ensuring type compatibility
-  const destinations: BookingPageDestination[] = [
-    customExperience,
-    ...originalDestinations.map(d => ({
-      ...d,
-      image: d.image as StaticImageData,
-      isSlideshow: false,
-    }))
-  ];
+  // Mock data for form (these would typically come from your backend)
+  const gyms = ['Gym 1', 'Gym 2', 'Gym 3'];
+  const countries = ['USA', 'Japan', 'Thailand', 'Brazil'];
+  const trainings = ['Boxing', 'Muay Thai', 'BJJ', 'Wrestling'];
 
-  const gyms = Array.from(new Set(originalDestinations.flatMap(d => d.gyms)));
-  const countries = Array.from(new Set(originalDestinations.map(d => d.country)));
-  const trainings = Array.from(new Set(originalDestinations.flatMap(d => d.disciplines)));
-
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    phone: '',
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
-    destinations: [],
-    gyms: [],
-    trainings: [],
-    mealPlan: '',
-    comfort: '',
-    budget: '',
-    note: '',
+    phone: '',
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+    country: [] as string[],
+    gym: [] as string[],
+    training: [] as string[],
+    message: ''
   });
 
-  useEffect(() => {
-    // ✅ FIX: Only run on client-side
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
-    
-    const interval = setInterval(() => {
-      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as StaticImageData[]).length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleCustomTripClick = () => {
-    setShowForm(true);
-    setTimeout(() => {
-      // ✅ FIX: Only run on client-side
-      if (typeof window !== 'undefined' && formRef.current) {
-        formRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
+  interface SelectOption {
+    value: string;
+    label: string;
+  }
 
   const handleSelectChange = (name: string) => (value: SelectOption[]) => {
     setFormData((prev) => ({
@@ -149,6 +150,29 @@ const BookingPage = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  useEffect(() => {
+    // ✅ FIX: Only scroll to top on client-side
+    if (isBrowser && typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+    
+    // Slideshow for custom experience
+    const interval = setInterval(() => {
+      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as StaticImageData[]).length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isBrowser]);
+
+  const handleCustomTripClick = () => {
+    setShowForm(true);
+    setTimeout(() => {
+      // ✅ FIX: Only scroll on client-side with proper checks
+      if (isBrowser && typeof window !== 'undefined' && formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   return (
@@ -212,7 +236,7 @@ const BookingPage = () => {
                 Choose Your Adventure
               </Typography>
               <Grid container spacing={3}>
-                {destinations.map((dest, index) => (
+                {allDestinations.map((dest, index) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
                     <Box
                       sx={{
@@ -317,28 +341,18 @@ const BookingPage = () => {
                           onClick={dest.country === 'Custom Experience' ? handleCustomTripClick : undefined}
                           variant="contained"
                           sx={{
-                            mt: 'auto',
-                            mb: { xs: 1, md: 1 },
-                            borderRadius: '30px',
+                            mt: 2,
+                            backgroundColor: theme.palette.primary.main,
                             color: theme.palette.primary.contrastText,
-                            backgroundColor: theme.palette.secondary.main,
                             fontWeight: 'bold',
-                            textTransform: 'none',
-                            fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem' },
-                            padding: { xs: '4px 8px', md: '6px 12px' },
-                            opacity: 0,
-                            transition: 'opacity 0.3s ease',
-                            '.destination-info:hover &': {
-                              opacity: 1,
-                            },
+                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
+                            py: { xs: 0.5, md: 1 },
                             '&:hover': {
-                              backgroundColor: theme.palette.secondary.dark,
+                              backgroundColor: theme.palette.primary.dark,
                             },
                           }}
                         >
-                          {dest.country === 'Custom Experience' 
-                            ? 'Start Custom Booking' 
-                            : `Discover ${dest.country} Trip`}
+                          {dest.country === 'Custom Experience' ? 'Create Custom Trip' : 'Book Now'}
                         </Button>
                       </Box>
                     </Box>
@@ -349,14 +363,16 @@ const BookingPage = () => {
           </Grid>
         </Container>
 
-        {/* Custom Form */}
-        <Box ref={formRef}>
-          <CustomTripForm />
-        </Box>
+        {/* ✅ FIX: Only render form when on client-side and showForm is true */}
+        {isBrowser && showForm && (
+          <Box ref={formRef} sx={{ mt: 6 }}>
+            <CustomTripForm />
+          </Box>
+        )}
       </Box>
       <Footer />
     </>
   );
 };
 
-export default BookingPage;
+export default BookPage;
