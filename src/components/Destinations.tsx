@@ -9,27 +9,26 @@ import {
     TextField,
 } from '@mui/material';
 import { Theme } from '@mui/material/styles';
-import { motion } from 'framer-motion'; // 🔧 FIX: Removed unused 'useAnimation' import (12:18)
-import Link from 'next/link'; // Import Link from next/link
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import Select from 'react-select'; // 🔧 FIX: Removed unused 'MultiValue' and 'ActionMeta' imports (16:18, 16:30)
+import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
-import { destinations as originalDestinations } from '../utils/destinations'; // Renamed to avoid conflict
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+import { destinations as originalDestinations } from '../utils/destinations';
 
 const animatedComponents = makeAnimated();
 
 type OptionType = { label: string; value: string };
 
-// Define the Destination interface to match the structure in utils/destinations.ts
+// ✅ FIXED: Updated interface for Next.js string paths
 interface DestinationType {
     country: string;
     title: string;
     description: string;
     nights: string;
     price: number;
-    image: StaticImageData; // Correctly typed as StaticImageData
+    image: string; // ✅ Changed from StaticImageData to string
     date: string;
     videoUrl: string;
     isSlideshow: boolean;
@@ -40,7 +39,6 @@ interface DestinationType {
     disciplines: string[];
 }
 
-
 const Destinations = () => {
     const theme = useTheme<Theme>();
     const [selectedLocations, setSelectedLocations] = useState<OptionType[]>([]);
@@ -50,9 +48,8 @@ const Destinations = () => {
     const [startDate, endDate] = dateRange;
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-    // Cast originalDestinations to DestinationType[] for type safety
+    // ✅ FIXED: No casting needed now - types match
     const destinations: DestinationType[] = originalDestinations as DestinationType[];
-
 
     const locations = useMemo(() => Array.from(new Set(destinations.map(dest => dest.country))), [destinations]);
     const disciplines = useMemo(() => Array.from(new Set(destinations.flatMap(dest => dest.disciplines))), [destinations]);
@@ -71,7 +68,7 @@ const Destinations = () => {
                 return matchLocation && matchDiscipline && matchGym && matchDate;
             })
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [selectedLocations, selectedDisciplines, selectedGyms, startDate, endDate, destinations]); // Add destinations to dependency array
+    }, [selectedLocations, selectedDisciplines, selectedGyms, startDate, endDate, destinations]);
 
     const formatOptions = (options: string[]): OptionType[] => options.map(opt => ({ label: opt, value: opt }));
 
@@ -190,7 +187,7 @@ const Destinations = () => {
                                 >
                                     <Box
                                         component="img"
-                                        src={dest.image.src} // Corrected: Access the .src property
+                                        src={dest.image} // ✅ FIXED: Direct string usage (no .src needed)
                                         alt={dest.country}
                                         sx={{
                                             width: '100%',

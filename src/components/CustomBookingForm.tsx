@@ -20,7 +20,6 @@ import makeAnimated from 'react-select/animated';
 
 const animatedComponents = makeAnimated();
 
-// 🔧 FIX: Type definitions
 interface SelectOption {
   label: string;
   value: string;

@@ -37,10 +37,10 @@ import { motion } from 'framer-motion';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Items } from '../utils/Items';
-import GearPageHeroPhoto from '../assets/img/services_page/gi_belt.jpg';
 import { useRouter } from 'next/router';
 import { CartContext } from '../providers/cartProvider';
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+import { StaticImageData } from 'next/image';
+const GearPageHeroPhoto = '/assets/img/services_page/gi_belt.jpg';
 
 interface ItemType {
   id: string;
@@ -400,7 +400,7 @@ const GearPage = () => {
       <Box
         sx={{
           height: { xs: '40vh', md: '50vh' },
-          backgroundImage: `url(${(GearPageHeroPhoto as StaticImageData).src})`, // Corrected
+          backgroundImage: `url(${GearPageHeroPhoto})`, // Corrected
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           display: 'flex',

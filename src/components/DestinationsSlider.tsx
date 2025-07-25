@@ -4,8 +4,9 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { StaticImageData } from 'next/image';
 import { destinations as originalDestinations } from '../utils/destinations';
+
+// ✅ FIXED: Use string paths for Next.js public assets
 const NewYorkPhoto = '/assets/img/home_page/photo-newyork.jpg';
 const SanFranciscoPhoto = '/assets/img/home_page/photo-sanfrancisco.jpg';
 const NevadaPhoto = '/assets/img/home_page/photo-nevada.jpg';
@@ -13,12 +14,12 @@ const LasVegasPhoto = '/assets/img/home_page/photo-lasvegas.jpg';
 const JapanPhoto = '/assets/img/home_page/photo-japan.jpg';
 const ThailandPhoto = '/assets/img/home_page/photo-thailand.jpg';
 
-// 🔧 FIX: Updated type definitions to include StaticImageData
+// ✅ FIXED: Updated interface to use only string paths
 interface Destination {
   country: string;
   title: string;
   nights: string;
-  image: string | string[] | StaticImageData | StaticImageData[];
+  image: string | string[]; // ✅ Only string paths now
   isSlideshow?: boolean;
   description?: string;
   price?: number;
@@ -39,17 +40,35 @@ const customExperience: Destination = {
   isSlideshow: true,
 };
 
+console.log('🎯 customExperience created:', customExperience);
+console.log('🖼️ customExperience.image:', customExperience.image);
+console.log('🎬 customExperience.isSlideshow:', customExperience.isSlideshow);
+
 const destinations = [customExperience, ...originalDestinations] as Destination[];
+
+// ✅ DEBUG: Array'leri console'a yazdır
+console.log('=== DEBUG DESTINATIONS ===');
+console.log('customExperience:', customExperience);
+console.log('originalDestinations:', originalDestinations);
+console.log('final destinations:', destinations);
+console.log('destinations length:', destinations.length);
 
 // Sonsuz döngü için kartları çoğaltıyoruz
 const infiniteDestinations: Destination[] = [...destinations, ...destinations, ...destinations];
 
+console.log('infiniteDestinations length:', infiniteDestinations.length);
+console.log('First 3 cards:', infiniteDestinations.slice(0, 3).map(d => d.country));
+
 const DestinationSlider = () => {
+  console.log('🚀 DestinationSlider RENDER STARTED');
+  
   const theme = useTheme();
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  const [slideshowImageIndex, setSlideshowImageIndex] = useState(0);
+  console.log('📱 isMobile:', isMobile);
+  
+  const [slideshowIndex, setSlideshowIndex] = useState(0); // ✅ Book sayfasındaki gibi slideshowIndex
   const [isDragging, setIsDragging] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(0);
@@ -65,7 +84,7 @@ const DestinationSlider = () => {
 
   // Başlangıç pozisyonu - ortadaki set
   const initialPosition = -slidingDistance;
-
+console.log('I was here!')
   // 🔧 FIX: Desktop sonsuz animasyon fonksiyonu - useCallback ile wrap edildi (107:6, 124:6)
   const startInfiniteAnimation = useCallback(() => {
     if (!isPaused && !isMobile && isMountedRef.current) {
@@ -242,12 +261,12 @@ const DestinationSlider = () => {
     }
   };
 
-  // Slideshow resimleri
+  // ✅ FIXED: Book sayfasındaki exact code
   useEffect(() => {
     const interval = setInterval(() => {
-      const imageArray = Array.isArray(customExperience.image) ? customExperience.image : [customExperience.image];
-      setSlideshowImageIndex((prev) => (prev + 1) % (imageArray.length || 1));
-    }, 800);
+      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as string[]).length);
+    }, 2000);
+    
     return () => clearInterval(interval);
   }, []);
 
@@ -270,6 +289,16 @@ const DestinationSlider = () => {
         ? '/book'
         : `/destination/${destination.country.toLowerCase().replace(/\s+/g, '-')}`
     );
+  };
+
+  // ✅ FIXED: Custom experience için doğru image handling - book sayfasındaki gibi
+  const getDestinationImage = (destination: Destination) => {
+    // Diğer destinasyonlar için (Custom Experience değilse)
+    if (Array.isArray(destination.image)) {
+      return destination.image[0];
+    }
+    
+    return destination.image;
   };
 
   // Cleanup effect
@@ -396,7 +425,11 @@ const DestinationSlider = () => {
               userSelect: 'none',
             }}
           >
-            {infiniteDestinations.map((destination, index) => (
+            {infiniteDestinations.map((destination, index) => {
+              // ✅ DEBUG: Tüm kartları console'a yazdır
+              console.log(`Card ${index}: ${destination.country}, isSlideshow: ${destination.isSlideshow}`);
+              
+              return (
               <motion.div
                 key={`${destination.country}-${index}`}
                 onMouseEnter={() => handleCardMouseEnter(index)}
@@ -424,18 +457,19 @@ const DestinationSlider = () => {
                     sx={{
                       width: '100%',
                       height: '100%',
-                      backgroundImage: `url(${destination.isSlideshow && Array.isArray(destination.image)
-                        ? typeof destination.image[slideshowImageIndex] === 'string' 
-                          ? destination.image[slideshowImageIndex]
-                          : destination.image[slideshowImageIndex]?.src || ''
-                        : typeof destination.image === 'string'
-                          ? destination.image
-                          : Array.isArray(destination.image)
-                            ? typeof destination.image[0] === 'string' 
-                              ? destination.image[0]
-                              : destination.image[0]?.src || ''
-                            : destination.image?.src || ''
-                        })`,
+                      backgroundImage: (() => {
+                        // ✅ FIXED: Custom Experience için hardcode debug
+                        if (destination.country === 'Custom Experience') {
+                          const imageArray = [NewYorkPhoto, SanFranciscoPhoto, NevadaPhoto, LasVegasPhoto, JapanPhoto, ThailandPhoto];
+                          const currentImg = imageArray[slideshowIndex % imageArray.length];
+                          console.log('Custom Experience - Index:', slideshowIndex, 'Image:', currentImg);
+                          return `url(${currentImg})`;
+                        }
+                        
+                        // Diğer destinasyonlar için
+                        const img = Array.isArray(destination.image) ? destination.image[0] : destination.image;
+                        return `url(${img})`;
+                      })(),
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                     }}
@@ -532,7 +566,7 @@ const DestinationSlider = () => {
                   </Box>
                 </Box>
               </motion.div>
-            ))}
+            )})}
           </Box>
         </Box>
       </Box>

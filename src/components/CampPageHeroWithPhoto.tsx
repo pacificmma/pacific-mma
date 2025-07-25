@@ -1,8 +1,6 @@
 // src/components/CampPageHeroWithPhoto.tsx
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
-
-// ✅ Next.js compatible asset import - use public folder path
 const CampHeroPhoto = '/assets/img/camp_page/youthCampHero.jpg';
 
 const CampHeroWPhoto = () => {

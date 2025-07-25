@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Box, Typography, Button, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
-
-// ✅ Next.js compatible asset imports - use public folder paths
 const featureImage1 = '/assets/img/home_page/feature_1.jpeg';
 const featureImage2 = '/assets/img/home_page/feature_2.jpeg';
 const featureImage3 = '/assets/img/home_page/feature_3.jpg';
@@ -34,7 +32,6 @@ const features = [
 
 const HeroWServices = () => {
   const theme = useTheme();
-  // 🔧 FIX: Removed unused isMobile (35:9) and isTablet (36:9) variables
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'));
   const router = useRouter();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -118,7 +115,7 @@ const HeroWServices = () => {
               sx={{
                 width: '100%',
                 height: { xs: 'auto', sm: 'auto', md: '400px', lg: '450px' },
-                aspectRatio: { xs: '1 / 1', md: '3 / 4' }, // Desktop için biraz daha dikdörtgen
+                aspectRatio: { xs: '1 / 1', md: '3 / 4' },
                 borderRadius: { xs: '10px', md: '12px' },
                 position: 'relative',
                 backgroundImage: !isLargeScreen

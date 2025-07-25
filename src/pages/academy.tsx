@@ -1,20 +1,16 @@
 // src/pages/academy.tsx
 import React, { useEffect } from 'react';
-import { Box, Typography, useTheme } from '@mui/material'; // 🔧 FIX: Removed unused Button import (3:27)
+import { Box, Typography, useTheme } from '@mui/material';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import BrendaWStudents from '../assets/img/academy/brendaWstudents.jpg';
-import BrendaWAlone from '../assets/img/academy/brendaWalone.jpg';
-import BrendaWTraining from '../assets/img/academy/brendaWtraining.jpg';
-// 🔧 FIX: Removed unused theme import (9:8)
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+
+// ✅ FIXED: Use public folder paths instead of imports
+const BrendaWStudents = '/assets/img/academy/brendaWstudents.jpg';
+const BrendaWAlone = '/assets/img/academy/brendaWalone.jpg';
+const BrendaWTraining = '/assets/img/academy/brendaWtraining.jpg';
 
 const AcademyPage = () => {
-    // theme is already available via useTheme hook
-    // If you need the theme object globally outside of a component,
-    // you would typically import it directly or pass it down.
-    // For component usage, useTheme() is standard.
-    const currentTheme = useTheme(); // Use currentTheme variable for clarity
+    const currentTheme = useTheme();
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -29,7 +25,7 @@ const AcademyPage = () => {
                 sx={{
                     width: '100%',
                     minHeight: '70vh',
-                    backgroundImage: `url(${(BrendaWStudents as StaticImageData).src})`, // Corrected
+                    backgroundImage: `url(${BrendaWStudents})`, // ✅ Direct string usage
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     display: 'flex',
@@ -103,7 +99,6 @@ const AcademyPage = () => {
                 <Typography variant="body1" sx={{ maxWidth: '800px', mx: 'auto', lineHeight: 1.8 }}>
                     Located in Redwood City, CA, Pacific MMA Academy ranks among the TOP 20 Bay Area martial arts schools.
                     We offer top-tier classes in Brazilian Jiu-Jitsu, STX Kickboxing, Jeet Kune Do, Kali-Escrima, and a
-                    {/* 🔧 FIX: Escaped apostrophe (147:31) */}
                     remarkable children&apos;s program. Our renowned Striking Coach, Brenda King, brings over 30 years of experience,
                     holding certifications under Guro Dan Inosanto, Sensei Eric Paulson, and Guro Daniel Sullivan.
                 </Typography>
@@ -124,7 +119,7 @@ const AcademyPage = () => {
             >
                 <Box
                     component="img"
-                    src={(BrendaWAlone as StaticImageData).src} // Corrected
+                    src={BrendaWAlone} // ✅ Direct string usage
                     alt="Brenda Alone"
                     sx={{
                         width: { xs: '100%', md: '50%' },
@@ -145,7 +140,6 @@ const AcademyPage = () => {
                     }}
                 >
                     <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: currentTheme.palette.primary.contrastText }}>
-                        {/* 🔧 FIX: Escaped apostrophe (186:36) */}
                         Brenda&apos;s Martial Arts Journey
                     </Typography>
                     <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
@@ -191,7 +185,7 @@ const AcademyPage = () => {
                 </Box>
                 <Box
                     component="img"
-                    src={(BrendaWTraining as StaticImageData).src} // Corrected
+                    src={BrendaWTraining} // ✅ Direct string usage
                     alt="Brenda Training"
                     sx={{
                         width: { xs: '100%', md: '50%' },

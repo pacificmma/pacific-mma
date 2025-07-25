@@ -13,8 +13,6 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { gsap } from 'gsap';
-
-// ✅ Next.js compatible asset imports - use public folder paths
 const trainingImage = '/assets/img/home_page/training_1.jpg';
 const strikingImage = '/assets/img/home_page/striking_1.jpg';
 const grapplingImage = '/assets/img/home_page/grappling.jpg';
@@ -22,7 +20,7 @@ const grapplingImage = '/assets/img/home_page/grappling.jpg';
 interface AccordionItem {
   title: string;
   items: string[];
-  image: string; // ✅ Changed from StaticImageData to string for Next.js public assets
+  image: string;
 }
 
 const HeroWPartners = () => {

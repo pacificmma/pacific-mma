@@ -1,12 +1,10 @@
 // src/components/HeroWTrainer.tsx
 import React from 'react';
 import { Box, Typography, Button, useTheme } from '@mui/material';
-import BrendaWBrothers from '../assets/img/home_page/brenda_brothers.jpeg';
 import { useRouter } from 'next/router';
 import { StaticImageData } from 'next/image';
-
-// ✅ CHANGE: Video now references public folder
 const backgroundVideo = '/assets/videos/trainingWhero.mp4';
+const BrendaWBrothers = '/assets/img/home_page/brenda_brothers.jpeg';
 
 const HeroWTrainer = () => {
   const theme = useTheme();
@@ -195,7 +193,7 @@ const HeroWTrainer = () => {
         >
           <Box
             component="img"
-            src={(BrendaWBrothers as StaticImageData).src}
+            src={BrendaWBrothers}
             alt="Brenda King with Fighters"
             sx={{
               width: '100%',

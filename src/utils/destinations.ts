@@ -1,10 +1,10 @@
-import NewYorkPhoto from '../assets/img/home_page/photo-newyork.jpg';
-import SanFranciscoPhoto from '../assets/img/home_page/photo-sanfrancisco.jpg';
-import LasVegasPhoto from '../assets/img/home_page/photo-lasvegas.jpg';
-import JapanPhoto from '../assets/img/home_page/photo-japan.jpg';
-import ThailandPhoto from '../assets/img/home_page/photo-thailand.jpg';
-import FloridaPhoto from '../assets/img/home_page/photo-florida.jpg';
-import BrazilPhoto from '../assets/img/home_page/photo-brazil.jpg';
+const NewYorkPhoto = '/assets/img/home_page/photo-newyork.jpg';
+const SanFranciscoPhoto = '/assets/img/home_page/photo-sanfrancisco.jpg';
+const LasVegasPhoto = '/assets/img/home_page/photo-lasvegas.jpg';
+const JapanPhoto = '/assets/img/home_page/photo-japan.jpg';
+const ThailandPhoto = '/assets/img/home_page/photo-thailand.jpg';
+const FloridaPhoto = '/assets/img/home_page/photo-florida.jpg';
+const BrazilPhoto = '/assets/img/home_page/photo-brazil.jpg';
 
 
 export const destinations = [

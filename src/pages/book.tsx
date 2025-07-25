@@ -6,18 +6,17 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import BookingHeroPhoto from '../assets/img/booking_page/bookingHero.jpg';
-import NewYorkPhoto from '../assets/img/home_page/photo-newyork.jpg';
-import SanFranciscoPhoto from '../assets/img/home_page/photo-sanfrancisco.jpg';
-import NevadaPhoto from '../assets/img/home_page/photo-nevada.jpg';
-import LasVegasPhoto from '../assets/img/home_page/photo-lasvegas.jpg';
-import JapanPhoto from '../assets/img/home_page/photo-japan.jpg';
-import ThailandPhoto from '../assets/img/home_page/photo-thailand.jpg';
 import { destinations as originalDestinations } from '../utils/destinations';
-import { StaticImageData } from 'next/image';
+
+const BookingHeroPhoto = '/assets/img/booking_page/bookingHero.jpg';
+const NewYorkPhoto = '/assets/img/home_page/photo-newyork.jpg';
+const SanFranciscoPhoto = '/assets/img/home_page/photo-sanfrancisco.jpg';
+const NevadaPhoto = '/assets/img/home_page/photo-nevada.jpg';
+const LasVegasPhoto = '/assets/img/home_page/photo-lasvegas.jpg';
+const JapanPhoto = '/assets/img/home_page/photo-japan.jpg';
+const ThailandPhoto = '/assets/img/home_page/photo-thailand.jpg';
 
 // ✅ FIX: Dynamically import CustomTripForm to avoid SSR issues
 const CustomTripForm = dynamic(() => import('../components/CustomBookingForm'), {
@@ -25,13 +24,13 @@ const CustomTripForm = dynamic(() => import('../components/CustomBookingForm'), 
   loading: () => <div>Loading...</div>
 });
 
-// Define a new interface for destinations specifically for this page
+// ✅ FIXED: Updated interface for Next.js string paths
 interface BookingPageDestination {
   country: string;
   title: string;
   nights: string;
   price?: number;
-  image: StaticImageData | StaticImageData[];
+  image: string | string[]; // ✅ Changed to string paths
   date?: string;
   videoUrl?: string;
   isSlideshow: boolean;
@@ -42,8 +41,6 @@ interface BookingPageDestination {
   gyms?: string[];
   disciplines?: string[];
 }
-
-// ✅ FIX: Import the shared hook instead
 import { useBrowser } from '../hooks/useBrowser';
 
 const BookPage = () => {
@@ -160,7 +157,7 @@ const BookPage = () => {
     
     // Slideshow for custom experience
     const interval = setInterval(() => {
-      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as StaticImageData[]).length);
+      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as string[]).length);
     }, 2000);
     return () => clearInterval(interval);
   }, [isBrowser]);
@@ -185,7 +182,7 @@ const BookPage = () => {
             position: 'relative',
             width: '100vw',
             height: { xs: '40vh', sm: '50vh', md: '60vh' },
-            backgroundImage: `url(${BookingHeroPhoto.src})`,
+            backgroundImage: `url(${BookingHeroPhoto})`, // ✅ Direct string usage
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
@@ -262,8 +259,8 @@ const BookPage = () => {
                           bottom: 0,
                           backgroundImage: `url(${
                             dest.isSlideshow && Array.isArray(dest.image)
-                              ? (dest.image as StaticImageData[])[slideshowIndex].src
-                              : (dest.image as StaticImageData).src
+                              ? (dest.image as string[])[slideshowIndex] // ✅ Direct string usage
+                              : (dest.image as string) // ✅ Direct string usage
                           })`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',

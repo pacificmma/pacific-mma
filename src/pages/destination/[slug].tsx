@@ -15,17 +15,17 @@ import {
 import { destinations } from '../../utils/destinations';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { StaticImageData } from 'next/image';
 
 const slugify = (text: string) =>
   text.toLowerCase().replace(/\s+/g, '-');
 
+// ✅ FIXED: Updated interface for Next.js string paths
 interface DestinationType {
   country: string;
   title: string;
   nights: string;
   price: number;
-  image: StaticImageData;
+  image: string; // ✅ Changed from StaticImageData to string
   date: string;
   videoUrl?: string;
   isSlideshow?: boolean;
@@ -53,7 +53,8 @@ const DestinationDetails = () => {
   const router = useRouter();
   const { slug } = router.query;
   
-  const destination = (destinations as DestinationType[]).find((d: DestinationType) => slugify(d.country) === slug);
+  // ✅ FIXED: No casting needed now - types match
+  const destination = destinations.find((d) => slugify(d.country) === slug);
 
   useEffect(() => {
     // ✅ FIX: Only run on client-side
@@ -152,7 +153,7 @@ const DestinationDetails = () => {
           position: 'relative',
           width: '100vw',
           height: { xs: '50vh', sm: '60vh', md: '70vh' },
-          backgroundImage: `url(${destination.image.src})`,
+          backgroundImage: `url(${destination.image})`, // ✅ FIXED: Direct string usage (no .src needed)
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           display: 'flex',

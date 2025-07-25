@@ -4,11 +4,10 @@ import { Box, Tabs, Tab, Typography, useTheme } from '@mui/material';
 import PersonalDetails from '../components/PersonalDetails';
 import PreviousTrips from '../components/PreviousTrips';
 import PreviousPurchases from '../components/PreviousPurchases';
-import Pacific_MMA_Logo from '../assets/img/personal_page/pacific_mma.jpg';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
-import { StaticImageData } from 'next/image'; // Import StaticImageData
+const Pacific_MMA_Logo = '/assets/img/personal_page/pacific_mma.jpg';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -129,7 +128,7 @@ const UserInfoDetailsPage = () => {
         >
           <Box
             component="img"
-            src={(Pacific_MMA_Logo as StaticImageData).src} // Corrected: Access the .src property
+            src={Pacific_MMA_Logo}
             alt="Pacific MMA Logo"
             sx={{
               width: '100%',

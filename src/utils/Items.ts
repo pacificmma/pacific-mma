@@ -1,6 +1,6 @@
-import GiPhoto from '../assets/img/home_page/gi.jpg';
-import GlovesPhoto from '../assets/img/home_page/gloves.jpg';
-import ShirtPhoto from '../assets/img/home_page/shirt.jpg';
+const GiPhoto = '/assets/img/home_page/gi.jpg';
+const GlovesPhoto = '/assets/img/home_page/gloves.jpg';
+const ShirtPhoto = '/assets/img/home_page/shirt.jpg';
 
 export const Items = [
   {

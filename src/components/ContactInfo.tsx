@@ -1,8 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-
-// ✅ Next.js compatible asset import - use public folder path
 const teamPhoto = "/assets/img/contactUs_page/contactus-team.jpeg";
 
 const ContactUsInfo = () => {
@@ -15,7 +13,7 @@ const ContactUsInfo = () => {
         sx={{
           width: "100%",
           height: { xs: "40vh", md: "80vh" },
-          backgroundImage: `url(${teamPhoto})`, // ✅ Fixed: Direct string usage
+          backgroundImage: `url(${teamPhoto})`,
           backgroundSize: "cover",
           backgroundPosition: "center top",
           display: "flex",

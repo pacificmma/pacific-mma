@@ -18,7 +18,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-// Removed: import { useLocation } from 'react-router-dom';
 import menuItems from '../utils/menuItems.json';
 import HamburgerMenu from './HamburgerMenu';
 import { CartContext } from '../providers/cartProvider';
@@ -28,8 +27,7 @@ import { useRouter } from 'next/router'; // next/router import
 
 const Header = () => {
   const theme = useTheme();
-  const router = useRouter(); // Initialize useRouter hook
-  // Removed: const location = useLocation();
+  const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -70,8 +68,6 @@ const Header = () => {
       await logout();
       router.push('/');
     } catch {
-      // 🔧 FIX: Removed console.error statement (73:7)
-      // Silently handle logout error - user will still be redirected
       router.push('/');
     }
   };
