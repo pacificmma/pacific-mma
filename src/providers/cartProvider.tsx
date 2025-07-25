@@ -170,8 +170,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     const cartRef = doc(db, 'carts', user.uid);
 
-    console.log(`🛒 Kullanıcı ${user.uid} için sepet dinleyicisi başlatılıyor...`); // eslint-disable-line no-console
-
     const unsubscribe = onSnapshot(
       cartRef, 
       (docSnap) => {
@@ -180,8 +178,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             const data = docSnap.data();
             const items = data.items || [];
             const lastSyncTime = data.updatedAt || data.lastSyncTime;
-            
-            console.log(`🔄 Sepet güncellendi: ${items.length} ürün`); // eslint-disable-line no-console
             
             // Cart item ID'leri eksikse ekle
             const itemsWithIds = items.map((item: CartItem) => ({
@@ -197,7 +193,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
               } 
             });
           } else {
-            console.log('📭 Sepet boş veya mevcut değil'); // eslint-disable-line no-console
             dispatch({ type: 'LOAD_CART', payload: { items: [] } });
           }
         } catch (error) {
@@ -212,7 +207,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     );
 
     return () => {
-      console.log('🔌 Sepet dinleyicisi kapatılıyor...'); // eslint-disable-line no-console
       unsubscribe();
     };
   }, [user?.uid]);
@@ -224,8 +218,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     const timeoutId = setTimeout(async () => {
       try {
         const cartRef = doc(db, 'carts', user.uid);
-        
-        console.log(`💾 Sepet kaydediliyor: ${state.items.length} ürün`); // eslint-disable-line no-console
+
         
         await setDoc(cartRef, { 
           userId: user.uid,
@@ -236,12 +229,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             userAgent: navigator.userAgent,
             timestamp: new Date().toISOString()
           }
-        }, { merge: true });
-        
-        console.log('✅ Sepet başarıyla kaydedildi'); // eslint-disable-line no-console
-        
+        }, { merge: true });        
       } catch (error) {
-        console.error('❌ Sepet kaydedilirken hata:', error); // eslint-disable-line no-console
         dispatch({ type: 'SET_ERROR', payload: 'Sepet kaydedilirken bir hata oluştu' });
       }
     }, 300); // Daha hızlı sync için 300ms
@@ -252,7 +241,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   // 🎯 Memoized functions
   const addItem = useCallback((item: Omit<CartItem, 'cartItemId'>) => {
     const cartItemId = generateCartItemId(item);
-    console.log(`➕ Sepete ekleniyor: ${item.name} (${item.size}/${item.color})`); // eslint-disable-line no-console
     
     dispatch({ 
       type: 'ADD_ITEM', 
@@ -265,17 +253,14 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, []);
 
   const removeItem = useCallback((cartItemId: string) => {
-    console.log(`🗑️ Sepetten kaldırılıyor: ${cartItemId}`); // eslint-disable-line no-console
     dispatch({ type: 'REMOVE_ITEM', payload: cartItemId });
   }, []);
 
   const updateQuantity = useCallback((cartItemId: string, quantity: number) => {
-    console.log(`🔢 Miktar güncelleniyor: ${cartItemId} -> ${quantity}`); // eslint-disable-line no-console
     dispatch({ type: 'UPDATE_QUANTITY', payload: { cartItemId, quantity } });
   }, []);
 
   const clearCart = useCallback(() => {
-    console.log('🧹 Sepet temizleniyor'); // eslint-disable-line no-console
     dispatch({ type: 'CLEAR_CART' });
   }, []);
 

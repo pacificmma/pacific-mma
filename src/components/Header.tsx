@@ -1,4 +1,4 @@
-// src/components/Header.tsx
+// src/components/Header.tsx - FIXED VERSION
 import React, { useState, useEffect, useContext } from 'react';
 import {
   AppBar,
@@ -22,8 +22,8 @@ import menuItems from '../utils/menuItems.json';
 import HamburgerMenu from './HamburgerMenu';
 import { CartContext } from '../providers/cartProvider';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
-import Link from 'next/link'; // next/link import
-import { useRouter } from 'next/router'; // next/router import
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const Header = () => {
   const theme = useTheme();
@@ -113,9 +113,9 @@ const Header = () => {
             </IconButton>
           )}
 
-          {/* Logo/Site Title Link */}
+          {/* Logo/Site Title Link - FIXED */}
           <Link
-            href="/" // Use href
+            href="/"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -139,25 +139,23 @@ const Header = () => {
 
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {/* Home Button */}
-              <Link href="/" passHref>
-                <Button
-                  component="a" // Use component="a" when wrapping Link around MUI Button
-                  sx={{
-                    color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.text.secondary,
-                    fontWeight: theme.typography.button.fontWeight,
-                    fontSize: theme.typography.button.fontSize,
-                    borderRadius: '20px',
-                    px: 2,
-                    minHeight: '40px',
-                    '&:hover': { color: theme.palette.secondary.main },
-                  }}
-                >
-                  Home
-                </Button>
-              </Link>
+              {/* Home Button - FIXED */}
+              <Button
+                onClick={() => router.push('/')}
+                sx={{
+                  color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.text.secondary,
+                  fontWeight: theme.typography.button.fontWeight,
+                  fontSize: theme.typography.button.fontSize,
+                  borderRadius: '20px',
+                  px: 2,
+                  minHeight: '40px',
+                  '&:hover': { color: theme.palette.secondary.main },
+                }}
+              >
+                Home
+              </Button>
 
-              {/* Camps Dropdown */}
+              {/* Camps Dropdown - FIXED */}
               <Box>
                 <Button
                   onClick={handleMenuOpenCamps}
@@ -183,63 +181,62 @@ const Header = () => {
                   onClose={handleMenuCloseCamps}
                   MenuListProps={{ onMouseLeave: handleMenuCloseCamps }}
                 >
-                  <Link href="/camp" passHref>
-                    <MenuItem
-                      component="a" // Use component="a"
-                      onClick={handleMenuCloseCamps}
-                      sx={{
-                        color: currentPath === '/camp' 
-                          ? theme.palette.secondary.main 
-                          : theme.palette.text.primary,
-                        fontWeight: theme.typography.button.fontWeight,
-                        fontSize: theme.typography.button.fontSize,
-                        '&:hover': { color: theme.palette.secondary.main },
-                      }}
-                    >
-                      Adult Camps
-                    </MenuItem>
-                  </Link>
-                  <Link href="/youth-camp" passHref>
-                    <MenuItem
-                      component="a" // Use component="a"
-                      onClick={handleMenuCloseCamps}
-                      sx={{
-                        color: currentPath === '/youth-camp' 
-                          ? theme.palette.secondary.main 
-                          : theme.palette.text.primary,
-                        fontWeight: theme.typography.button.fontWeight,
-                        fontSize: theme.typography.button.fontSize,
-                        '&:hover': { color: theme.palette.secondary.main },
-                      }}
-                    >
-                      Youth Camps
-                    </MenuItem>
-                  </Link>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuCloseCamps();
+                      router.push('/camp');
+                    }}
+                    sx={{
+                      color: currentPath === '/camp' 
+                        ? theme.palette.secondary.main 
+                        : theme.palette.text.primary,
+                      fontWeight: theme.typography.button.fontWeight,
+                      fontSize: theme.typography.button.fontSize,
+                      '&:hover': { color: theme.palette.secondary.main },
+                    }}
+                  >
+                    Adult Camps
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuCloseCamps();
+                      router.push('/youth-camp');
+                    }}
+                    sx={{
+                      color: currentPath === '/youth-camp' 
+                        ? theme.palette.secondary.main 
+                        : theme.palette.text.primary,
+                      fontWeight: theme.typography.button.fontWeight,
+                      fontSize: theme.typography.button.fontSize,
+                      '&:hover': { color: theme.palette.secondary.main },
+                    }}
+                  >
+                    Youth Camps
+                  </MenuItem>
                 </Menu>
               </Box>
 
-              {/* Other Menu Items */}
+              {/* Other Menu Items - FIXED */}
               {menuItems
                 .filter((item) => !['Home', 'Camp', 'Youth Camp'].includes(item.label))
                 .map((item, index) => (
-                  <Link href={item.link} passHref key={index}>
-                    <Button
-                      component="a" // Use component="a"
-                      sx={{
-                        color: currentPath === item.link 
-                          ? theme.palette.secondary.main 
-                          : theme.palette.text.secondary,
-                        fontWeight: theme.typography.button.fontWeight,
-                        fontSize: theme.typography.button.fontSize,
-                        borderRadius: '20px',
-                        px: 2,
-                        minHeight: '40px',
-                        '&:hover': { color: theme.palette.secondary.main },
-                      }}
-                    >
-                      {item.label}
-                    </Button>
-                  </Link>
+                  <Button
+                    key={index}
+                    onClick={() => router.push(item.link)}
+                    sx={{
+                      color: currentPath === item.link 
+                        ? theme.palette.secondary.main 
+                        : theme.palette.text.secondary,
+                      fontWeight: theme.typography.button.fontWeight,
+                      fontSize: theme.typography.button.fontSize,
+                      borderRadius: '20px',
+                      px: 2,
+                      minHeight: '40px',
+                      '&:hover': { color: theme.palette.secondary.main },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
                 ))}
             </Box>
           )}
@@ -264,7 +261,7 @@ const Header = () => {
               </Badge>
             </IconButton>
 
-            {/* User Authentication Section */}
+            {/* User Authentication Section - FIXED */}
             {loading ? (
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                 Loading...
@@ -291,55 +288,44 @@ const Header = () => {
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                  <Link href="/profile" passHref>
-                    <MenuItem
-                      component="a" // Use component="a"
-                      onClick={handleMenuCloseUser}
-                      sx={{
-                        color: currentPath === '/profile' 
-                          ? theme.palette.secondary.main 
-                          : theme.palette.text.primary,
-                        fontWeight: theme.typography.button.fontWeight,
-                        fontSize: theme.typography.button.fontSize,
-                        '&:hover': { color: theme.palette.secondary.main },
-                      }}
-                    >
-                      Profile
-                    </MenuItem>
-                  </Link>
-                  <Link href="/orders" passHref>
-                    <MenuItem
-                      component="a" // Use component="a"
-                      onClick={handleMenuCloseUser}
-                      sx={{
-                        color: currentPath === '/orders' 
-                          ? theme.palette.secondary.main 
-                          : theme.palette.text.primary,
-                        fontWeight: theme.typography.button.fontWeight,
-                        fontSize: theme.typography.button.fontSize,
-                        '&:hover': { color: theme.palette.secondary.main },
-                      }}
-                    >
-                      My Orders
-                    </MenuItem>
-                  </Link>
                   <MenuItem
-                    onClick={handleLogout}
+                    onClick={() => {
+                      handleMenuCloseUser();
+                      router.push('/profile');
+                    }}
                     sx={{
-                      color: theme.palette.text.primary,
+                      color: currentPath === '/profile' 
+                        ? theme.palette.secondary.main 
+                        : theme.palette.text.primary,
                       fontWeight: theme.typography.button.fontWeight,
                       fontSize: theme.typography.button.fontSize,
                       '&:hover': { color: theme.palette.secondary.main },
                     }}
                   >
-                    Logout
+                    Profile
                   </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuCloseUser();
+                      router.push('/orders');
+                    }}
+                    sx={{
+                      color: currentPath === '/orders' 
+                        ? theme.palette.secondary.main 
+                        : theme.palette.text.primary,
+                      fontWeight: theme.typography.button.fontWeight,
+                      fontSize: theme.typography.button.fontSize,
+                      '&:hover': { color: theme.palette.secondary.main },
+                    }}
+                  >
+                    Orders
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
               </>
             ) : (
               <>
                 <IconButton
-                  aria-label="user account"
                   onClick={handleMenuOpenUser}
                   sx={{ 
                     color: theme.palette.text.secondary, 
@@ -352,32 +338,11 @@ const Header = () => {
                   anchorEl={anchorElUser}
                   open={Boolean(anchorElUser)}
                   onClose={handleMenuCloseUser}
-                  MenuListProps={{ onMouseLeave: handleMenuCloseUser }}
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                  <MenuItem
-                    onClick={handleLogin}
-                    sx={{
-                      color: theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    Login
-                  </MenuItem>
-                  <MenuItem
-                    onClick={handleSignUp}
-                    sx={{
-                      color: theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    Sign Up
-                  </MenuItem>
+                  <MenuItem onClick={handleLogin}>Login</MenuItem>
+                  <MenuItem onClick={handleSignUp}>Sign Up</MenuItem>
                 </Menu>
               </>
             )}

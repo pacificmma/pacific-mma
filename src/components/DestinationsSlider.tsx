@@ -40,33 +40,15 @@ const customExperience: Destination = {
   isSlideshow: true,
 };
 
-console.log('🎯 customExperience created:', customExperience);
-console.log('🖼️ customExperience.image:', customExperience.image);
-console.log('🎬 customExperience.isSlideshow:', customExperience.isSlideshow);
-
 const destinations = [customExperience, ...originalDestinations] as Destination[];
-
-// ✅ DEBUG: Array'leri console'a yazdır
-console.log('=== DEBUG DESTINATIONS ===');
-console.log('customExperience:', customExperience);
-console.log('originalDestinations:', originalDestinations);
-console.log('final destinations:', destinations);
-console.log('destinations length:', destinations.length);
 
 // Sonsuz döngü için kartları çoğaltıyoruz
 const infiniteDestinations: Destination[] = [...destinations, ...destinations, ...destinations];
 
-console.log('infiniteDestinations length:', infiniteDestinations.length);
-console.log('First 3 cards:', infiniteDestinations.slice(0, 3).map(d => d.country));
-
-const DestinationSlider = () => {
-  console.log('🚀 DestinationSlider RENDER STARTED');
-  
+const DestinationSlider = () => {  
   const theme = useTheme();
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  console.log('📱 isMobile:', isMobile);
   
   const [slideshowIndex, setSlideshowIndex] = useState(0); // ✅ Book sayfasındaki gibi slideshowIndex
   const [isDragging, setIsDragging] = useState(false);
@@ -84,7 +66,6 @@ const DestinationSlider = () => {
 
   // Başlangıç pozisyonu - ortadaki set
   const initialPosition = -slidingDistance;
-console.log('I was here!')
   // 🔧 FIX: Desktop sonsuz animasyon fonksiyonu - useCallback ile wrap edildi (107:6, 124:6)
   const startInfiniteAnimation = useCallback(() => {
     if (!isPaused && !isMobile && isMountedRef.current) {
@@ -426,8 +407,6 @@ console.log('I was here!')
             }}
           >
             {infiniteDestinations.map((destination, index) => {
-              // ✅ DEBUG: Tüm kartları console'a yazdır
-              console.log(`Card ${index}: ${destination.country}, isSlideshow: ${destination.isSlideshow}`);
               
               return (
               <motion.div
@@ -462,7 +441,6 @@ console.log('I was here!')
                         if (destination.country === 'Custom Experience') {
                           const imageArray = [NewYorkPhoto, SanFranciscoPhoto, NevadaPhoto, LasVegasPhoto, JapanPhoto, ThailandPhoto];
                           const currentImg = imageArray[slideshowIndex % imageArray.length];
-                          console.log('Custom Experience - Index:', slideshowIndex, 'Image:', currentImg);
                           return `url(${currentImg})`;
                         }
                         
