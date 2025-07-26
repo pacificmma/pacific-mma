@@ -1,15 +1,27 @@
 // src/pages/book.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Box, Typography, Container, Grid, Button,
+  Box, Typography, Container, Grid, Button, Paper,
   useTheme,
+  TextField,
+  MenuItem
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
+import Head from 'next/head';
+import DatePicker from 'react-datepicker';
+import Select from 'react-select';
+import makeAnimated from 'react-select/animated';
+import 'react-datepicker/dist/react-datepicker.css';
+
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { destinations as originalDestinations } from '../utils/destinations';
+import CustomTripForm from '../components/CustomBookingForm';
 
+const animatedComponents = makeAnimated();
+
+// Asset paths for Next.js (in public folder)
 const BookingHeroPhoto = '/assets/img/booking_page/bookingHero.jpg';
 const NewYorkPhoto = '/assets/img/home_page/photo-newyork.jpg';
 const SanFranciscoPhoto = '/assets/img/home_page/photo-sanfrancisco.jpg';
@@ -18,250 +30,152 @@ const LasVegasPhoto = '/assets/img/home_page/photo-lasvegas.jpg';
 const JapanPhoto = '/assets/img/home_page/photo-japan.jpg';
 const ThailandPhoto = '/assets/img/home_page/photo-thailand.jpg';
 
-// ✅ FIX: Dynamically import CustomTripForm to avoid SSR issues
-const CustomTripForm = dynamic(() => import('../components/CustomBookingForm'), {
-  ssr: false,
-  loading: () => <div>Loading...</div>
-});
+const customExperience = {
+  country: 'Custom Experience',
+  title: 'Design Your Custom Trip',
+  nights: 'Flexible',
+  image: [NewYorkPhoto, SanFranciscoPhoto, NevadaPhoto, LasVegasPhoto, JapanPhoto, ThailandPhoto],
+  isSlideshow: true,
+};
 
-// ✅ FIXED: Updated interface for Next.js string paths
-interface BookingPageDestination {
-  country: string;
-  title: string;
-  nights: string;
-  price?: number;
-  image: string | string[]; // ✅ Changed to string paths
-  date?: string;
-  videoUrl?: string;
-  isSlideshow: boolean;
-  description?: string;
-  whatYouWillEnjoy?: string[];
-  generalInfo?: string[];
-  descriptionPage?: string;
-  gyms?: string[];
-  disciplines?: string[];
-}
-import { useBrowser } from '../hooks/useBrowser';
-
-const BookPage = () => {
+const BookingPage = () => {
   const theme = useTheme();
-  const formRef = useRef<HTMLDivElement>(null);
-  const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [showForm, setShowForm] = useState(false);
+  const formRef = useRef<HTMLDivElement | null>(null);
+
+  const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
-  
-  // ✅ FIX: Use the shared browser hook
-  const { isBrowser } = useBrowser();
-
-  // Convert destinations for this specific page
-  const destinations: BookingPageDestination[] = [
-    {
-      country: 'New York',
-      title: 'Experience the city that never sleeps while training with top MMA athletes',
-      nights: '7 days, 6 nights',
-      image: NewYorkPhoto,
-      isSlideshow: false,
-    },
-    {
-      country: 'San Francisco',
-      title: 'Train by the bay with world-class coaches and stunning views',
-      nights: '7 days, 6 nights',
-      image: SanFranciscoPhoto,
-      isSlideshow: false,
-    },
-    {
-      country: 'Nevada',
-      title: 'Desert training camps with professional fighters',
-      nights: '7 days, 6 nights',
-      image: NevadaPhoto,
-      isSlideshow: false,
-    },
-    {
-      country: 'Las Vegas',
-      title: 'Train in the fight capital of the world',
-      nights: '7 days, 6 nights',
-      image: LasVegasPhoto,
-      isSlideshow: false,
-    },
-    {
-      country: 'Japan',
-      title: 'Traditional martial arts meets modern MMA in the land of the rising sun',
-      nights: '10 days, 9 nights',
-      image: JapanPhoto,
-      isSlideshow: false,
-    },
-    {
-      country: 'Thailand',
-      title: 'Muay Thai paradise with authentic training experiences',
-      nights: '10 days, 9 nights',
-      image: ThailandPhoto,
-      isSlideshow: false,
-    },
-  ];
-
-  // Custom slideshow destination
-  const customExperience: BookingPageDestination = {
-    country: 'Custom Experience',
-    title: 'Create your personalized MMA adventure anywhere in the world',
-    nights: 'Customizable duration',
-    image: [NewYorkPhoto, SanFranciscoPhoto, NevadaPhoto, LasVegasPhoto, JapanPhoto, ThailandPhoto],
-    isSlideshow: true,
-  };
-
-  const allDestinations = [...destinations, customExperience];
 
   const handleShowForm = () => {
     setShowForm(true);
-  };
-
-  // Mock data for form (these would typically come from your backend)
-  const gyms = ['Gym 1', 'Gym 2', 'Gym 3'];
-  const countries = ['USA', 'Japan', 'Thailand', 'Brazil'];
-  const trainings = ['Boxing', 'Muay Thai', 'BJJ', 'Wrestling'];
-
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    startDate: null as Date | null,
-    endDate: null as Date | null,
-    country: [] as string[],
-    gym: [] as string[],
-    training: [] as string[],
-    message: ''
-  });
-
-  interface SelectOption {
-    value: string;
-    label: string;
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   }
 
-  const handleSelectChange = (name: string) => (value: SelectOption[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value.map((v: SelectOption) => v.value)
-    }));
-  };
+  const destinations = [customExperience, ...originalDestinations];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const gyms = Array.from(new Set(originalDestinations.flatMap(d => d.gyms || [])));
+  const countries = Array.from(new Set(originalDestinations.map(d => d.country)));
+  const trainings = Array.from(new Set(originalDestinations.flatMap(d => d.disciplines || [])));
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    destinations: [],
+    gyms: [],
+    trainings: [],
+    mealPlan: '',
+    comfort: '',
+    budget: '',
+    note: '',
+  });
 
   useEffect(() => {
-    // ✅ FIX: Only scroll to top on client-side
-    if (isBrowser && typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
-    
-    // Slideshow for custom experience
+    window.scrollTo(0, 0);
     const interval = setInterval(() => {
-      setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as string[]).length);
+      setSlideshowIndex((prev) => (prev + 1) % customExperience.image.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [isBrowser]);
+  }, []);
 
   const handleCustomTripClick = () => {
     setShowForm(true);
     setTimeout(() => {
-      // ✅ FIX: Only scroll on client-side with proper checks
-      if (isBrowser && typeof window !== 'undefined' && formRef.current) {
-        formRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
+      formRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
+  };
+
+  const handleSelectChange = (name: string) => (value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value.map((v: any) => v.value)
+    }));
+  };
+
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
     <>
+      <Head>
+        <title>Book Your Martial Arts Journey</title>
+        <meta name="description" content="Design your own martial arts journey with our luxury MMA vacations" />
+      </Head>
+
       <Header />
-      <Box>
-        {/* Hero Section */}
+      <Box sx={{ backgroundColor: theme.palette.background.paper }}>
+        {/* Hero */}
         <Box
           sx={{
-            position: 'relative',
-            width: '100vw',
-            height: { xs: '40vh', sm: '50vh', md: '60vh' },
-            backgroundImage: `url(${BookingHeroPhoto})`, // ✅ Direct string usage
+            height: '60vh',
+            backgroundImage: `url(${BookingHeroPhoto})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            mb: 6,
+            textAlign: 'center',
+            borderBottom: `5px solid ${theme.palette.secondary.main}`
           }}
         >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            }}
-          />
           <Typography
-            variant="h2"
+            variant="h6"
             sx={{
-              position: 'relative',
-              zIndex: 1,
+              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+              lineHeight: { xs: 1.4, sm: 1.4 },
+              letterSpacing: '1px',
               color: theme.palette.primary.contrastText,
-              fontWeight: 'bold',
-              textAlign: 'center',
-              fontSize: { xs: '2rem', sm: '3rem', md: '4rem' },
+              textTransform: 'none',
+              maxWidth: '900px',
+              zIndex: 1,
+              margin: '0 auto',
+              fontFamily: theme.typography.fontFamily,
             }}
           >
-            Book Your Experience
+            Design Your Own Martial Arts Journey
           </Typography>
         </Box>
 
-        {/* Destinations Grid */}
-        <Container maxWidth="xl" sx={{ mb: 6 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography
-                variant="h4"
-                fontWeight="bold"
-                gutterBottom
-                sx={{
-                  textAlign: 'center',
-                  color: theme.palette.text.primary,
-                  mb: 4,
-                }}
-              >
-                Choose Your Adventure
+        {/* Destination Cards */}
+        <Container maxWidth="lg" sx={{ py: 10 }}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={3}>
+              <Typography variant="h3" fontWeight="bold" gutterBottom>
+                Our Favourite <br /> Luxury MMA Vacations
               </Typography>
-              <Grid container spacing={3}>
-                {allDestinations.map((dest, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <Typography>
+                Your trip should be as unique as your journey. Start with a custom plan or explore one of our crafted experiences.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={9}>
+              <Grid container spacing={4}>
+                {destinations.map((dest, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
                     <Box
+                      onClick={dest.country === 'Custom Experience' ? handleCustomTripClick : undefined}
                       sx={{
-                        position: 'relative',
-                        height: '350px',
+                        width: '100%',
+                        height: { xs: '300px', sm: '350px', md: '440px' },
                         borderRadius: '12px',
                         overflow: 'hidden',
+                        position: 'relative',
                         cursor: 'pointer',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                        boxShadow: '0px 4px 12px rgba(0,0,0,0.2)',
+                        transition: 'transform 0.2s',
                         '&:hover': {
-                          transform: 'translateY(-5px)',
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-                        },
+                          transform: 'scale(1.03)'
+                        }
                       }}
                     >
                       <Box
                         sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundImage: `url(${
-                            dest.isSlideshow && Array.isArray(dest.image)
-                              ? (dest.image as string[])[slideshowIndex] // ✅ Direct string usage
-                              : (dest.image as string) // ✅ Direct string usage
-                          })`,
+                          width: '100%',
+                          height: '100%',
+                          backgroundImage: `url(${dest.isSlideshow ? dest.image[slideshowIndex] : dest.image})`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
                         }}
@@ -273,7 +187,7 @@ const BookPage = () => {
                           bottom: 0,
                           left: 0,
                           right: 0,
-                          height: '33.33%',
+                          height: '33.33%', // Kartın 1/3'ü kadar yükseklik
                           background: 'rgba(0, 0, 0, 0.7)',
                           color: '#fff',
                           p: { xs: 1, md: 1.5 },
@@ -284,7 +198,7 @@ const BookPage = () => {
                           justifyContent: 'space-between',
                           overflow: 'hidden',
                           '&:hover': {
-                            height: '100%',
+                            height: '100%', // Hover'da tüm kart yüksekliğini kapla
                           }
                         }}
                       >
@@ -316,11 +230,11 @@ const BookPage = () => {
                               fontSize: { xs: '0.75rem', sm: '0.9rem', md: '1rem' },
                               display: '-webkit-box',
                               color: theme.palette.primary.contrastText,
-                              WebkitLineClamp: 3,
+                              WebkitLineClamp: 3, // Varsayılan olarak 3 satır göster
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
                               '.destination-info:hover &': {
-                                WebkitLineClamp: 'unset',
+                                WebkitLineClamp: 'unset', // Hover durumunda tüm metni göster
                               },
                             }}
                           >
@@ -338,18 +252,28 @@ const BookPage = () => {
                           onClick={dest.country === 'Custom Experience' ? handleCustomTripClick : undefined}
                           variant="contained"
                           sx={{
-                            mt: 2,
-                            backgroundColor: theme.palette.primary.main,
+                            mt: 'auto', // Alt tarafa ittir
+                            mb: { xs: 1, md: 1 },
+                            borderRadius: '30px',
                             color: theme.palette.primary.contrastText,
+                            backgroundColor: theme.palette.secondary.main,
                             fontWeight: 'bold',
-                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.9rem' },
-                            py: { xs: 0.5, md: 1 },
+                            textTransform: 'none',
+                            fontSize: { xs: '0.7rem', sm: '0.9rem', md: '1rem' },
+                            padding: { xs: '4px 8px', md: '6px 12px' },
+                            opacity: 0, // Varsayılan olarak gizli
+                            transition: 'opacity 0.3s ease',
+                            '.destination-info:hover &': {
+                              opacity: 1, // Hover durumunda göster
+                            },
                             '&:hover': {
-                              backgroundColor: theme.palette.primary.dark,
+                              backgroundColor: theme.palette.secondary.dark,
                             },
                           }}
                         >
-                          {dest.country === 'Custom Experience' ? 'Create Custom Trip' : 'Book Now'}
+                          {dest.country === 'Custom Experience' 
+                            ? 'Start Custom Booking' 
+                            : `Discover ${dest.country} Trip`}
                         </Button>
                       </Box>
                     </Box>
@@ -360,16 +284,14 @@ const BookPage = () => {
           </Grid>
         </Container>
 
-        {/* ✅ FIX: Only render form when on client-side and showForm is true */}
-        {isBrowser && showForm && (
-          <Box ref={formRef} sx={{ mt: 6 }}>
-            <CustomTripForm />
-          </Box>
-        )}
+        {/* Custom Form */}
+        <Box ref={formRef}>
+          <CustomTripForm />
+        </Box>
       </Box>
       <Footer />
     </>
   );
 };
 
-export default BookPage;
+export default BookingPage;

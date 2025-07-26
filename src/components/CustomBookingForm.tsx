@@ -201,7 +201,7 @@ const CustomTripForm = () => {
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
               components={animatedComponents}
-              menuPortalTarget={document.body}
+              menuPortalTarget={typeof window !== 'undefined' ? document.body : undefined}
             />
 
 
@@ -218,7 +218,7 @@ const CustomTripForm = () => {
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
               components={animatedComponents}
-              menuPortalTarget={document.body}
+              menuPortalTarget={typeof window !== 'undefined' ? document.body : undefined}
             />
 
 
@@ -235,7 +235,7 @@ const CustomTripForm = () => {
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
               components={animatedComponents}
-              menuPortalTarget={document.body}
+              menuPortalTarget={typeof window !== 'undefined' ? document.body : undefined}
             />
 
           </Grid>

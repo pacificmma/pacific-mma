@@ -50,7 +50,7 @@ const DestinationSlider = () => {
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  const [slideshowIndex, setSlideshowIndex] = useState(0); // ✅ Book sayfasındaki gibi slideshowIndex
+  const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(0);
