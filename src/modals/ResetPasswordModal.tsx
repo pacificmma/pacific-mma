@@ -1,3 +1,4 @@
+// src/modals/ResetPasswordModal.tsx - ORIGINAL DESIGN
 import React, { useState } from 'react';
 import {
   Box,
@@ -47,7 +48,6 @@ const ResetPasswordModal = ({ open, onClose }: ResetPasswordModalProps) => {
       await sendPasswordResetEmail(auth, email);
       setMessage('Password reset email sent successfully.');
     } catch (err: unknown) {
-      // 🔧 FIX: Proper error typing (49:19) and removed console.error (50:7)
       const errorMessage = err instanceof Error ? err.message : 'Failed to send reset email.';
       setError(errorMessage);
     }

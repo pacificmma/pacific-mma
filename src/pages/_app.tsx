@@ -1,11 +1,12 @@
-// src/pages/_app.tsx
+// src/pages/_app.tsx - UPDATED WITH AUTH MODALS CONTAINER
 import React from 'react';
 import type { AppProps } from 'next/app';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import theme from '../theme'; // Path to your theme.js
-import { FirebaseAuthProvider } from '../providers/fireBaseAuthProvider'; // Path to your Firebase Auth Provider
-import { CartProvider } from '../providers/cartProvider'; // Path to your Cart Provider
-import "@/styles/globals.css"; // Your global CSS imports
+import theme from '../theme';
+import { FirebaseAuthProvider } from '../providers/fireBaseAuthProvider';
+import { CartProvider } from '../providers/cartProvider';
+import AuthModalsContainer from '../components/AuthModalsContainer';
+import "@/styles/globals.css";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -13,7 +14,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <CartProvider>
+          {/* 🎯 Main Application */}
           <Component {...pageProps} />
+          
+          {/* 🔐 Authentication Modals - Global seviyede */}
+          <AuthModalsContainer />
         </CartProvider>
       </ThemeProvider>
     </FirebaseAuthProvider>

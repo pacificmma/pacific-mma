@@ -1,4 +1,4 @@
-// src/components/Header.tsx - FIXED VERSION
+// src/components/Header.tsx - ORIGINAL DESIGN WITH FIREBASE AUTH INTEGRATION
 import React, { useState, useEffect, useContext } from 'react';
 import {
   AppBar,
@@ -88,7 +88,7 @@ const Header = () => {
     return user.fullName || user.email?.split('@')[0] || 'User';
   };
 
-  // Check if user is authenticated
+  // Check if user is authenticated - ORIGINAL LOGIC
   const isAuthenticated = !!user && !loading;
 
   return (
@@ -113,7 +113,7 @@ const Header = () => {
             </IconButton>
           )}
 
-          {/* Logo/Site Title Link - FIXED */}
+          {/* Logo/Site Title Link - ORIGINAL */}
           <Link
             href="/"
             style={{
@@ -139,7 +139,7 @@ const Header = () => {
 
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {/* Home Button - FIXED */}
+              {/* Home Button - ORIGINAL */}
               <Button
                 onClick={() => router.push('/')}
                 sx={{
@@ -155,7 +155,7 @@ const Header = () => {
                 Home
               </Button>
 
-              {/* Camps Dropdown - FIXED */}
+              {/* Camps Dropdown - ORIGINAL */}
               <Box>
                 <Button
                   onClick={handleMenuOpenCamps}
@@ -216,7 +216,7 @@ const Header = () => {
                 </Menu>
               </Box>
 
-              {/* Other Menu Items - FIXED */}
+              {/* Other Menu Items - ORIGINAL WITH TYPESCRIPT FIX */}
               {menuItems
                 .filter((item) => !['Home', 'Camp', 'Youth Camp'].includes(item.label))
                 .map((item, index) => (
@@ -242,7 +242,7 @@ const Header = () => {
           )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Shopping Cart */}
+            {/* Shopping Cart - ORIGINAL */}
             <IconButton
               aria-label="cart"
               onClick={() => router.push('/cart')}
@@ -261,7 +261,7 @@ const Header = () => {
               </Badge>
             </IconButton>
 
-            {/* User Authentication Section - FIXED */}
+            {/* User Authentication Section - ORIGINAL DESIGN WITH FIREBASE AUTH */}
             {loading ? (
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                 Loading...
@@ -325,6 +325,7 @@ const Header = () => {
               </>
             ) : (
               <>
+                {/* Account Circle Icon for Login/Signup - ORIGINAL */}
                 <IconButton
                   onClick={handleMenuOpenUser}
                   sx={{ 
@@ -347,7 +348,7 @@ const Header = () => {
               </>
             )}
 
-            {/* Book Now Button */}
+            {/* Book Now Button - ORIGINAL */}
             <Button
               variant="contained"
               onClick={() => router.push('/book')}
@@ -368,6 +369,7 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
+      {/* Mobile Drawer - ORIGINAL */}
       <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer}>
         <HamburgerMenu toggleDrawer={toggleDrawer} />
       </Drawer>

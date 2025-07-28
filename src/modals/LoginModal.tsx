@@ -1,3 +1,4 @@
+// src/modals/LoginModal.tsx - ORIGINAL DESIGN WITH FIREBASE AUTH
 import React, { useState } from 'react';
 import {
   Box,
@@ -8,7 +9,7 @@ import {
   IconButton,
   useTheme,
   Link,
-} from '@mui/material'; // 🔧 FIX: Removed unused 'Divider' import (10:3)
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
 import ResetPasswordModal from './ResetPasswordModal';
@@ -34,9 +35,7 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading, error } = useFirebaseAuth();
-  const [resetMessage, setResetMessage] = useState('');
-  const [resetError, setResetError] = useState('');
+  const { login, loading, error, clearError } = useFirebaseAuth();
   const [resetOpen, setResetOpen] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -45,24 +44,19 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
     onClose();
   };
 
-  // 🔧 FIX: Removed unused handlePasswordReset function (52:9)
-  // Reset password functionality is handled by ResetPasswordModal
-
   const handleClose = () => {
     setEmail('');
     setPassword('');
-    setResetMessage('');
-    setResetError('');
+    clearError();
     onClose();
   };
 
   return (
     <Modal open={open} onClose={handleClose}>
-      <>
       <Box sx={style} component="form" onSubmit={handleEmailLogin}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6">LOG IN</Typography>
-          <IconButton onClick={handleClose}>
+          <IconButton onClick={handleClose} disabled={loading}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -97,18 +91,6 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
           </Typography>
         )}
 
-        {resetError && (
-          <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-            {resetError}
-          </Typography>
-        )}
-
-        {resetMessage && (
-          <Typography color="success.main" variant="body2" sx={{ mt: 1 }}>
-            {resetMessage}
-          </Typography>
-        )}
-
         <Button
           type="submit"
           variant="contained"
@@ -124,24 +106,20 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
         </Button>
 
         <Box textAlign="center" mt={2}>
-          <Box textAlign="center" mt={2}>
-            <Link
-              component="button"
-              variant="body2"
-              underline="always"
-              onClick={() => setResetOpen(true)}
-              sx={{ color: theme.palette.primary.main }}
-            >
-              Forgot your password?
-            </Link>
-          </Box>
-
+          <Link
+            component="button"
+            variant="body2"
+            underline="always"
+            onClick={() => setResetOpen(true)}
+            sx={{ color: theme.palette.primary.main }}
+          >
+            Forgot your password?
+          </Link>
         </Box>
+
+        <ResetPasswordModal open={resetOpen} onClose={() => setResetOpen(false)} />
       </Box>
-      <ResetPasswordModal open={resetOpen} onClose={() => setResetOpen(false)} />
-      </>
     </Modal>
-    
   );
 };
 

@@ -1,9 +1,9 @@
 [
     { "label": "Home", "link": "/" },
     { "label": "Academy", "link": "/academy" },
-    { "label": "Network", "link": "/network" },
-    { "label": "Services", "link": "/services" },
     {"label": "Gear", "link": "/gear"},
+    { "label": "Who we are", "link": "/whoweare" },
+    { "label": "Services", "link": "/services" },
     { "label": "Contact", "link": "/contact" }
   ]
   
