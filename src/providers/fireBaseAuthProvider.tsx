@@ -1,10 +1,11 @@
-// src/providers/fireBaseAuthProvider.tsx - COMPLETE VERSION WITH DEBUG
+// src/providers/fireBaseAuthProvider.tsx - REGISTRATION FLAG İLE DÜZELTİLMİŞ
 import React, {
   createContext,
   useContext,
   useEffect,
   useState,
   ReactNode,
+  useRef,
 } from 'react';
 import {
   createUserWithEmailAndPassword,
@@ -13,8 +14,41 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
 } from 'firebase/auth';
-import { auth, db } from '../utils/fireBaseAuthProvider';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, getFirestore } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
+// ✅ DEBUGGING: Console'a export'ları yazdır
+console.log('🔥 Firebase initialized:', {
+  auth: !!auth,
+  db: !!db,
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain
+});
+
+// ✅ Global olarak da erişilebilir yap (development için)
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  (window as any).firebaseAuth = auth;
+  (window as any).firebaseDb = db;
+  console.log('🌐 Firebase globals available: window.firebaseAuth, window.firebaseDb');
+}
+
+// Default export (backward compatibility için)
+export default { auth, db };
 
 // 🛡️ Security utilities import
 import { 
@@ -100,6 +134,9 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isSignUpModalOpen, setSignUpModalOpen] = useState(false);
 
+  // 🆕 Registration flag to prevent auth state listener interference
+  const isRegistering = useRef<boolean>(false);
+
   const showLoginModal = () => {
     clearError();
     setLoginModalOpen(true);
@@ -118,13 +155,29 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const clearError = () => setError(null);
 
-  // 🔍 Firebase Auth State Change Listener
+  // 🔍 Firebase Auth State Change Listener - REGISTRATION AWARE
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      // 🆕 Skip auth state processing during registration
+      if (isRegistering.current) {
+        console.log('🔄 Auth state change detected during registration - skipping listener');
+        return;
+      }
+
       setLoading(true);
       
       if (firebaseUser) {
         try {
+          // Small delay to allow for potential ongoing registration
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Double-check registration flag after delay
+          if (isRegistering.current) {
+            console.log('🔄 Registration still in progress - skipping auth state processing');
+            setLoading(false);
+            return;
+          }
+
           // Get user information from members collection
           const memberRef = doc(db, 'members', firebaseUser.uid);
           const memberSnap = await getDoc(memberRef);
@@ -158,23 +211,30 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
               );
             }
           } else {
-            // No Firestore record - sign out
-            await signOut(auth);
-            setUser(null);
-            setError('User record not found.');
-            
-            // 🆕 Log missing user record
-            SimpleAuditLogger.logSecurityEvent(
-              'SUSPICIOUS_ACTIVITY', 
-              firebaseUser.uid, 
-              { reason: 'User not found in Firestore' },
-              'HIGH'
-            );
+            // No Firestore record - only sign out if not registering
+            if (!isRegistering.current) {
+              console.log('🔍 No Firestore record found and not registering - signing out user');
+              await signOut(auth);
+              setUser(null);
+              setError('User record not found.');
+              
+              // 🆕 Log missing user record
+              SimpleAuditLogger.logSecurityEvent(
+                'SUSPICIOUS_ACTIVITY', 
+                firebaseUser.uid, 
+                { reason: 'User not found in Firestore' },
+                'HIGH'
+              );
+            } else {
+              console.log('🔍 No Firestore record but registration in progress - allowing');
+            }
           }
         } catch (err) {
           console.error('User data fetch error:', err);
-          setUser(null);
-          setError('An error occurred while fetching user information.');
+          if (!isRegistering.current) {
+            setUser(null);
+            setError('An error occurred while fetching user information.');
+          }
         }
       } else {
         setUser(null);
@@ -296,117 +356,130 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // 📝 Enhanced Register Function - WITH DETAILED DEBUG
+  // 📝 Enhanced Register Function - WITH REGISTRATION FLAG
   const register = async (email: string, password: string, userData: SignUpData) => {
-    // 🆕 Enhanced input validation
-    if (!email || !password || !userData.fullName || !userData.phoneNumber) {
-      setError('Please fill in all required fields.');
-      return;
-    }
-
-    // 🆕 Input sanitization
-    const sanitizedEmail = SecurityValidator.sanitizeInput(email.toLowerCase()).trim();
-    const sanitizedUserData = SecurityValidator.sanitizeForDatabase(userData) as SignUpData;
-
-    // 🆕 Detailed validation
-    if (!SecurityValidator.validateEmail(sanitizedEmail)) {
-      setError('Invalid email format.');
-      return;
-    }
-
-    if (!SecurityValidator.validatePhone(sanitizedUserData.phoneNumber)) {
-      setError('Invalid phone number format.');
-      return;
-    }
-
-    if (!SecurityValidator.validateString(sanitizedUserData.fullName, 2, 50)) {
-      setError('Name must be between 2 and 50 characters.');
-      return;
-    }
-
-    // 🆕 Password strength validation
-    const passwordValidation = AuthSecurity.validatePasswordStrength(password);
-    if (!passwordValidation.isValid) {
-      setError(`Password requirements: ${passwordValidation.errors.join(', ')}`);
-      return;
-    }
-
-    setError(null);
-    setLoading(true);
+    console.log('🚀 REGISTRATION DEBUG BAŞLADI');
+    console.log('=================================');
+    
+    // 🆕 Set registration flag to prevent auth listener interference
+    isRegistering.current = true;
+    console.log('🔒 Registration flag set - auth listener paused');
     
     try {
-      // Create Firebase Authentication user
-      const result = await createUserWithEmailAndPassword(auth, sanitizedEmail, password);
-      
-      // 🔍 Check if Firestore record already exists (edge case)
-      const existingMemberRef = doc(db, 'members', result.user.uid);
-      const existingMemberSnap = await getDoc(existingMemberRef);
-      
-      if (existingMemberSnap.exists()) {
-        // User already exists in Firestore, just set state
-        const existingMember = existingMemberSnap.data() as MemberProfile;
-        setUser(existingMember);
-        closeModals();
-        
-        SimpleAuditLogger.logSecurityEvent(
-          'LOGIN', 
-          result.user.uid, 
-          { email: sanitizedEmail, method: 'existing_user' },
-          'LOW'
-        );
+      // Input validation
+      if (!email || !password || !userData.fullName || !userData.phoneNumber) {
+        console.error('❌ INPUT VALIDATION FAILED: Missing required fields');
+        setError('Please fill in all required fields.');
         return;
       }
-      
-      // ✅ FIXED: Create Firestore member record without undefined values
-      const baseData = {
-        uid: result.user.uid,
-        email: sanitizedEmail,
-        fullName: sanitizedUserData.fullName.trim(),
-        phoneNumber: sanitizedUserData.phoneNumber.trim(),
-        role: 'member' as const,
-        isActive: true,
-        address: {
-          street: sanitizedUserData.address.street.trim(),
-          city: sanitizedUserData.address.city.trim(),
-          state: sanitizedUserData.address.state.trim(),
-          country: sanitizedUserData.address.country.trim(),
-          zipCode: sanitizedUserData.address.zipCode.trim(),
-        },
-        awards: [],
-        classRegistrations: [],
-        parentId: null,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        createdBy: result.user.uid,
-        updatedBy: result.user.uid,
-      };
 
-      // ✅ FIXED: Only add emergencyContact if it has valid data
-      const newMember: MemberProfile = sanitizedUserData.emergencyContact && 
-        sanitizedUserData.emergencyContact.name && 
-        sanitizedUserData.emergencyContact.phone 
-        ? {
-            ...baseData,
-            emergencyContact: {
-              name: sanitizedUserData.emergencyContact.name.trim(),
-              phone: sanitizedUserData.emergencyContact.phone.trim(),
-              relationship: sanitizedUserData.emergencyContact.relationship?.trim() || 'Not specified',
-            }
-          }
-        : baseData;
+      console.log('✅ Input validation PASSED');
+
+      const sanitizedEmail = SecurityValidator.sanitizeInput(email.toLowerCase()).trim();
+      const sanitizedUserData = SecurityValidator.sanitizeForDatabase(userData) as SignUpData;
+
+      console.log('📧 Email:', sanitizedEmail);
+      console.log('👤 User data structure:', {
+        hasFullName: !!sanitizedUserData.fullName,
+        hasPhone: !!sanitizedUserData.phoneNumber,
+        hasAddress: !!sanitizedUserData.address,
+        addressComplete: !!(sanitizedUserData.address?.street && sanitizedUserData.address?.city)
+      });
+
+      // Validation checks
+      if (!SecurityValidator.validateEmail(sanitizedEmail)) {
+        console.error('❌ EMAIL VALIDATION FAILED');
+        setError('Invalid email format.');
+        return;
+      }
+
+      if (!SecurityValidator.validatePhone(sanitizedUserData.phoneNumber)) {
+        console.error('❌ PHONE VALIDATION FAILED');
+        setError('Invalid phone number format.');
+        return;
+      }
+
+      if (!SecurityValidator.validateString(sanitizedUserData.fullName, 2, 50)) {
+        console.error('❌ NAME VALIDATION FAILED');
+        setError('Name must be between 2 and 50 characters.');
+        return;
+      }
+
+      const passwordValidation = AuthSecurity.validatePasswordStrength(password);
+      if (!passwordValidation.isValid) {
+        console.error('❌ PASSWORD VALIDATION FAILED');
+        setError(`Password requirements: ${passwordValidation.errors.join(', ')}`);
+        return;
+      }
+
+      console.log('✅ All validations PASSED');
+
+      setError(null);
+      setLoading(true);
       
-      // 🔍 DETAILED DEBUG: Save to Firestore with comprehensive debugging
+      let authUser: any = null;
+      
       try {
-        console.log('🔄 Starting Firestore save process...');
-        console.log('📋 User ID:', result.user.uid);
-        console.log('📧 Email:', sanitizedEmail);
+        // 🔥 STEP 1: Firebase Auth user creation
+        console.log('🔄 STEP 1: Creating Firebase Auth user...');
         
-        // Check Firebase Auth state
-        console.log('🔐 Current auth user:', auth.currentUser?.uid);
-        console.log('🔐 Auth token exists:', !!auth.currentUser);
+        console.log('Auth config check:', {
+          hasAuth: !!auth,
+          appName: auth?.app?.name,
+          projectId: auth?.app?.options?.projectId,
+          authDomain: auth?.app?.options?.authDomain
+        });
         
-        // Log the exact data we're trying to save (without sensitive info)
-        const dataToLog = {
+        const result = await createUserWithEmailAndPassword(auth, sanitizedEmail, password);
+        authUser = result.user;
+        
+        console.log('✅ STEP 1 SUCCESS: Firebase Auth user created');
+        console.log('🆔 User ID:', authUser.uid);
+        console.log('📧 User Email:', authUser.email);
+        console.log('🕐 Creation Time:', authUser.metadata.creationTime);
+
+        // 🔥 STEP 2: Prepare Firestore data (simplified, no waiting needed)
+        console.log('🔄 STEP 2: Preparing Firestore data...');
+        
+        const baseData = {
+          uid: authUser.uid,
+          email: sanitizedEmail,
+          fullName: sanitizedUserData.fullName.trim(),
+          phoneNumber: sanitizedUserData.phoneNumber.trim(),
+          role: 'member' as const,
+          isActive: true,
+          address: {
+            street: sanitizedUserData.address.street?.trim() || '',
+            city: sanitizedUserData.address.city?.trim() || '',
+            state: sanitizedUserData.address.state?.trim() || '',
+            country: sanitizedUserData.address.country?.trim() || 'USA',
+            zipCode: sanitizedUserData.address.zipCode?.trim() || '',
+          },
+          awards: [],
+          classRegistrations: [],
+          parentId: null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          createdBy: authUser.uid,
+          updatedBy: authUser.uid,
+        };
+
+        // Add emergency contact if provided
+        const newMember: MemberProfile = sanitizedUserData.emergencyContact && 
+          sanitizedUserData.emergencyContact.name && 
+          sanitizedUserData.emergencyContact.phone 
+          ? {
+              ...baseData,
+              emergencyContact: {
+                name: sanitizedUserData.emergencyContact.name.trim(),
+                phone: sanitizedUserData.emergencyContact.phone.trim(),
+                relationship: sanitizedUserData.emergencyContact.relationship?.trim() || 'Not specified',
+              }
+            }
+          : baseData;
+
+        console.log('✅ STEP 2 SUCCESS: Data prepared');
+        console.log('📦 Final data structure:', {
           uid: newMember.uid,
           email: newMember.email,
           fullName: newMember.fullName,
@@ -415,167 +488,190 @@ export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
           isActive: newMember.isActive,
           hasAddress: !!newMember.address,
           hasEmergencyContact: !!newMember.emergencyContact,
-          addressFields: newMember.address ? Object.keys(newMember.address) : [],
-          emergencyContactFields: newMember.emergencyContact ? Object.keys(newMember.emergencyContact) : []
-        };
+          dataSize: JSON.stringify(newMember).length + ' characters'
+        });
+
+        // 🔥 STEP 3: Save to Firestore
+        console.log('🔄 STEP 3: Saving user data to Firestore...');
         
-        console.log('📦 Data structure to save:', dataToLog);
+        const memberRef = doc(db, 'members', authUser.uid);
         
-        // Check for undefined or invalid values
-        const checkForUndefined = (obj: any, path = ''): string[] => {
-          const undefinedPaths: string[] = [];
+        // Check current auth state before save
+        console.log('🔐 Current auth state before save:', {
+          currentUser: auth.currentUser?.uid,
+          isSignedIn: !!auth.currentUser,
+          emailVerified: auth.currentUser?.emailVerified,
+          matchesNewUser: auth.currentUser?.uid === authUser.uid,
+          registrationFlag: isRegistering.current
+        });
+
+        let saveAttempts = 0;
+        const maxRetries = 3;
+        
+        while (saveAttempts < maxRetries) {
+          saveAttempts++;
+          console.log(`📝 Save attempt ${saveAttempts}/${maxRetries}...`);
           
-          for (const [key, value] of Object.entries(obj)) {
-            const currentPath = path ? `${path}.${key}` : key;
+          try {
+            await setDoc(memberRef, newMember);
+            console.log(`✅ Save attempt ${saveAttempts}: SUCCESS`);
+            break;
+          } catch (saveError: any) {
+            console.error(`❌ Save attempt ${saveAttempts}: FAILED`);
+            console.error('Save error details:', {
+              message: saveError.message,
+              code: saveError.code,
+              attempt: saveAttempts,
+              currentUser: auth.currentUser?.uid || 'null'
+            });
             
-            if (value === undefined) {
-              undefinedPaths.push(currentPath);
-            } else if (value && typeof value === 'object' && !Array.isArray(value) && value.constructor === Object) {
-              undefinedPaths.push(...checkForUndefined(value, currentPath));
+            if (saveAttempts >= maxRetries) {
+              throw saveError;
             }
+            
+            // Wait before retry
+            console.log(`⏳ Waiting ${1000 * saveAttempts}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * saveAttempts));
           }
-          
-          return undefinedPaths;
-        };
-        
-        const undefinedFields = checkForUndefined(newMember);
-        if (undefinedFields.length > 0) {
-          console.error('❌ FOUND UNDEFINED FIELDS:', undefinedFields);
-          throw new Error(`Invalid data: undefined fields found: ${undefinedFields.join(', ')}`);
-        } else {
-          console.log('✅ Data validation passed: no undefined fields');
         }
+
+        // 🔥 STEP 4: Verify save was successful
+        console.log('🔄 STEP 4: Verifying save...');
         
-        // Attempt to save
-        console.log('💾 Attempting setDoc...');
-        const memberRef = doc(db, 'members', newMember.uid);
+        // Wait a moment for Firestore consistency
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        await setDoc(memberRef, newMember);
+        const verificationSnap = await getDoc(memberRef);
         
-        console.log('✅ setDoc completed successfully');
-        
-        // Verification step
-        console.log('🔍 Verifying document was saved...');
-        const verifySnap = await getDoc(memberRef);
-        
-        if (verifySnap.exists()) {
-          console.log('✅ VERIFICATION SUCCESS: Document exists in Firestore');
-          console.log('📋 Saved document ID:', verifySnap.id);
-          
-          const savedData = verifySnap.data();
-          console.log('📦 Verified saved data structure:', {
-            uid: savedData.uid,
-            email: savedData.email,
-            role: savedData.role,
-            isActive: savedData.isActive,
-            hasAllFields: !!(savedData.fullName && savedData.phoneNumber && savedData.address)
-          });
-          
-        } else {
+        if (!verificationSnap.exists()) {
           console.error('❌ VERIFICATION FAILED: Document does not exist after save');
-          throw new Error('Document verification failed - save may not have completed');
+          throw new Error('VERIFICATION_FAILED: Document was not saved to Firestore');
         }
         
-      } catch (firestoreError: any) {
-        console.error('❌ FIRESTORE ERROR DETAILS:');
-        console.error('Error message:', firestoreError.message);
-        console.error('Error code:', firestoreError.code);
-        console.error('Error stack:', firestoreError.stack);
+        const savedData = verificationSnap.data();
+        console.log('📋 Verification data check:', {
+          hasUid: !!savedData.uid,
+          hasEmail: !!savedData.email,
+          hasFullName: !!savedData.fullName,
+          hasPhoneNumber: !!savedData.phoneNumber,
+          hasRole: !!savedData.role,
+          isActive: savedData.isActive,
+          matchesInput: savedData.uid === authUser.uid && savedData.email === sanitizedEmail
+        });
         
-        // Check specific error types
-        if (firestoreError.code === 'permission-denied') {
-          console.error('🚫 PERMISSION DENIED - Check Firestore Rules');
-          console.error('Current user:', auth.currentUser?.uid);
-          console.error('Trying to write to:', `members/${newMember.uid}`);
+        const hasRequiredFields = !!(savedData.fullName && savedData.phoneNumber && savedData.address);
+        
+        if (!hasRequiredFields) {
+          console.error('❌ VERIFICATION FAILED: Required fields missing from saved document');
+          throw new Error('VERIFICATION_FAILED: Required fields missing from saved document');
         }
         
-        if (firestoreError.code === 'invalid-argument') {
-          console.error('📝 INVALID ARGUMENT - Check data structure');
-          console.error('Full newMember object:', JSON.stringify(newMember, null, 2));
-        }
-        
-        if (firestoreError.code === 'unavailable') {
-          console.error('🌐 SERVICE UNAVAILABLE - Network/Server issue');
-        }
-        
-        // Clean up auth user
-        try {
-          console.log('🗑️ Cleaning up Auth user due to Firestore error...');
-          await result.user.delete();
-          console.log('✅ Auth user cleanup successful');
-        } catch (deleteError) {
-          console.error('❌ Auth user cleanup failed:', deleteError);
-        }
-        
-        // Provide user-friendly error message
-        let friendlyMessage = 'Failed to create user account. ';
-        
-        switch (firestoreError.code) {
-          case 'permission-denied':
-            friendlyMessage += 'Permission denied. Please try again or contact support.';
-            break;
-          case 'unavailable':
-            friendlyMessage += 'Service temporarily unavailable. Please try again in a moment.';
-            break;
-          case 'invalid-argument':
-            friendlyMessage += 'Invalid data provided. Please check your information.';
-            break;
-          default:
-            friendlyMessage += `Database error (${firestoreError.code}). Please try again.`;
-        }
-        
-        throw new Error(friendlyMessage);
-      }
-      
-      // Update state
-      setUser(newMember);
-      closeModals();
+        console.log('✅ STEP 4 SUCCESS: Save verification completed');
 
-      // 🆕 Log successful registration
-      SimpleAuditLogger.logSecurityEvent(
-        'REGISTER', 
-        result.user.uid, 
-        { email: sanitizedEmail, success: true },
-        'LOW'
-      );
-      
-    } catch (err: unknown) {
-      let errorMessage = 'An error occurred during registration.';
-      
-      if (err instanceof Error) {
-        const errorCode = (err as any).code;
-        switch (errorCode || err.message) {
-          case 'auth/email-already-in-use':
-          case 'Firebase: Error (auth/email-already-in-use).':
-            errorMessage = 'This email address is already in use. Try logging in instead.';
-            break;
-          case 'auth/weak-password':
-          case 'Firebase: Error (auth/weak-password).':
-            errorMessage = 'Password is too weak. Must be at least 6 characters.';
-            break;
-          case 'auth/invalid-email':
-          case 'Firebase: Error (auth/invalid-email).':
-            errorMessage = 'Invalid email address.';
-            break;
-          case 'permission-denied':
-            errorMessage = 'Registration not allowed. Please check your internet connection and try again.';
-            break;
-          default:
-            errorMessage = err.message;
-        }
+        // 🔥 STEP 5: Update application state
+        console.log('🔄 STEP 5: Updating application state...');
+        
+        setUser(newMember);
+        closeModals();
 
-        // 🆕 Log failed registration
+        // Log successful registration
         SimpleAuditLogger.logSecurityEvent(
           'REGISTER', 
-          sanitizedEmail, 
-          { success: false, error: err.message, code: errorCode },
-          'MEDIUM'
+          authUser.uid, 
+          { email: sanitizedEmail, success: true },
+          'LOW'
         );
+        
+        console.log('🎉 REGISTRATION COMPLETED SUCCESSFULLY');
+        console.log('=================================');
+        
+      } catch (err: unknown) {
+        console.error('💥 REGISTRATION FAILED');
+        console.error('======================');
+        console.error('Error details:', err);
+        
+        // 🔥 CRITICAL: Clean up Firebase Auth user if Firestore save failed
+        if (authUser) {
+          try {
+            console.log('🗑️ CLEANUP: Removing Firebase Auth user...');
+            await authUser.delete();
+            console.log('✅ CLEANUP: Auth user removed successfully');
+          } catch (deleteError: unknown) {
+            console.error('❌ CLEANUP FAILED: Could not remove auth user');
+            console.error('Delete error:', deleteError);
+            
+            const errorMessage = deleteError instanceof Error ? deleteError.message : String(deleteError);
+            SimpleAuditLogger.logSecurityEvent(
+              'SYSTEM',
+              authUser.uid, 
+              { error: errorMessage, context: 'auth_user_cleanup_failed' },
+              'CRITICAL'
+            );
+          }
+        }
+        
+        // Handle different error types
+        let errorMessage = 'An error occurred during registration.';
+        
+        if (err instanceof Error) {
+          const errorCode = (err as any).code;
+          
+          console.error('📋 Error analysis:', {
+            message: err.message,
+            code: errorCode,
+            name: err.name,
+            stack: err.stack
+          });
+          
+          switch (errorCode || err.message) {
+            case 'auth/email-already-in-use':
+              errorMessage = 'This email address is already in use. Try logging in instead.';
+              break;
+            case 'auth/weak-password':
+              errorMessage = 'Password is too weak. Must be at least 6 characters.';
+              break;
+            case 'auth/invalid-email':
+              errorMessage = 'Invalid email address.';
+              break;
+            case 'permission-denied':
+              errorMessage = 'Database permission denied. Please check configuration and try again.';
+              break;
+            case 'Database connection failed':
+              errorMessage = 'Could not connect to database. Please check your internet connection.';
+              break;
+            case 'Database permission denied. Please check Firestore Rules configuration.':
+              errorMessage = 'Database rules are blocking registration. Please contact support.';
+              break;
+            case 'VERIFICATION_FAILED: Document was not saved to Firestore':
+              errorMessage = 'Registration failed - data could not be saved. Please try again.';
+              break;
+            case 'VERIFICATION_FAILED: Required fields missing from saved document':
+              errorMessage = 'Registration failed - incomplete data. Please check all fields and try again.';
+              break;
+            default:
+              errorMessage = err.message || 'Unknown error occurred during registration.';
+          }
+
+          // Log failed registration
+          SimpleAuditLogger.logSecurityEvent(
+            'REGISTER', 
+            sanitizedEmail, 
+            { success: false, error: err.message, code: errorCode },
+            'HIGH'
+          );
+        }
+        
+        console.error('🎯 Final error message for user:', errorMessage);
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+        console.log('🏁 Registration process ended');
       }
       
-      setError(errorMessage);
     } finally {
-      setLoading(false);
+      // 🆕 Clear registration flag to re-enable auth listener
+      isRegistering.current = false;
+      console.log('🔓 Registration flag cleared - auth listener re-enabled');
     }
   };
 
