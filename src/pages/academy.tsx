@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import ClassCalendar from '../components/ClassCalendar';
 
 // ✅ FIXED: Use public folder paths instead of imports
 const BrendaWStudents = '/assets/img/academy/brendaWstudents.jpg';
@@ -194,6 +195,60 @@ const AcademyPage = () => {
                         borderRadius: '12px',
                         mb: { xs: 3, md: 0 },
                         ml: { md: 4 },
+                    }}
+                />
+            </Box>
+
+            {/* Class Schedule Section */}
+            <Box
+                sx={{
+                    backgroundColor: currentTheme.palette.background.default,
+                    color: currentTheme.palette.text.primary,
+                    borderTop: `5px solid ${currentTheme.palette.secondary.main}`,
+                    p: { xs: 3, md: 6 },
+                    textAlign: 'center',
+                }}
+            >
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+                        lineHeight: { xs: 1.4, sm: 1.4 },
+                        letterSpacing: '1px',
+                        color: currentTheme.palette.text.primary,
+                        textTransform: 'none',
+                        maxWidth: '900px',
+                        margin: '0 auto 2rem auto',
+                        fontFamily: currentTheme.typography.fontFamily,
+                    }}
+                >
+                    Class Schedule
+                </Typography>
+                <Typography 
+                    variant="body1" 
+                    sx={{ 
+                        maxWidth: '800px', 
+                        mx: 'auto', 
+                        lineHeight: 1.8,
+                        mb: 4,
+                        color: currentTheme.palette.text.secondary
+                    }}
+                >
+                    Join our comprehensive training program with classes designed for all skill levels. 
+                    From beginner-friendly sessions to advanced techniques, discover the perfect class for your martial arts journey.
+                </Typography>
+                
+                <ClassCalendar
+                    showInstructor={true}
+                    showCapacity={true}
+                    allowNavigation={true}
+                    onClassClick={(classData) => {
+                        console.log('Class clicked:', classData);
+                        // You can add modal logic here if needed
+                    }}
+                    onDateChange={(date) => {
+                        console.log('Week changed to:', date);
+                        // You can track week changes here if needed
                     }}
                 />
             </Box>
