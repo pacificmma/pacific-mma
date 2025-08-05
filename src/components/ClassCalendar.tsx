@@ -141,77 +141,177 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
     [weekStart, weekEnd]
   );
 
-  // 🔒 Security: Secure data fetching with proper error handling
-// 🔒 Security: Secure data fetching with proper error handling
-const fetchClassData = async (): Promise<void> => {
-  try {
-    setLoading(true);
-    setError(null);
+  // 🔒 Default values for fallback data
+  const getDefaultColor = (category?: string): string => {
+    const colorMap: { [key: string]: string } = {
+      'fitness': theme.palette.primary.main,
+      'yoga': theme.palette.secondary.main,
+      'cardio': theme.palette.error.main,
+      'strength': theme.palette.warning.main,
+      'dance': theme.palette.info.main,
+      'martial-arts': theme.palette.success.main,
+    };
+    return colorMap[category?.toLowerCase() || ''] || theme.palette.grey[600];
+  };
 
-    // 🔒 Security: Validate date range to prevent excessive queries
-    const daysDiff = Math.abs((weekEnd.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysDiff > 7) {
-      throw new Error('Invalid date range');
-    }
+  // 🔒 Security: Secure data fetching with proper error handling and data transformation
+  const fetchClassData = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    // 🔒 CHANGED: Only fetch from classInstances collection
-    console.log('🔍 Fetching data from classInstances collection...');
-    console.log('📅 Week range:', { weekStart, weekEnd });
+      // 🔒 Security: Validate date range to prevent excessive queries
+      const daysDiff = Math.abs((weekEnd.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysDiff > 7) {
+        throw new Error('Invalid date range');
+      }
 
-    const instancesQuery = query(
-      collection(db, 'classInstances'),
-      where('startTime', '>=', Timestamp.fromDate(weekStart)),
-      where('startTime', '<=', Timestamp.fromDate(weekEnd)),
-      orderBy('startTime', 'asc')
-    );
+      console.log('🔍 Fetching data from classInstances collection...');
+      console.log('📅 Week range:', { weekStart, weekEnd });
 
-    const instancesSnapshot = await getDocs(instancesQuery);
-    
-    console.log('📊 Raw Firestore snapshot:', instancesSnapshot);
-    console.log('📈 Number of documents found:', instancesSnapshot.docs.length);
+      // Fetch class instances for the current week
+      const instancesQuery = query(
+        collection(db, 'classInstances'),
+        where('startTime', '>=', Timestamp.fromDate(weekStart)),
+        where('startTime', '<=', Timestamp.fromDate(weekEnd)),
+        where('status', 'in', ['active', 'completed']), // Include both active and completed
+        orderBy('startTime', 'asc')
+      );
 
-    if (instancesSnapshot.empty) {
-      console.log('⚠️ No class instances found for this week');
-      setClassData([]);
-      return;
-    }
-
-    // 🔒 Process and log the raw data
-    const rawInstancesData = instancesSnapshot.docs.map(doc => {
-      const data = doc.data();
-      console.log('📋 Document ID:', doc.id);
-      console.log('📊 Raw document data:', data);
+      const instancesSnapshot = await getDocs(instancesQuery);
       
-      return {
-        id: doc.id,
-        ...data,
-        // Convert Firestore timestamps to Date objects for logging
-        startTime: data.startTime?.toDate(),
-        endTime: data.endTime?.toDate(),
-        createdAt: data.createdAt?.toDate(),
-        updatedAt: data.updatedAt?.toDate(),
-      };
-    });
+      console.log('📊 Raw Firestore snapshot:', instancesSnapshot);
+      console.log('📈 Number of documents found:', instancesSnapshot.docs.length);
 
-    console.log('🗂️ All processed instances data:', rawInstancesData);
+      if (instancesSnapshot.empty) {
+        console.log('⚠️ No class instances found for this week');
+        setClassData([]);
+        return;
+      }
 
-    // 🔒 For now, create minimal data structure to prevent component breaking
-    // Later we'll adapt the component based on the actual data structure
+      // 🔒 Process the raw instance data
+      const rawInstancesData = instancesSnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('📋 Document ID:', doc.id);
+        console.log('📊 Raw document data:', data);
+        
+        return {
+          id: doc.id,
+          ...data,
+          startTime: data.startTime?.toDate() || new Date(),
+          endTime: data.endTime?.toDate() || new Date(),
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        };
+      });
 
+      console.log('🗂️ All processed instances data:', rawInstancesData);
 
-    console.log('🎯 Temporary merged data for component:', rawInstancesData);
+      // 🔒 Extract unique class IDs to fetch class schedules
+      const classIds = Array.from(new Set(
+        rawInstancesData
+          .map(instance => instance.classId)
+          .filter(Boolean) // Remove any undefined/null values
+      ));
 
-    setClassData([]);
+      console.log('🎯 Unique class IDs to fetch:', classIds);
 
-  } catch (err) {
-    console.error('🚨 Calendar fetch error:', err);
-    setError(err instanceof Error ? err.message : 'Failed to load class data');
-  } finally {
-    setLoading(false);
-  }
-};
+      // Fetch class schedules for additional information
+      let schedulesMap = new Map<string, ClassSchedule>();
+      
+      if (classIds.length > 0) {
+        try {
+          const schedulesQuery = query(
+            collection(db, 'classSchedules'),
+            where('isActive', '==', true)
+          );
 
-  
+          const schedulesSnapshot = await getDocs(schedulesQuery);
+          
+          schedulesSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            const schedule: ClassSchedule = {
+              id: doc.id,
+              className: SecurityValidator.sanitizeInput(data.className || 'Unknown Class'),
+              description: SecurityValidator.sanitizeInput(data.description || ''),
+              instructorId: SecurityValidator.sanitizeInput(data.instructorId || ''),
+              instructorName: SecurityValidator.sanitizeInput(data.instructorName || 'Unknown Instructor'),
+              duration: Math.max(0, Math.min(480, parseInt(data.duration) || 60)),
+              difficulty: ['beginner', 'intermediate', 'advanced'].includes(data.difficulty) 
+                ? data.difficulty as 'beginner' | 'intermediate' | 'advanced'
+                : 'beginner',
+              category: SecurityValidator.sanitizeInput(data.category || 'General'),
+              maxCapacity: Math.max(1, Math.min(100, parseInt(data.maxCapacity) || 20)),
+              color: SecurityValidator.sanitizeInput(data.color || getDefaultColor(data.category)),
+              isActive: Boolean(data.isActive),
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date(),
+            };
+            schedulesMap.set(doc.id, schedule);
+          });
+          
+          console.log('📚 Fetched schedules:', schedulesMap.size);
+        } catch (scheduleError) {
+          console.warn('⚠️ Failed to fetch class schedules, using instance data only:', scheduleError);
+        }
+      }
+
+      // 🔒 Merge instance data with schedule data
+      const mergedData: MergedClassData[] = rawInstancesData.map(instance => {
+        const schedule = schedulesMap.get(instance.classId);
+        
+        // 🔒 Security: Sanitize all data fields
+        const mergedClass: MergedClassData = {
+          id: SecurityValidator.sanitizeInput(instance.id),
+          className: SecurityValidator.sanitizeInput(
+            schedule?.className || 
+            instance.className || 
+            instance.name || 
+            'Unknown Class'
+          ),
+          instructorName: SecurityValidator.sanitizeInput(
+            schedule?.instructorName || 
+            instance.instructorName || 
+            'Unknown Instructor'
+          ),
+          startTime: instance.startTime instanceof Date ? instance.startTime : new Date(),
+          endTime: instance.endTime instanceof Date ? instance.endTime : new Date(),
+          category: SecurityValidator.sanitizeInput(
+            schedule?.category || 
+            instance.category || 
+            'General'
+          ),
+          difficulty: (schedule?.difficulty || instance.difficulty || 'beginner') as 'beginner' | 'intermediate' | 'advanced',
+          enrolledCount: Math.max(0, parseInt(instance.enrolledCount) || 0),
+          capacity: Math.max(1, parseInt(schedule?.maxCapacity || instance.capacity || 20)),
+          color: SecurityValidator.sanitizeInput(
+            schedule?.color || 
+            instance.color || 
+            getDefaultColor(schedule?.category || instance.category)
+          ),
+          location: SecurityValidator.sanitizeInput(instance.location || 'Main Studio'),
+          status: (instance.status || 'active') as 'active' | 'cancelled' | 'completed',
+        };
+
+        return mergedClass;
+      });
+
+      console.log('🎯 Final merged data for component:', mergedData);
+
+      // 🔒 Set the processed data to state
+      setClassData(rawInstancesData);
+
+    } catch (err) {
+      console.error('🚨 Calendar fetch error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load class data';
+      setError(errorMessage);
+      
+      // Set empty data on error to prevent undefined issues
+      setClassData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Effect for data fetching
   useEffect(() => {
@@ -336,9 +436,24 @@ const fetchClassData = async (): Promise<void> => {
   // Error state
   if (error) {
     return (
-      <Alert severity="error" sx={{ my: 2 }}>
+      <Alert 
+        severity="error" 
+        sx={{ my: 2 }}
+        action={
+          <IconButton
+            color="inherit"
+            size="small"
+            onClick={fetchClassData}
+          >
+            <ChevronRight />
+          </IconButton>
+        }
+      >
         <Typography variant="body1">
           {error}
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 0.5 }}>
+          Click the arrow to retry loading.
         </Typography>
       </Alert>
     );
@@ -648,7 +763,7 @@ const fetchClassData = async (): Promise<void> => {
       )}
 
       {/* Empty state */}
-      {classData.length === 0 && (
+      {classData.length === 0 && !loading && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
