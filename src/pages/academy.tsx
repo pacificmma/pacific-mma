@@ -202,8 +202,8 @@ const AcademyPage = () => {
             {/* Class Schedule Section */}
             <Box
                 sx={{
-                    backgroundColor: currentTheme.palette.background.default,
-                    color: currentTheme.palette.text.primary,
+                    backgroundColor: currentTheme.palette.primary.main,
+                    color: currentTheme.palette.primary.contrastText, // Changed to contrastText for better visibility
                     borderTop: `5px solid ${currentTheme.palette.secondary.main}`,
                     p: { xs: 3, md: 6 },
                     textAlign: 'center',
@@ -215,7 +215,7 @@ const AcademyPage = () => {
                         fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
                         lineHeight: { xs: 1.4, sm: 1.4 },
                         letterSpacing: '1px',
-                        color: currentTheme.palette.text.primary,
+                        color: currentTheme.palette.primary.contrastText, // Changed to contrastText
                         textTransform: 'none',
                         maxWidth: '900px',
                         margin: '0 auto 2rem auto',
@@ -231,23 +231,30 @@ const AcademyPage = () => {
                         mx: 'auto', 
                         lineHeight: 1.8,
                         mb: 4,
-                        color: currentTheme.palette.text.secondary
+                        color: currentTheme.palette.primary.contrastText // Changed to contrastText
                     }}
                 >
                     Join our comprehensive training program with classes designed for all skill levels. 
                     From beginner-friendly sessions to advanced techniques, discover the perfect class for your martial arts journey.
                 </Typography>
-                
+            </Box>
+            
+            {/* Class Calendar with separate background */}
+            <Box
+                sx={{
+                    backgroundColor: currentTheme.palette.background.default,
+                    color: currentTheme.palette.text.primary,
+                    py: { xs: 3, md: 6 },
+                }}
+            >
                 <ClassCalendar
                     showInstructor={true}
                     showCapacity={true}
                     allowNavigation={true}
                     onClassClick={(classData) => {
-                        console.log('Class clicked:', classData);
                         // You can add modal logic here if needed
                     }}
                     onDateChange={(date) => {
-                        console.log('Week changed to:', date);
                         // You can track week changes here if needed
                     }}
                 />

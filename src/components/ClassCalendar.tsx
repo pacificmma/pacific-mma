@@ -27,49 +27,41 @@ import { Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  orderBy,
-  Timestamp 
+import {
+  collection,
+  query,
+  getDocs,
 } from 'firebase/firestore';
-import { db } from '../providers/fireBaseAuthProvider';
+import { db, useFirebaseAuth } from '../providers/fireBaseAuthProvider';
 import { SecurityValidator } from '../utils/security';
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  addWeeks,
+  subWeeks,
+  eachDayOfInterval,
+  isSameDay,
+} from 'date-fns';
 
-// 🔒 Security: Proper TypeScript interfaces
+// Proper TypeScript interfaces based on the Firestore document screenshot
 interface ClassInstance {
   id: string;
-  classId: string;
+  classtype: string;
+  name: string;
   instructorId: string;
   instructorName: string;
-  startTime: Date;
-  endTime: Date;
-  capacity: number;
-  enrolledCount: number;
-  status: 'active' | 'cancelled' | 'completed';
+  startTime: string; 
+  enddate: string;
+  date: string;
+  maxParticipants: number;
+  registeredParticipants: number;
+  status: 'scheduled' | 'cancelled' | 'completed';
   location: string;
   notes?: string;
-  createdAt: Date;
+  created: Date;
   updatedAt: Date;
-}
-
-interface ClassSchedule {
-  id: string;
-  className: string;
-  description: string;
-  instructorId: string;
-  instructorName: string;
-  duration: number; // minutes
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  category: string;
-  maxCapacity: number;
-  color: string; // for UI theming
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  color: string;
 }
 
 interface MergedClassData {
@@ -79,16 +71,14 @@ interface MergedClassData {
   startTime: Date;
   endTime: Date;
   category: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
   enrolledCount: number;
   capacity: number;
   color: string;
   location: string;
-  status: 'active' | 'cancelled' | 'completed';
+  status: 'scheduled' | 'cancelled' | 'completed';
 }
 
 interface ClassCalendarProps {
-  // Optional props for customization
   showInstructor?: boolean;
   showCapacity?: boolean;
   allowNavigation?: boolean;
@@ -105,14 +95,13 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { loading: authLoading } = useFirebaseAuth();
   
-  // State management
   const [currentWeek, setCurrentWeek] = useState<Date>(initialDate);
   const [classData, setClassData] = useState<MergedClassData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔒 Security: Input sanitization
   const sanitizeDate = (date: Date): Date => {
     try {
       const sanitized = new Date(date);
@@ -125,23 +114,21 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
     }
   };
 
-  // Calculate week bounds
-  const weekStart = useMemo(() => 
-    startOfWeek(sanitizeDate(currentWeek), { weekStartsOn: 1 }), 
-    [currentWeek]
-  );
-  
-  const weekEnd = useMemo(() => 
-    endOfWeek(sanitizeDate(currentWeek), { weekStartsOn: 1 }), 
+  const weekStart = useMemo(
+    () => startOfWeek(sanitizeDate(currentWeek), { weekStartsOn: 1 }),
     [currentWeek]
   );
 
-  const weekDays = useMemo(() => 
-    eachDayOfInterval({ start: weekStart, end: weekEnd }), 
+  const weekEnd = useMemo(
+    () => endOfWeek(sanitizeDate(currentWeek), { weekStartsOn: 1 }),
+    [currentWeek]
+  );
+
+  const weekDays = useMemo(
+    () => eachDayOfInterval({ start: weekStart, end: weekEnd }),
     [weekStart, weekEnd]
   );
 
-  // 🔒 Default values for fallback data
   const getDefaultColor = (category?: string): string => {
     const colorMap: { [key: string]: string } = {
       'fitness': theme.palette.primary.main,
@@ -154,202 +141,109 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
     return colorMap[category?.toLowerCase() || ''] || theme.palette.grey[600];
   };
 
-  // 🔒 Security: Secure data fetching with proper error handling and data transformation
   const fetchClassData = async (): Promise<void> => {
+    if (authLoading) {
+        setLoading(true); 
+        return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-
-      // 🔒 Security: Validate date range to prevent excessive queries
+      
       const daysDiff = Math.abs((weekEnd.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
       if (daysDiff > 7) {
         throw new Error('Invalid date range');
       }
-
-      console.log('🔍 Fetching data from classInstances collection...');
-      console.log('📅 Week range:', { weekStart, weekEnd });
-
-      // Fetch class instances for the current week
+      
       const instancesQuery = query(
         collection(db, 'classInstances'),
-        where('startTime', '>=', Timestamp.fromDate(weekStart)),
-        where('startTime', '<=', Timestamp.fromDate(weekEnd)),
-        where('status', 'in', ['active', 'completed']), // Include both active and completed
-        orderBy('startTime', 'asc')
       );
 
       const instancesSnapshot = await getDocs(instancesQuery);
-      
-      console.log('📊 Raw Firestore snapshot:', instancesSnapshot);
-      console.log('📈 Number of documents found:', instancesSnapshot.docs.length);
 
       if (instancesSnapshot.empty) {
-        console.log('⚠️ No class instances found for this week');
         setClassData([]);
         return;
       }
-
-      // 🔒 Process the raw instance data
-      const rawInstancesData = instancesSnapshot.docs.map(doc => {
-        const data = doc.data();
-        console.log('📋 Document ID:', doc.id);
-        console.log('📊 Raw document data:', data);
-        
-        return {
-          id: doc.id,
-          ...data,
-          startTime: data.startTime?.toDate() || new Date(),
-          endTime: data.endTime?.toDate() || new Date(),
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date(),
-        };
-      });
-
-      console.log('🗂️ All processed instances data:', rawInstancesData);
-
-      // 🔒 Extract unique class IDs to fetch class schedules
-      const classIds = Array.from(new Set(
-        rawInstancesData
-          .map(instance => instance.classId)
-          .filter(Boolean) // Remove any undefined/null values
-      ));
-
-      console.log('🎯 Unique class IDs to fetch:', classIds);
-
-      // Fetch class schedules for additional information
-      let schedulesMap = new Map<string, ClassSchedule>();
       
-      if (classIds.length > 0) {
-        try {
-          const schedulesQuery = query(
-            collection(db, 'classSchedules'),
-            where('isActive', '==', true)
-          );
-
-          const schedulesSnapshot = await getDocs(schedulesQuery);
-          
-          schedulesSnapshot.docs.forEach(doc => {
-            const data = doc.data();
-            const schedule: ClassSchedule = {
-              id: doc.id,
-              className: SecurityValidator.sanitizeInput(data.className || 'Unknown Class'),
-              description: SecurityValidator.sanitizeInput(data.description || ''),
-              instructorId: SecurityValidator.sanitizeInput(data.instructorId || ''),
-              instructorName: SecurityValidator.sanitizeInput(data.instructorName || 'Unknown Instructor'),
-              duration: Math.max(0, Math.min(480, parseInt(data.duration) || 60)),
-              difficulty: ['beginner', 'intermediate', 'advanced'].includes(data.difficulty) 
-                ? data.difficulty as 'beginner' | 'intermediate' | 'advanced'
-                : 'beginner',
-              category: SecurityValidator.sanitizeInput(data.category || 'General'),
-              maxCapacity: Math.max(1, Math.min(100, parseInt(data.maxCapacity) || 20)),
-              color: SecurityValidator.sanitizeInput(data.color || getDefaultColor(data.category)),
-              isActive: Boolean(data.isActive),
-              createdAt: data.createdAt?.toDate() || new Date(),
-              updatedAt: data.updatedAt?.toDate() || new Date(),
-            };
-            schedulesMap.set(doc.id, schedule);
-          });
-          
-          console.log('📚 Fetched schedules:', schedulesMap.size);
-        } catch (scheduleError) {
-          console.warn('⚠️ Failed to fetch class schedules, using instance data only:', scheduleError);
-        }
-      }
-
-      // 🔒 Merge instance data with schedule data
-      const mergedData: MergedClassData[] = rawInstancesData.map(instance => {
-        const schedule = schedulesMap.get(instance.classId);
+      const allClassInstances: MergedClassData[] = instancesSnapshot.docs.map((doc) => {
+        const data = doc.data();
         
-        // 🔒 Security: Sanitize all data fields
-        const mergedClass: MergedClassData = {
-          id: SecurityValidator.sanitizeInput(instance.id),
-          className: SecurityValidator.sanitizeInput(
-            schedule?.className || 
-            instance.className || 
-            instance.name || 
-            'Unknown Class'
-          ),
-          instructorName: SecurityValidator.sanitizeInput(
-            schedule?.instructorName || 
-            instance.instructorName || 
-            'Unknown Instructor'
-          ),
-          startTime: instance.startTime instanceof Date ? instance.startTime : new Date(),
-          endTime: instance.endTime instanceof Date ? instance.endTime : new Date(),
-          category: SecurityValidator.sanitizeInput(
-            schedule?.category || 
-            instance.category || 
-            'General'
-          ),
-          difficulty: (schedule?.difficulty || instance.difficulty || 'beginner') as 'beginner' | 'intermediate' | 'advanced',
-          enrolledCount: Math.max(0, parseInt(instance.enrolledCount) || 0),
-          capacity: Math.max(1, parseInt(schedule?.maxCapacity || instance.capacity || 20)),
-          color: SecurityValidator.sanitizeInput(
-            schedule?.color || 
-            instance.color || 
-            getDefaultColor(schedule?.category || instance.category)
-          ),
-          location: SecurityValidator.sanitizeInput(instance.location || 'Main Studio'),
-          status: (instance.status || 'active') as 'active' | 'cancelled' | 'completed',
-        };
+        let startTime = new Date();
+        let endTime = new Date();
+        try {
+          if (data.date && data.startTime) {
+            startTime = new Date(`${data.date}T${data.startTime}:00`);
+          }
+          if (data.date && data.enddate) {
+            endTime = new Date(`${data.date}T${data.enddate}:00`);
+          }
+        } catch (e) {
+          console.error("Date parsing error for:", data, e);
+        }
 
+        const mergedClass: MergedClassData = {
+          id: SecurityValidator.sanitizeInput(doc.id || ''),
+          className: SecurityValidator.sanitizeInput(data.name || 'Unknown Class'),
+          instructorName: SecurityValidator.sanitizeInput(data.instructorName || 'Unknown Instructor'),
+          startTime: startTime,
+          endTime: endTime,
+          category: SecurityValidator.sanitizeInput(data.classtype || 'General'),
+          enrolledCount: Math.max(0, Number(data.registeredParticipants) || 0),
+          capacity: Math.max(1, Number(data.maxParticipants) || 20),
+          color: SecurityValidator.sanitizeInput(data.color || getDefaultColor(data.classtype)),
+          location: SecurityValidator.sanitizeInput(data.location || 'Main Studio'),
+          status: ['scheduled', 'cancelled', 'completed'].includes(data.status as string)
+            ? (data.status as 'scheduled' | 'cancelled' | 'completed')
+            : 'scheduled',
+        };
+        
         return mergedClass;
       });
 
-      console.log('🎯 Final merged data for component:', mergedData);
-
-      // 🔒 Set the processed data to state
-      setClassData(rawInstancesData);
+      const filteredByWeek = allClassInstances.filter(item => {
+        const itemDate = item.startTime;
+        return isSameDay(itemDate, weekStart) || (itemDate >= weekStart && itemDate <= weekEnd);
+      });
+      
+      setClassData(filteredByWeek);
 
     } catch (err) {
       console.error('🚨 Calendar fetch error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load class data';
       setError(errorMessage);
-      
-      // Set empty data on error to prevent undefined issues
       setClassData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Effect for data fetching
   useEffect(() => {
-    fetchClassData();
-  }, [currentWeek]);
+    if (!authLoading) {
+      fetchClassData();
+    }
+  }, [currentWeek, authLoading]);
 
-  // Navigation handlers
   const goToPreviousWeek = (): void => {
     if (!allowNavigation) return;
-    setCurrentWeek(prev => subWeeks(prev, 1));
+    setCurrentWeek((prev) => subWeeks(prev, 1));
   };
 
   const goToNextWeek = (): void => {
     if (!allowNavigation) return;
-    setCurrentWeek(prev => addWeeks(prev, 1));
+    setCurrentWeek((prev) => addWeeks(prev, 1));
   };
 
-  // Get classes for a specific day
   const getClassesForDay = (day: Date): MergedClassData[] => {
     return classData
-      .filter(classItem => isSameDay(classItem.startTime, day))
+      .filter((classItem) => isSameDay(classItem.startTime, day))
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
   };
-
-  // Difficulty color mapping
-  const getDifficultyColor = (difficulty: string): string => {
-    switch (difficulty) {
-      case 'beginner': return theme.palette.success.main;
-      case 'intermediate': return theme.palette.warning.main;
-      case 'advanced': return theme.palette.error.main;
-      default: return theme.palette.grey[500];
-    }
-  };
-
-  // Class card component
-  const ClassCard: React.FC<{ classItem: MergedClassData; compact?: boolean }> = ({ 
-    classItem, 
-    compact = false 
+  
+  const ClassCard: React.FC<{ classItem: MergedClassData; compact?: boolean }> = ({
+    classItem,
+    compact = false,
   }) => (
     <Card
       component={motion.div}
@@ -364,35 +258,28 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
       }}
     >
       <CardContent sx={{ p: compact ? 1.5 : 2, '&:last-child': { pb: compact ? 1.5 : 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Typography 
-            variant={compact ? "body2" : "subtitle1"} 
+        <Box
+          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
+        >
+          <Typography
+            variant={compact ? 'body2' : 'subtitle1'}
             sx={{ fontWeight: 600, color: theme.palette.text.primary }}
           >
             {classItem.className}
           </Typography>
-          <Chip
-            label={classItem.difficulty}
-            size="small"
-            sx={{
-              backgroundColor: getDifficultyColor(classItem.difficulty),
-              color: 'white',
-              fontSize: '0.7rem',
-            }}
-          />
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-          <AccessTime sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.secondary }} />
-          <Typography variant="body2" color="text.secondary">
+          <AccessTime sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.primary }} />
+          <Typography variant="body2" color="text.primary">
             {format(classItem.startTime, 'HH:mm')} - {format(classItem.endTime, 'HH:mm')}
           </Typography>
         </Box>
 
         {showInstructor && (
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-            <Person sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.secondary }} />
-            <Typography variant="body2" color="text.secondary">
+            <Person sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.primary }} />
+            <Typography variant="body2" color="text.primary">
               {classItem.instructorName}
             </Typography>
           </Box>
@@ -400,19 +287,19 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
 
         {showCapacity && (
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-            <FitnessCenter sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.secondary }} />
-            <Typography variant="body2" color="text.secondary">
+            <FitnessCenter sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.primary }} />
+            <Typography variant="body2" color="text.primary">
               {classItem.enrolledCount}/{classItem.capacity} participants
             </Typography>
           </Box>
         )}
 
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            display: 'block', 
-            color: theme.palette.text.secondary,
-            mt: 0.5 
+        <Typography
+          variant="caption"
+          sx={{
+            display: 'block',
+            color: theme.palette.text.primary,
+            mt: 0.5,
           }}
         >
           {classItem.location} • {classItem.category}
@@ -421,10 +308,11 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
     </Card>
   );
 
-  // Loading state
-  if (loading) {
+  if (loading || authLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}
+      >
         <CircularProgress size={40} />
         <Typography variant="body1" sx={{ ml: 2 }}>
           Loading classes...
@@ -433,25 +321,18 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <Alert 
-        severity="error" 
+      <Alert
+        severity="error"
         sx={{ my: 2 }}
         action={
-          <IconButton
-            color="inherit"
-            size="small"
-            onClick={fetchClassData}
-          >
+          <IconButton color="inherit" size="small" onClick={fetchClassData}>
             <ChevronRight />
           </IconButton>
         }
       >
-        <Typography variant="body1">
-          {error}
-        </Typography>
+        <Typography variant="body1">{error}</Typography>
         <Typography variant="body2" sx={{ mt: 0.5 }}>
           Click the arrow to retry loading.
         </Typography>
@@ -460,23 +341,24 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', p: 2 }}>
-      {/* Header */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        mb: 3,
-        flexDirection: { xs: 'column', sm: 'row' },
-        gap: { xs: 2, sm: 0 }
-      }}>
-        <Typography 
-          variant="h4" 
+    <Box sx={{ width: '100%', maxWidth: 'none', mx: 'auto', p: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 2, sm: 0 },
+        }}
+      >
+        <Typography
+          variant="h4"
           component="h1"
-          sx={{ 
+          sx={{
             fontWeight: 700,
             color: theme.palette.text.primary,
-            textAlign: { xs: 'center', sm: 'left' }
+            textAlign: { xs: 'center', sm: 'left' },
           }}
         >
           Class Schedule
@@ -484,34 +366,34 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
 
         {allowNavigation && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <IconButton 
+            <IconButton
               onClick={goToPreviousWeek}
-              sx={{ 
+              sx={{
                 backgroundColor: theme.palette.action.hover,
-                '&:hover': { backgroundColor: theme.palette.action.selected }
+                '&:hover': { backgroundColor: theme.palette.action.selected },
               }}
             >
               <ChevronLeft />
             </IconButton>
-            
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mx: 2, 
+
+            <Typography
+              variant="h6"
+              sx={{
+                mx: 2,
                 minWidth: 200,
                 textAlign: 'center',
                 fontWeight: 500,
-                color: theme.palette.text.primary
+                color: theme.palette.text.primary,
               }}
             >
               {format(weekStart, 'MMM d')} - {format(weekEnd, 'd, yyyy')}
             </Typography>
-            
-            <IconButton 
+
+            <IconButton
               onClick={goToNextWeek}
-              sx={{ 
+              sx={{
                 backgroundColor: theme.palette.action.hover,
-                '&:hover': { backgroundColor: theme.palette.action.selected }
+                '&:hover': { backgroundColor: theme.palette.action.selected },
               }}
             >
               <ChevronRight />
@@ -522,15 +404,40 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* Desktop Calendar View */}
+      {/* Desktop view with horizontal scroll on smaller screens */}
       {!isMobile ? (
-        <Grid container spacing={2}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: theme.spacing(2),
+            overflowX: 'auto',
+            pb: 2, // Scrollbar görünürlüğü için dolgu
+            '&::-webkit-scrollbar': {
+              height: '8px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.grey[400],
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: theme.palette.grey[200],
+            },
+          }}
+        >
           {weekDays.map((day, index) => {
             const dayClasses = getClassesForDay(day);
             const isToday = isSameDay(day, new Date());
 
             return (
-              <Grid item xs={12} sm={6} md key={index}>
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minWidth: 250, // Sabit genişlik
+                  flexGrow: 1, // Günleri eşit genişlikte yapar
+                }}
+              >
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -538,36 +445,36 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                 >
                   <Card
                     sx={{
-                      minHeight: 400,
-                      backgroundColor: isToday 
-                        ? theme.palette.action.selected 
+                      height: 400, // Sabit yükseklik
+                      backgroundColor: isToday
+                        ? theme.palette.action.selected
                         : theme.palette.background.paper,
-                      border: isToday 
-                        ? `2px solid ${theme.palette.primary.main}` 
+                      border: isToday
+                        ? `2px solid ${theme.palette.primary.main}`
                         : `1px solid ${theme.palette.divider}`,
                     }}
                   >
-                    <CardContent>
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
+                    <CardContent sx={{ overflowY: 'auto', height: '100%' }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
                           mb: 2,
                           textAlign: 'center',
                           fontWeight: 600,
-                          color: isToday 
-                            ? theme.palette.primary.main 
-                            : theme.palette.text.primary
+                          color: isToday
+                            ? theme.palette.primary.main
+                            : theme.palette.text.primary,
                         }}
                       >
                         {format(day, 'EEEE')}
                         <br />
-                        <Typography 
-                          component="span" 
+                        <Typography
+                          component="span"
                           variant="body1"
-                          sx={{ 
-                            color: isToday 
-                              ? theme.palette.primary.main 
-                              : theme.palette.text.secondary
+                          sx={{
+                            color: isToday
+                              ? theme.palette.primary.main
+                              : theme.palette.text.primary,
                           }}
                         >
                           {format(day, 'MMM d')}
@@ -584,21 +491,18 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                               exit={{ opacity: 0, x: 20 }}
                               transition={{ delay: classIndex * 0.05 }}
                             >
-                              <ClassCard classItem={classItem} />
+                              <ClassCard classItem={classItem} compact />
                             </motion.div>
                           ))
                         ) : (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                          >
-                            <Typography 
-                              variant="body2" 
-                              color="text.secondary"
-                              sx={{ 
+                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                            <Typography
+                              variant="body2"
+                              color="text.primary"
+                              sx={{
                                 textAlign: 'center',
                                 py: 4,
-                                fontStyle: 'italic'
+                                fontStyle: 'italic',
                               }}
                             >
                               No classes scheduled
@@ -609,19 +513,18 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                     </CardContent>
                   </Card>
                 </motion.div>
-              </Grid>
+              </Box>
             );
           })}
-        </Grid>
+        </Box>
       ) : (
-        /* Mobile Carousel View */
         <Box sx={{ position: 'relative' }}>
           <Swiper
             modules={[Pagination, Navigation]}
             spaceBetween={16}
             slidesPerView={1.2}
             centeredSlides
-            pagination={{ 
+            pagination={{
               clickable: true,
               dynamicBullets: true,
             }}
@@ -655,66 +558,68 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                     <Card
                       sx={{
                         height: 450,
-                        backgroundColor: isToday 
-                          ? theme.palette.action.selected 
+                        backgroundColor: isToday
+                          ? theme.palette.action.selected
                           : theme.palette.background.paper,
-                        border: isToday 
-                          ? `2px solid ${theme.palette.primary.main}` 
+                        border: isToday
+                          ? `2px solid ${theme.palette.primary.main}`
                           : `1px solid ${theme.palette.divider}`,
                         overflow: 'auto',
                       }}
                     >
-                      <CardContent>
-                        <Typography 
-                          variant="h6" 
-                          sx={{ 
+                      <CardContent sx={{ overflowY: 'auto' }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
                             mb: 2,
                             textAlign: 'center',
                             fontWeight: 600,
-                            color: isToday 
-                              ? theme.palette.primary.main 
-                              : theme.palette.text.primary
+                            color: isToday
+                              ? theme.palette.primary.main
+                              : theme.palette.text.primary,
                           }}
                         >
                           {format(day, 'EEEE')}
                           <br />
-                          <Typography 
-                            component="span" 
+                          <Typography
+                            component="span"
                             variant="body1"
-                            sx={{ 
-                              color: isToday 
-                                ? theme.palette.primary.main 
-                                : theme.palette.text.secondary
+                            sx={{
+                              color: isToday
+                                ? theme.palette.primary.main
+                                : theme.palette.text.secondary,
                             }}
                           >
                             {format(day, 'MMM d')}
                           </Typography>
                         </Typography>
 
-                        {dayClasses.length > 0 ? (
-                          dayClasses.map((classItem, classIndex) => (
-                            <motion.div
-                              key={classItem.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: classIndex * 0.1 }}
+                        <AnimatePresence>
+                          {dayClasses.length > 0 ? (
+                            dayClasses.map((classItem, classIndex) => (
+                              <motion.div
+                                key={classItem.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: classIndex * 0.1 }}
+                              >
+                                <ClassCard classItem={classItem} compact />
+                              </motion.div>
+                            ))
+                          ) : (
+                            <Typography
+                              variant="body2"
+                              color="text.primary"
+                              sx={{
+                                textAlign: 'center',
+                                py: 4,
+                                fontStyle: 'italic',
+                              }}
                             >
-                              <ClassCard classItem={classItem} compact />
-                            </motion.div>
-                          ))
-                        ) : (
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary"
-                            sx={{ 
-                              textAlign: 'center',
-                              py: 4,
-                              fontStyle: 'italic'
-                            }}
-                          >
-                            No classes scheduled
-                          </Typography>
-                        )}
+                              No classes scheduled
+                            </Typography>
+                          )}
+                        </AnimatePresence>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -723,7 +628,6 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
             })}
           </Swiper>
 
-          {/* Custom Navigation Buttons */}
           <IconButton
             className="swiper-button-prev-custom"
             sx={{
@@ -762,25 +666,21 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
         </Box>
       )}
 
-      {/* Empty state */}
       {classData.length === 0 && !loading && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card sx={{ textAlign: 'center', py: 6 }}>
             <CardContent>
-              <FitnessCenter 
-                sx={{ 
-                  fontSize: 64, 
-                  color: theme.palette.text.secondary,
-                  mb: 2 
-                }} 
+              <FitnessCenter
+                sx={{
+                  fontSize: 64,
+                  color: theme.palette.text.primary,
+                  mb: 2,
+                }}
               />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
+              <Typography variant="h6" color="text.primary" gutterBottom>
                 No Classes This Week
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.primary">
                 Check back later for updated class schedules.
               </Typography>
             </CardContent>
