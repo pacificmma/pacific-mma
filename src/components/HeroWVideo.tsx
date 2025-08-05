@@ -110,6 +110,48 @@ const Hero = () => {
           for fighters worldwide.
         </Typography>
       </Box>
+      {/* SVG wave */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: -5,
+          left: 0,
+          width: '100%',
+          lineHeight: 0,
+          zIndex: 3,
+        }}
+      >
+        <svg
+          viewBox="0 0 1440 120"
+          width="100%"
+          height="120px"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          style={{ display: 'block' }}
+        >
+          <path
+            fill={theme.palette.background.paper}
+            d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z"
+          />
+          <path
+            fill="none"
+            stroke={theme.palette.secondary.main}
+            strokeWidth="8"
+            d="M0,60 C360,120 1080,120 1440,60"
+          />
+        </svg>
+      </Box>
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '5px',
+          background: theme.palette.background.paper,
+          zIndex: 2,
+        }}
+      />
     </Box>
   );
 };

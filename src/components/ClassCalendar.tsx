@@ -142,113 +142,76 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
   );
 
   // 🔒 Security: Secure data fetching with proper error handling
-  const fetchClassData = async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
+// 🔒 Security: Secure data fetching with proper error handling
+const fetchClassData = async (): Promise<void> => {
+  try {
+    setLoading(true);
+    setError(null);
 
-      // 🔒 Security: Validate date range to prevent excessive queries
-      const daysDiff = Math.abs((weekEnd.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysDiff > 7) {
-        throw new Error('Invalid date range');
-      }
-
-      // Fetch class instances for the week
-      const instancesQuery = query(
-        collection(db, 'classInstances'),
-        where('startTime', '>=', Timestamp.fromDate(weekStart)),
-        where('startTime', '<=', Timestamp.fromDate(weekEnd)),
-        where('status', '==', 'active'),
-        orderBy('startTime', 'asc')
-      );
-
-      const instancesSnapshot = await getDocs(instancesQuery);
-      
-      if (instancesSnapshot.empty) {
-        setClassData([]);
-        return;
-      }
-
-      // Extract unique class IDs to fetch schedules
-      const classIds = Array.from(new Set(
-        instancesSnapshot.docs.map(doc => {
-          const data = doc.data();
-          return SecurityValidator.sanitizeInput(data.classId);
-        })
-      ));
-
-      // Fetch class schedules
-      const schedulesQuery = query(
-        collection(db, 'classSchedules'),
-        where('isActive', '==', true)
-      );
-
-      const schedulesSnapshot = await getDocs(schedulesQuery);
-      
-      // Create lookup map for schedules
-      const schedulesMap = new Map<string, ClassSchedule>();
-      schedulesSnapshot.docs.forEach(doc => {
-        const data = doc.data();
-        
-        // 🔒 Security: Sanitize all input data
-        const schedule: ClassSchedule = {
-          id: SecurityValidator.sanitizeInput(doc.id),
-          className: SecurityValidator.sanitizeInput(data.className || ''),
-          description: SecurityValidator.sanitizeInput(data.description || ''),
-          instructorId: SecurityValidator.sanitizeInput(data.instructorId || ''),
-          instructorName: SecurityValidator.sanitizeInput(data.instructorName || ''),
-          duration: Math.max(0, Math.min(480, parseInt(data.duration) || 60)), // Max 8 hours
-          difficulty: ['beginner', 'intermediate', 'advanced'].includes(data.difficulty) 
-            ? data.difficulty : 'beginner',
-          category: SecurityValidator.sanitizeInput(data.category || ''),
-          maxCapacity: Math.max(1, Math.min(100, parseInt(data.maxCapacity) || 20)),
-          color: SecurityValidator.sanitizeInput(data.color || theme.palette.primary.main),
-          isActive: Boolean(data.isActive),
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date(),
-        };
-        
-        schedulesMap.set(doc.id, schedule);
-      });
-
-      // Merge instances with schedules
-      const mergedData: MergedClassData[] = instancesSnapshot.docs
-        .map(doc => {
-          const instanceData = doc.data();
-          const schedule = schedulesMap.get(instanceData.classId);
-          
-          if (!schedule) return null;
-
-          // 🔒 Security: Sanitize and validate all data
-          const merged: MergedClassData = {
-            id: SecurityValidator.sanitizeInput(doc.id),
-            className: schedule.className,
-            instructorName: schedule.instructorName,
-            startTime: instanceData.startTime?.toDate() || new Date(),
-            endTime: instanceData.endTime?.toDate() || new Date(),
-            category: schedule.category,
-            difficulty: schedule.difficulty,
-            enrolledCount: Math.max(0, parseInt(instanceData.enrolledCount) || 0),
-            capacity: schedule.maxCapacity,
-            color: schedule.color,
-            location: SecurityValidator.sanitizeInput(instanceData.location || ''),
-            status: ['active', 'cancelled', 'completed'].includes(instanceData.status) 
-              ? instanceData.status : 'active',
-          };
-
-          return merged;
-        })
-        .filter((item): item is MergedClassData => item !== null);
-
-      setClassData(mergedData);
-
-    } catch (err) {
-      console.error('🚨 Calendar fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load class data');
-    } finally {
-      setLoading(false);
+    // 🔒 Security: Validate date range to prevent excessive queries
+    const daysDiff = Math.abs((weekEnd.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysDiff > 7) {
+      throw new Error('Invalid date range');
     }
-  };
+
+    // 🔒 CHANGED: Only fetch from classInstances collection
+    console.log('🔍 Fetching data from classInstances collection...');
+    console.log('📅 Week range:', { weekStart, weekEnd });
+
+    const instancesQuery = query(
+      collection(db, 'classInstances'),
+      where('startTime', '>=', Timestamp.fromDate(weekStart)),
+      where('startTime', '<=', Timestamp.fromDate(weekEnd)),
+      orderBy('startTime', 'asc')
+    );
+
+    const instancesSnapshot = await getDocs(instancesQuery);
+    
+    console.log('📊 Raw Firestore snapshot:', instancesSnapshot);
+    console.log('📈 Number of documents found:', instancesSnapshot.docs.length);
+
+    if (instancesSnapshot.empty) {
+      console.log('⚠️ No class instances found for this week');
+      setClassData([]);
+      return;
+    }
+
+    // 🔒 Process and log the raw data
+    const rawInstancesData = instancesSnapshot.docs.map(doc => {
+      const data = doc.data();
+      console.log('📋 Document ID:', doc.id);
+      console.log('📊 Raw document data:', data);
+      
+      return {
+        id: doc.id,
+        ...data,
+        // Convert Firestore timestamps to Date objects for logging
+        startTime: data.startTime?.toDate(),
+        endTime: data.endTime?.toDate(),
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      };
+    });
+
+    console.log('🗂️ All processed instances data:', rawInstancesData);
+
+    // 🔒 For now, create minimal data structure to prevent component breaking
+    // Later we'll adapt the component based on the actual data structure
+
+
+    console.log('🎯 Temporary merged data for component:', rawInstancesData);
+
+    setClassData([]);
+
+  } catch (err) {
+    console.error('🚨 Calendar fetch error:', err);
+    setError(err instanceof Error ? err.message : 'Failed to load class data');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  
 
   // Effect for data fetching
   useEffect(() => {

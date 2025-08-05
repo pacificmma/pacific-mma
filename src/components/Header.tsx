@@ -1,4 +1,4 @@
-// src/components/Header.tsx - ORIGINAL DESIGN WITH FIREBASE AUTH INTEGRATION
+// src/components/Header.tsx - UPDATED LAYOUT WITH LOGO LEFT, MENU CENTER, BUTTON RIGHT
 import React, { useState, useEffect, useContext } from 'react';
 import {
   AppBar,
@@ -24,6 +24,7 @@ import { CartContext } from '../providers/cartProvider';
 import { useFirebaseAuth } from '../providers/fireBaseAuthProvider';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 
 const Header = () => {
   const theme = useTheme();
@@ -34,6 +35,7 @@ const Header = () => {
   const [anchorElCamps, setAnchorElCamps] = useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const cartContext = useContext(CartContext);
+  const Logo = '/assets/logo/pacific_mma_logo_circle.png';
 
   // Firebase Auth hook values
   const { user, loading, logout, showLoginModal, showSignUpModal } = useFirebaseAuth();
@@ -63,7 +65,7 @@ const Header = () => {
   // Firebase Auth operations
   const handleLogout = async () => {
     handleMenuCloseUser();
-    
+
     try {
       await logout();
       router.push('/');
@@ -101,45 +103,66 @@ const Header = () => {
           transition: 'background-color 0.3s ease',
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between', px: 2, minHeight: '80px' }}>
-          {isMobile && (
-            <IconButton 
-              edge="start" 
-              aria-label="menu" 
-              onClick={toggleDrawer} 
-              sx={{ color: theme.palette.text.secondary }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
+        <Toolbar
+          sx={{
+            justifyContent: 'space-between',
+            px: 2,
+            minHeight: '80px',
+          }}
+        >
+          {/* Left Section - Logo and Title */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Mobile Menu */}
+            {isMobile && (
+              <IconButton
+                edge="start"
+                aria-label="menu"
+                onClick={toggleDrawer}
+                sx={{
+                  color: theme.palette.text.secondary,
+                  mr: 1
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
 
-          {/* Logo/Site Title Link - ORIGINAL */}
-          <Link
-            href="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              textDecoration: 'none',
-              width: isMobile ? '100%' : 'auto',
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 'bold',
-                color: theme.palette.text.secondary,
-                ml: 2,
-                fontFamily: theme.typography.fontFamily,
+            {/* Logo and Site Title */}
+            <Link
+              href="/"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                textDecoration: 'none',
+                gap: '8px'
               }}
             >
-              Pacific MMA
-            </Typography>
-          </Link>
+              <Image
+                src={Logo}
+                alt="Pacific MMA Logo"
+                width={100}
+                height={100}
+                style={{
+                  objectFit: 'contain'
+                }}
+              />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 'bold',
+                  color: theme.palette.text.secondary,
+                  fontFamily: theme.typography.fontFamily,
+                }}
+              >
+                Pacific MMA
+              </Typography>
+            </Link>
+          </Box>
 
+          {/* Center Section - Navigation Menu */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {/* Home Button - ORIGINAL */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+              {/* Home Button */}
               <Button
                 onClick={() => router.push('/')}
                 sx={{
@@ -155,13 +178,13 @@ const Header = () => {
                 Home
               </Button>
 
-              {/* Camps Dropdown - ORIGINAL */}
+              {/* Camps Dropdown */}
               <Box>
                 <Button
                   onClick={handleMenuOpenCamps}
                   sx={{
-                    color: ['/camp', '/youth-camp'].includes(currentPath) 
-                      ? theme.palette.secondary.main 
+                    color: ['/camp', '/youth-camp'].includes(currentPath)
+                      ? theme.palette.secondary.main
                       : theme.palette.text.secondary,
                     fontWeight: theme.typography.button.fontWeight,
                     fontSize: theme.typography.button.fontSize,
@@ -187,8 +210,8 @@ const Header = () => {
                       router.push('/camp');
                     }}
                     sx={{
-                      color: currentPath === '/camp' 
-                        ? theme.palette.secondary.main 
+                      color: currentPath === '/camp'
+                        ? theme.palette.secondary.main
                         : theme.palette.text.primary,
                       fontWeight: theme.typography.button.fontWeight,
                       fontSize: theme.typography.button.fontSize,
@@ -203,8 +226,8 @@ const Header = () => {
                       router.push('/youth-camp');
                     }}
                     sx={{
-                      color: currentPath === '/youth-camp' 
-                        ? theme.palette.secondary.main 
+                      color: currentPath === '/youth-camp'
+                        ? theme.palette.secondary.main
                         : theme.palette.text.primary,
                       fontWeight: theme.typography.button.fontWeight,
                       fontSize: theme.typography.button.fontSize,
@@ -216,7 +239,7 @@ const Header = () => {
                 </Menu>
               </Box>
 
-              {/* Other Menu Items - ORIGINAL WITH TYPESCRIPT FIX */}
+              {/* Other Menu Items */}
               {menuItems
                 .filter((item) => !['Home', 'Camp', 'Youth Camp'].includes(item.label))
                 .map((item, index) => (
@@ -224,8 +247,8 @@ const Header = () => {
                     key={index}
                     onClick={() => router.push(item.link)}
                     sx={{
-                      color: currentPath === item.link 
-                        ? theme.palette.secondary.main 
+                      color: currentPath === item.link
+                        ? theme.palette.secondary.main
                         : theme.palette.text.secondary,
                       fontWeight: theme.typography.button.fontWeight,
                       fontSize: theme.typography.button.fontSize,
@@ -241,114 +264,119 @@ const Header = () => {
             </Box>
           )}
 
+          {/* Right Section - Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Shopping Cart - ORIGINAL */}
-            <IconButton
-              aria-label="cart"
-              onClick={() => router.push('/cart')}
-              sx={{ 
-                color: theme.palette.text.secondary, 
-                '&:hover': { color: theme.palette.secondary.main } 
-              }}
-            >
-              <Badge 
-                badgeContent={cartItemCount} 
-                color="error" 
-                invisible={cartItemCount === 0} 
-                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-              >
-                <ShoppingCartIcon />
-              </Badge>
-            </IconButton>
-
-            {/* User Authentication Section - ORIGINAL DESIGN WITH FIREBASE AUTH */}
-            {loading ? (
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                Loading...
-              </Typography>
-            ) : isAuthenticated ? (
+            {/* Shopping Cart (Currently Hidden) */}
+            {false && (
               <>
-                <Button
-                  onClick={handleMenuOpenUser}
-                  endIcon={<ArrowDropDownIcon />}
-                  sx={{ 
-                    color: theme.palette.text.secondary, 
-                    fontWeight: 'bold',
-                    textTransform: 'none',
+                <IconButton
+                  aria-label="cart"
+                  onClick={() => router.push('/cart')}
+                  sx={{
+                    color: theme.palette.text.secondary,
                     '&:hover': { color: theme.palette.secondary.main }
                   }}
                 >
-                  {getUserDisplayName()}
-                </Button>
-                <Menu
-                  anchorEl={anchorElUser}
-                  open={Boolean(anchorElUser)}
-                  onClose={handleMenuCloseUser}
-                  MenuListProps={{ onMouseLeave: handleMenuCloseUser }}
-                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      handleMenuCloseUser();
-                      router.push('/profile');
-                    }}
-                    sx={{
-                      color: currentPath === '/profile' 
-                        ? theme.palette.secondary.main 
-                        : theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
+                  <Badge
+                    badgeContent={cartItemCount}
+                    color="error"
+                    invisible={cartItemCount === 0}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
                   >
-                    Profile
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => {
-                      handleMenuCloseUser();
-                      router.push('/orders');
-                    }}
-                    sx={{
-                      color: currentPath === '/orders' 
-                        ? theme.palette.secondary.main 
-                        : theme.palette.text.primary,
-                      fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
-                      '&:hover': { color: theme.palette.secondary.main },
-                    }}
-                  >
-                    Orders
-                  </MenuItem>
-                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                </Menu>
-              </>
-            ) : (
-              <>
-                {/* Account Circle Icon for Login/Signup - ORIGINAL */}
-                <IconButton
-                  onClick={handleMenuOpenUser}
-                  sx={{ 
-                    color: theme.palette.text.secondary, 
-                    '&:hover': { color: theme.palette.secondary.main } 
-                  }}
-                >
-                  <AccountCircle />
+                    <ShoppingCartIcon />
+                  </Badge>
                 </IconButton>
-                <Menu
-                  anchorEl={anchorElUser}
-                  open={Boolean(anchorElUser)}
-                  onClose={handleMenuCloseUser}
-                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                >
-                  <MenuItem onClick={handleLogin}>Login</MenuItem>
-                  <MenuItem onClick={handleSignUp}>Sign Up</MenuItem>
-                </Menu>
+
+                {/* User Authentication Section */}
+                {loading ? (
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                    Loading...
+                  </Typography>
+                ) : isAuthenticated ? (
+                  <>
+                    <Button
+                      onClick={handleMenuOpenUser}
+                      endIcon={<ArrowDropDownIcon />}
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        '&:hover': { color: theme.palette.secondary.main }
+                      }}
+                    >
+                      {getUserDisplayName()}
+                    </Button>
+                    <Menu
+                      anchorEl={anchorElUser}
+                      open={Boolean(anchorElUser)}
+                      onClose={handleMenuCloseUser}
+                      MenuListProps={{ onMouseLeave: handleMenuCloseUser }}
+                      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          handleMenuCloseUser();
+                          router.push('/profile');
+                        }}
+                        sx={{
+                          color: currentPath === '/profile'
+                            ? theme.palette.secondary.main
+                            : theme.palette.text.primary,
+                          fontWeight: theme.typography.button.fontWeight,
+                          fontSize: theme.typography.button.fontSize,
+                          '&:hover': { color: theme.palette.secondary.main },
+                        }}
+                      >
+                        Profile
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          handleMenuCloseUser();
+                          router.push('/orders');
+                        }}
+                        sx={{
+                          color: currentPath === '/orders'
+                            ? theme.palette.secondary.main
+                            : theme.palette.text.primary,
+                          fontWeight: theme.typography.button.fontWeight,
+                          fontSize: theme.typography.button.fontSize,
+                          '&:hover': { color: theme.palette.secondary.main },
+                        }}
+                      >
+                        Orders
+                      </MenuItem>
+                      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                    </Menu>
+                  </>
+                ) : (
+                  <>
+                    {/* Account Circle Icon for Login/Signup */}
+                    <IconButton
+                      onClick={handleMenuOpenUser}
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        '&:hover': { color: theme.palette.secondary.main }
+                      }}
+                    >
+                      <AccountCircle />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorElUser}
+                      open={Boolean(anchorElUser)}
+                      onClose={handleMenuCloseUser}
+                      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                      <MenuItem onClick={handleLogin}>Login</MenuItem>
+                      <MenuItem onClick={handleSignUp}>Sign Up</MenuItem>
+                    </Menu>
+                  </>
+                )}
               </>
             )}
 
-            {/* Book Now Button - ORIGINAL */}
+            {/* Book Now Button */}
             <Button
               variant="contained"
               onClick={() => router.push('/book')}
@@ -369,7 +397,7 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Mobile Drawer - ORIGINAL */}
+      {/* Mobile Drawer */}
       <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer}>
         <HamburgerMenu toggleDrawer={toggleDrawer} />
       </Drawer>

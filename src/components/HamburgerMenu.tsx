@@ -8,7 +8,7 @@ import Twitter from '@mui/icons-material/Twitter';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import menuItems from '../utils/menuItems.json';
 import { useRouter } from 'next/router';
-const logo = '/assets/logo/pacific_mma_logo.jpg';
+const logo = '/assets/logo/pacific_mma_logo_circle.png';
 
 type HamburgerMenuProps = {
   toggleDrawer: () => void;
