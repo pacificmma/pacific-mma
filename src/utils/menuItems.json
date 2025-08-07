@@ -2,7 +2,7 @@
     { "label": "Home", "link": "/" },
     { "label": "Academy", "link": "/academy" },
     {"label": "Gear", "link": "/gear"},
-    { "label": "Who we are", "link": "/whoweare" },
+    { "label": "About Us", "link": "/about-us" },
     { "label": "Services", "link": "/services" },
     { "label": "Contact", "link": "/contact" }
   ]

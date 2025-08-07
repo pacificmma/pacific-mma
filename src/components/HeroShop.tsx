@@ -67,7 +67,7 @@ const HeroShop = () => {
             fontFamily: theme.typography.fontFamily,
           }}
         >
-          Shop Gear
+          Fightwear
         </Typography>
 
         <Typography
@@ -81,7 +81,7 @@ const HeroShop = () => {
             textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
           }}
         >
-          Visit our shop to explore our collection of apparel (Gi, NoGi) and equipment for mixed martial arts. Pacific MMA combines high-quality materials with beautiful and functional aesthetics.
+          Brazilian Jiu-Jitsu (Gi and No-Gi), Wrestling, Judo, Muay Thai, and Boxing. At PACIFIC MMA, we blend top-tier materials with elegant, functional design—engineered for peak performance, crafted for durability and style.
         </Typography>
 
         <Box

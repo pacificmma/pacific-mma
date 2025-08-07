@@ -120,10 +120,28 @@ const HeroWPartners = () => {
           sx={{
             flex: 1,
             display: 'flex',
+            flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
           }}
         >
+          {/* Headline above left image */}
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+              lineHeight: { xs: 1.4, sm: 1.4 },
+              letterSpacing: '1px',
+              color: theme.palette.text.primary,
+              textTransform: 'none',
+              fontFamily: theme.typography.fontFamily,
+              textAlign: 'center',
+              mb: 2,
+            }}
+          >
+            Train With The Best
+          </Typography>
+          
           <Box
             ref={imageRef}
             component="img"
@@ -147,21 +165,6 @@ const HeroWPartners = () => {
             justifyContent: 'flex-start',
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
-              lineHeight: { xs: 1.4, sm: 1.4 },
-              letterSpacing: '1px',
-              color: theme.palette.text.primary,
-              textTransform: 'none',
-              maxWidth: '900px',
-              margin: '0 auto',
-              fontFamily: theme.typography.fontFamily,
-            }}
-          >
-            Train With The Best
-          </Typography>
 
           {accordionData.map((accordion, index) => (
             <Accordion
@@ -224,7 +227,7 @@ const HeroWPartners = () => {
             '&:hover': { backgroundColor: theme.palette.secondary.dark, color: 'white' },
           }}
         >
-          Learn More
+          Book
         </Button>
       </Box>
     </Box>

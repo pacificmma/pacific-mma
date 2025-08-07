@@ -29,5 +29,5 @@ if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
 }
 
-// Export auth, db, and analytics
-export { auth, db, analytics };
+// Export auth, db, analytics, and app
+export { auth, db, analytics, app };

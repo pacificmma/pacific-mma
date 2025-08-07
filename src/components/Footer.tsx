@@ -1,7 +1,21 @@
 import React from 'react';
 import { Box, Typography, Button, TextField, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Instagram, Facebook, Twitter } from '@mui/icons-material';
+import { Instagram, YouTube } from '@mui/icons-material';
+import { SvgIcon } from '@mui/material';
+
+// TikTok ve X (Twitter) ikonları için custom SVG componentleri
+const TikTokIcon = () => (
+  <SvgIcon viewBox="0 0 24 24">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-.88-.05A6.33 6.33 0 0 0 5.16 20.5a6.33 6.33 0 0 0 10.86-4.43V7.83a8.24 8.24 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.2-.26z"/>
+  </SvgIcon>
+);
+
+const XIcon = () => (
+  <SvgIcon viewBox="0 0 24 24">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </SvgIcon>
+);
 
 const Footer = () => {
   const theme = useTheme();
@@ -72,20 +86,23 @@ const Footer = () => {
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
           <IconButton sx={{ color: theme.palette.primary.contrastText }}>
+            <TikTokIcon />
+          </IconButton>
+          <IconButton sx={{ color: theme.palette.primary.contrastText }}>
             <Instagram />
           </IconButton>
           <IconButton sx={{ color: theme.palette.primary.contrastText }}>
-            <Facebook />
+            <XIcon />
           </IconButton>
           <IconButton sx={{ color: theme.palette.primary.contrastText }}>
-            <Twitter />
+            <YouTube />
           </IconButton>
         </Box>
       </Box>
 
       <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'right' } }}>
         <Typography variant="h5" sx={{ fontWeight: theme.typography.h5.fontWeight, mb: 2, fontFamily: theme.typography.fontFamily }}>
-          Pacific MMA
+          PACIFIC MMA
         </Typography>
         <Typography variant="body2" sx={{ mb: 1 }}>
           1265A Fairview Avenue <br />
@@ -93,13 +110,13 @@ const Footer = () => {
         </Typography>
         <Typography
           variant="body2"
-          sx={{ mb: 1, textDecoration: 'underline', cursor: 'pointer', color: theme.palette.secondary.main }}
+          sx={{ mb: 1, textDecoration: 'underline', cursor: 'pointer', color: theme.palette.secondary.main, fontWeight: 'bold' }}
         >
           info@pacificmma.com
         </Typography>
         <Typography
           variant="body2"
-          sx={{ textDecoration: 'underline', cursor: 'pointer', color: theme.palette.secondary.main }}
+          sx={{ textDecoration: 'underline', cursor: 'pointer', color: theme.palette.secondary.main, fontWeight: 'bold' }}
         >
           (555) 555-5555
         </Typography>

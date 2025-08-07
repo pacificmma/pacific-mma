@@ -249,7 +249,7 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
       component={motion.div}
       whileHover={{ scale: 1.02 }}
       sx={{
-        mb: compact ? 1 : 1.5,
+        mb: compact ? 1.5 : 2,
         borderLeft: `4px solid ${classItem.color}`,
         backgroundColor: theme.palette.background.paper,
         '&:hover': {
@@ -257,65 +257,84 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
         },
       }}
     >
-      <CardContent sx={{ p: compact ? 1.5 : 2, '&:last-child': { pb: compact ? 1.5 : 2 } }}>
+      <CardContent sx={{ p: compact ? 2 : 2.5, '&:last-child': { pb: compact ? 2 : 2.5 } }}>
         <Box
-          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
+          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}
         >
           <Typography
-            variant={compact ? 'body2' : 'subtitle1'}
-            sx={{ fontWeight: 600, color: theme.palette.text.primary }}
+            variant={compact ? 'body2' : 'subtitle2'}
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+              lineHeight: 1.2,
+            }}
           >
             {classItem.className}
           </Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-          <AccessTime sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.primary }} />
-          <Typography variant="body2" color="text.primary">
-            {format(classItem.startTime, 'HH:mm')} - {format(classItem.endTime, 'HH:mm')}
-          </Typography>
+          
+          <Chip
+            label={classItem.status}
+            size="small"
+            sx={{
+              fontSize: '0.7rem',
+              height: 20,
+              backgroundColor: 
+                classItem.status === 'scheduled' ? theme.palette.success.light :
+                classItem.status === 'cancelled' ? theme.palette.error.light :
+                theme.palette.grey.A200,
+              color: 
+                classItem.status === 'scheduled' ? theme.palette.success.contrastText :
+                classItem.status === 'cancelled' ? theme.palette.error.contrastText :
+                theme.palette.text.primary,
+            }}
+          />
         </Box>
 
         {showInstructor && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Person sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.primary }} />
-            <Typography variant="body2" color="text.primary">
+            <Typography variant="caption" color="text.primary">
               {classItem.instructorName}
             </Typography>
           </Box>
         )}
 
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <AccessTime sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.primary }} />
+          <Typography variant="caption" color="text.primary">
+            {format(classItem.startTime, 'HH:mm')} - {format(classItem.endTime, 'HH:mm')}
+          </Typography>
+        </Box>
+
         {showCapacity && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-            <FitnessCenter sx={{ fontSize: 16, mr: 0.5, color: theme.palette.text.primary }} />
-            <Typography variant="body2" color="text.primary">
-              {classItem.enrolledCount}/{classItem.capacity} participants
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+            <Typography variant="caption" color="text.primary">
+              📍 {classItem.location}
+            </Typography>
+            <Typography variant="caption" color="text.primary">
+              {classItem.enrolledCount}/{classItem.capacity}
             </Typography>
           </Box>
         )}
-
-        <Typography
-          variant="caption"
-          sx={{
-            display: 'block',
-            color: theme.palette.text.primary,
-            mt: 0.5,
-          }}
-        >
-          {classItem.location} • {classItem.category}
-        </Typography>
       </CardContent>
     </Card>
   );
 
-  if (loading || authLoading) {
+  if (loading) {
     return (
       <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 400,
+          gap: 2,
+        }}
       >
-        <CircularProgress size={40} />
-        <Typography variant="body1" sx={{ ml: 2 }}>
-          Loading classes...
+        <CircularProgress size={48} />
+        <Typography variant="body1" color="text.secondary">
+          Loading class schedule...
         </Typography>
       </Box>
     );
@@ -323,25 +342,19 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
 
   if (error) {
     return (
-      <Alert
-        severity="error"
-        sx={{ my: 2 }}
-        action={
-          <IconButton color="inherit" size="small" onClick={fetchClassData}>
-            <ChevronRight />
-          </IconButton>
-        }
-      >
-        <Typography variant="body1">{error}</Typography>
-        <Typography variant="body2" sx={{ mt: 0.5 }}>
-          Click the arrow to retry loading.
+      <Alert severity="error" sx={{ mx: 'auto', maxWidth: 600 }}>
+        <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
+          Unable to Load Class Schedule
+        </Typography>
+        <Typography variant="body2">
+          {error}. Please refresh the page or try again later.
         </Typography>
       </Alert>
     );
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 'none', mx: 'auto', p: 2 }}>
+    <Box sx={{ width: '100%', maxWidth: 'none', mx: 'auto', p: { xs: 2, sm: 1 } }}>
       <Box
         sx={{
           display: 'flex',
@@ -404,24 +417,16 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* Desktop view with horizontal scroll on smaller screens */}
+      {/* Desktop view with wider layout */}
       {!isMobile ? (
         <Box
           sx={{
             display: 'flex',
-            gap: theme.spacing(2),
-            overflowX: 'auto',
-            pb: 2, // Scrollbar görünürlüğü için dolgu
-            '&::-webkit-scrollbar': {
-              height: '8px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: theme.palette.grey[400],
-              borderRadius: '4px',
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: theme.palette.grey[200],
-            },
+            gap: theme.spacing(1.5), // Reduced gap for better space utilization
+            width: '100%',
+            '& > *': {
+              flex: '1 1 0', // Equal flex distribution
+            }
           }}
         >
           {weekDays.map((day, index) => {
@@ -434,8 +439,8 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  minWidth: 250, // Sabit genişlik
-                  flexGrow: 1, // Günleri eşit genişlikte yapar
+                  flex: 1, // Take equal share of available width
+                  minWidth: 0, // Allow shrinking below content size
                 }}
               >
                 <motion.div
@@ -445,7 +450,7 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                 >
                   <Card
                     sx={{
-                      height: 400, // Sabit yükseklik
+                      height: 600, // Increased from 400px to 600px for longer cards
                       backgroundColor: isToday
                         ? theme.palette.action.selected
                         : theme.palette.background.paper,
@@ -454,11 +459,11 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                         : `1px solid ${theme.palette.divider}`,
                     }}
                   >
-                    <CardContent sx={{ overflowY: 'auto', height: '100%' }}>
+                    <CardContent sx={{ overflowY: 'auto', height: '100%', p: 3 }}>
                       <Typography
                         variant="h6"
                         sx={{
-                          mb: 2,
+                          mb: 3,
                           textAlign: 'center',
                           fontWeight: 600,
                           color: isToday
@@ -486,28 +491,25 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                           dayClasses.map((classItem, classIndex) => (
                             <motion.div
                               key={classItem.id}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: 20 }}
-                              transition={{ delay: classIndex * 0.05 }}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: classIndex * 0.1 }}
                             >
-                              <ClassCard classItem={classItem} compact />
+                              <ClassCard classItem={classItem} compact={false} />
                             </motion.div>
                           ))
                         ) : (
-                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                            <Typography
-                              variant="body2"
-                              color="text.primary"
-                              sx={{
-                                textAlign: 'center',
-                                py: 4,
-                                fontStyle: 'italic',
-                              }}
-                            >
-                              No classes scheduled
-                            </Typography>
-                          </motion.div>
+                          <Typography
+                            variant="body2"
+                            color="text.primary"
+                            sx={{
+                              textAlign: 'center',
+                              py: 6,
+                              fontStyle: 'italic',
+                            }}
+                          >
+                            No classes scheduled
+                          </Typography>
                         )}
                       </AnimatePresence>
                     </CardContent>
@@ -518,13 +520,13 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
           })}
         </Box>
       ) : (
+        // Mobile view remains unchanged
         <Box sx={{ position: 'relative' }}>
           <Swiper
             modules={[Pagination, Navigation]}
             spaceBetween={16}
-            slidesPerView={1.2}
-            centeredSlides
-            pagination={{
+            slidesPerView={1}
+            pagination={{ 
               clickable: true,
               dynamicBullets: true,
             }}
@@ -532,17 +534,7 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
               prevEl: '.swiper-button-prev-custom',
               nextEl: '.swiper-button-next-custom',
             }}
-            breakpoints={{
-              480: {
-                slidesPerView: 1.5,
-              },
-              600: {
-                slidesPerView: 2,
-              },
-            }}
-            style={{
-              paddingBottom: '50px',
-            }}
+            className="calendarSwiper"
           >
             {weekDays.map((day, index) => {
               const dayClasses = getClassesForDay(day);
@@ -557,7 +549,7 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                   >
                     <Card
                       sx={{
-                        height: 450,
+                        minHeight: 500,
                         backgroundColor: isToday
                           ? theme.palette.action.selected
                           : theme.palette.background.paper,

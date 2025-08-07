@@ -39,6 +39,7 @@ export const destinations = [
     Whether you're in prep for a tournament or need a mental and physical reset, this tour is a complete package of performance and paradise.`,
     gyms: ['American Top Team', 'Sanford MMA', 'MMA Masters'],
     disciplines: ['MMA', 'Boxing', 'BJJ', 'Wrestling'],
+    notifyMe: false,
   },
   {
     country: "Brazil",
@@ -71,6 +72,7 @@ export const destinations = [
     Whether you’re chasing mastery or memories, Rio gives you both.`,
     gyms: ['Gracie Humaitá', 'Nova União', 'GFTeam', 'Brazilian Fight Academy'],
     disciplines: ['BJJ', 'Muay Thai', 'Luta Livre', 'MMA'],
+    notifyMe: false,
   },
   {
     country: "California",
@@ -101,6 +103,7 @@ export const destinations = [
     Whether you're preparing for the cage or just seeking inspiration and transformation, this California tour lets you live the fighter’s dream while soaking in the sun, sea, and stories of the Golden State.`,
     gyms: ['Alliance MMA', 'Team Alpha Male', 'Athos HQ', 'CSW Academy', 'American Kickboxing Academy'],
     disciplines: ['BJJ', 'Boxing', 'Muay Thai', 'MMA'],
+    notifyMe: false,
   },  
   {
     country: "New York",
@@ -128,6 +131,7 @@ export const destinations = [
     Whether you’re a hobbyist looking for inspiration or a competitor craving next-level exposure, this camp gives you the chance to evolve inside and outside the cage. More than just a training trip, this is a deep, kinetic, and cultural dive into one of the world’s greatest cities — where everything moves fast and hits hard.`,
     gyms: ['American Top Team', 'Gracie Barra Jiu Jitsu', 'Rise Combat Sports'],
     disciplines: ['BJJ', 'Boxing', 'Wrestling'],
+    notifyMe: true,
   },
   {
     country: "Las Vegas",
@@ -154,6 +158,7 @@ export const destinations = [
     This camp is designed for those who want to train like a pro and live like a star. It’s about pushing your limits in the gym and embracing the bold, unapologetic spirit of Las Vegas. You’ll leave with sharper skills, a stronger mindset, and memories of a city that never holds back.`,
     gyms: ['UFC Gyms', 'Brazilian Top Team', 'CJ Judo'],
     disciplines: ['MMA', 'Boxing', 'Judo'],
+    notifyMe: false,
   },
   {
     country: "Japan",
@@ -181,6 +186,7 @@ export const destinations = [
     This journey is not just for those seeking to upgrade their skills — it’s for those who want to understand the deeper meanings of martial arts. It is for the fighter who knows that power comes not just from fists, but from stillness, tradition, and intention.`,
     gyms: ['Nakano Judo Academy', 'World Team USA', 'Tiger Muay Thai'],
     disciplines: ['Judo', 'Karate', 'Sambo'],
+    notifyMe: true,
   },
   {
     country: "Thailand",
@@ -208,5 +214,6 @@ export const destinations = [
     Thailand’s rhythm is ancient and honest. Here, you learn that fighting is about balance — between breath and power, fire and humility. You’ll leave not only as a more skilled fighter, but also as someone who has touched the essence of what it means to move with purpose, respect, and raw authenticity.`,
     gyms: ['Tiger Muay Thai', 'United Wrestling Academy', 'American Kickboxing Academy'],
     disciplines: ['Muay Thai', 'Wrestling', 'Kickboxing'],
+    notifyMe: false,
   },
 ];

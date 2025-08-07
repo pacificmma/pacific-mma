@@ -12,20 +12,20 @@ const photoHero3 = '/assets/img/home_page/photo-3-hero.jpg';
 const features = [
   {
     image: featureImage1,
-    title: 'Customized Trips',
-    description: 'We offer exceptional tours that combine top-notch martial arts training with unforgettable travel experiences. Our expertise in destinations, athletic training, and nutrition allows us to curate the best routes, training sessions, meals, and fun activities. We handle everything, allowing you to enjoy your adventures and focus on your training.',
+    title: 'The Ultimate Training Camp, Redefined',
+    description: 'Step into a world where ancient warrior traditions meet modern combat excellence. This isn’t just training abroad—it’s a transformative odyssey designed to forge champions. From sunrise beach sessions to sparring alongside UFC legends, every moment is orchestrated for your evolution. We handle the complete journey: exclusive gym access, luxury accommodations, performance nutrition, world-class recovery, and cultural immersion. You bring the warrior spirit. We provide everything else.',
     background: photoHero1,
   },
   {
     image: featureImage2,
-    title: 'Best MMA Network',
-    description: 'Our global trainer network includes top dojos, mixed martial arts studios, schools, and gyms, all recognized for their excellence in their respective disciplines and services. We offer MMA fighters access to a diverse and exclusive network of academies specializing in MMA, striking, and grappling.',
+    title: 'Train with the Legends',
+    description: 'Our exclusive partnerships unlock doors that money alone can’t open. Train where champions are made—from Hawaii’s legendary camps to Vegas’s UFC Performance Institute. This isn’t tourism; it’s initiation into the global fight family. Learn directly from world champions, roll with black belt professors, and gain techniques passed down through generations. Each location offers its own martial arts lineage, creating a diverse mastery that transforms good fighters into complete warriors.',
     background: photoHero2,
   },
   {
     image: featureImage3,
-    title: '24/7 Travel Assistance',
-    description: "Wherever you go, our team or our partners will be available to assist you throughout the day as needed. Please let us know what you require, and we will address it promptly. Whether it's an emergency, an issue with your accommodation or car rental, or a request for a restaurant or club reservation, we are here to help.",
+    title: 'Seamless Support, Around the Clock',
+    description: "Your dedicated concierge team moves like your corner crew—always there, never in the way. From private jet transfers to securing impossible restaurant reservations, from emergency medical support to capturing your journey on film, we anticipate every need. Our global network of fixers, trainers, and local insiders ensures you experience each destination like a champion, not a tourist. Focus on your transformation. We’ll handle the rest, 24/7.",
     background: photoHero3,
   },
 ];
@@ -70,12 +70,22 @@ const HeroWServices = () => {
             letterSpacing: '1px',
             color: theme.palette.primary.contrastText,
             textTransform: 'none',
-            maxWidth: '800px', // Reduced max width
+            maxWidth: '1140px', // Reduced max width
             margin: '0 auto',
             fontFamily: theme.typography.fontFamily,
           }}
         >
-          Travel The World & Train Martial Arts
+          We craft unparalleled{' '}
+          <Box
+            component="span"
+            sx={{
+              color: theme.palette.secondary.main,
+              fontWeight: 'bold',
+            }}
+          >
+            Mixed Martial Arts (MMA)
+          </Box>{' '}
+          training and travel experiences for fighters around the globe.
         </Typography>
       </Box>
 
@@ -107,30 +117,18 @@ const HeroWServices = () => {
           >
             {/* Görsel */}
             <Box
-              component={!isLargeScreen ? 'div' : motion.div}
-              onMouseEnter={!isLargeScreen ? undefined : () => setHoveredIndex(i)}
-              onMouseLeave={!isLargeScreen ? undefined : () => setHoveredIndex(null)}
-              animate={!isLargeScreen ? {} : { scale: hoveredIndex === i ? 1.05 : 1 }}
-              transition={!isLargeScreen ? {} : { duration: 0.3, ease: 'easeInOut' }}
               sx={{
                 width: '100%',
-                height: { xs: 'auto', sm: 'auto', md: '400px', lg: '450px' },
-                aspectRatio: { xs: '1 / 1', md: '3 / 4' },
+                height: { xs: 'auto', sm: 'auto', md: '650px', lg: '700px' },
+                aspectRatio: { xs: '1 / 1', md: '3 / 5' },
                 borderRadius: { xs: '10px', md: '12px' },
                 position: 'relative',
-                backgroundImage: !isLargeScreen
-                  ? `url(${feature.image})`
-                  : hoveredIndex !== null
-                    ? `url(${features[hoveredIndex].background})`
-                    : `url(${feature.image})`,
-                backgroundSize: !isLargeScreen ? 'cover' : hoveredIndex !== null ? '300% 100%' : 'cover',
-                backgroundPosition: !isLargeScreen ? 'center' : hoveredIndex !== null ? `${i * 50}% center` : 'center',
+                backgroundImage: `url(${feature.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 overflow: 'hidden',
-                cursor: !isLargeScreen ? 'default' : 'pointer',
-                transition: !isLargeScreen
-                  ? 'none'
-                  : 'background-image 0.5s ease-in-out, background-position 0.5s ease-in-out',
+                cursor: 'default',
                 p: { xs: 0, md: 2 },
                 boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
               }}
@@ -151,7 +149,11 @@ const HeroWServices = () => {
                   textAlign: 'center',
                   borderBottomLeftRadius: { xs: '10px', md: '12px' },
                   borderBottomRightRadius: { xs: '10px', md: '12px' },
-                  height: { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto' }, // Height for desktop version
+                  height: { xs: 'auto', sm: 'auto', md: '350px', lg: '380px' }, // Fixed height for all cards
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
                 <Typography
@@ -164,7 +166,7 @@ const HeroWServices = () => {
                     fontSize: {
                       sm: '1.1rem',
                       md: '1.1rem',
-                      lg: '1.2rem'
+                      lg: '1.1rem'
                     },
                     fontWeight: 'bold',
                     mb: { xs: 0.5, sm: 0.7, md: 1 }
@@ -179,10 +181,10 @@ const HeroWServices = () => {
                     textAlign: 'center',
                     fontFamily: theme.typography.fontFamily,
                     fontSize: {
-                      xs: '0.75rem',
-                      sm: '0.8rem',
-                      md: '0.85rem',
-                      lg: '0.9rem'
+                      xs: '0.85rem',
+                      sm: '0.95rem',
+                      md: '1rem',
+                      lg: '1.1rem'
                     },
                     display: '-webkit-box',
                     WebkitBoxOrient: 'vertical',

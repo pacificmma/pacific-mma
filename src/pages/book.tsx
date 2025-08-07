@@ -156,7 +156,13 @@ const BookingPage = () => {
                 {destinations.map((dest, index) => (
                   <Grid item xs={12} sm={6} md={4} key={index}>
                     <Box
-                      onClick={dest.country === 'Custom Experience' ? handleCustomTripClick : undefined}
+                      onClick={() => {
+                        if (dest.country === 'Custom Experience') {
+                          handleCustomTripClick();
+                        } else {
+                          window.location.href = `/destination/${dest.country.toLowerCase().replace(/\s+/g, '-')}`;
+                        }
+                      }}
                       sx={{
                         width: '100%',
                         height: { xs: '300px', sm: '350px', md: '440px' },
@@ -243,13 +249,14 @@ const BookingPage = () => {
                         </Box>
                         
                         <Button
-                          component={dest.country !== 'Custom Experience' ? Link : 'button'}
-                          href={
-                            dest.country !== 'Custom Experience'
-                              ? `/destination/${dest.country.toLowerCase().replace(/\s+/g, '-')}`
-                              : undefined
-                          }
-                          onClick={dest.country === 'Custom Experience' ? handleCustomTripClick : undefined}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Parent click event'ini durdur
+                            if (dest.country === 'Custom Experience') {
+                              handleCustomTripClick();
+                            } else {
+                              window.location.href = `/destination/${dest.country.toLowerCase().replace(/\s+/g, '-')}`;
+                            }
+                          }}
                           variant="contained"
                           sx={{
                             mt: 'auto', // Alt tarafa ittir

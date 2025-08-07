@@ -6,12 +6,19 @@ import {
   Button,
   Snackbar,
   Alert,
-  useTheme
+  useTheme,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent
 } from '@mui/material';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { app } from '../utils/fireBaseAuthProvider';
 
 const ContactUs = () => {
   const theme = useTheme();
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', message: '', topic: '' });
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -23,27 +30,36 @@ const ContactUs = () => {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
+  const handleSelectChange = (e: SelectChangeEvent) => {
+    setFormData({ ...formData, topic: e.target.value });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('https://23ail7r21i.execute-api.us-west-2.amazonaws.com/production/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      const functions = getFunctions(app);
+      const contactUsFunction = httpsCallable(functions, 'contactUs');
+      
+      const result = await contactUsFunction({
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        topic: formData.topic,
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        setSnackbarMessage('Thank you! We received your message.');
+      const data = result.data as any;
+      if (data.success) {
+        setSnackbarMessage('Thank you! We received your message and will respond within 24 hours.');
         setSnackbarSeverity('success');
-        setFormData({ name: '', email: '', message: '' });
+        setFormData({ name: '', email: '', message: '', topic: '' });
       } else {
-        setSnackbarMessage(`Error: ${data.message}`);
+        setSnackbarMessage(`Error: ${data.message || 'Failed to send message'}`);
         setSnackbarSeverity('error');
       }
-    } catch {
-      setSnackbarMessage('Something went wrong. Please try again later.');
+    } catch (error: any) {
+      console.error('Contact form error:', error);
+      setSnackbarMessage(error.message || 'Something went wrong. Please try again later.');
       setSnackbarSeverity('error');
     } finally {
       setSnackbarOpen(true);
@@ -109,7 +125,7 @@ const ContactUs = () => {
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            Do you have questions about our tours, academy, or products? Are you interested in
+            Do you have questions about our camps, academy, or products? Are you interested in
             joining our network of trainers and gyms? If so, please send us a message and our team will get back to you as soon as possible.
           </Typography>
         </Box>
@@ -127,6 +143,30 @@ const ContactUs = () => {
             mt: { xs: 4, md: 0 },
           }}
         >
+          {/* Topic Dropdown */}
+          <FormControl 
+            variant="standard" 
+            fullWidth 
+            required
+            sx={{
+              '& .MuiInput-underline:before': { borderBottom: `1px solid ${theme.palette.text.primary}` },
+              '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottom: `2px solid ${theme.palette.text.primary}` },
+              '& .MuiInput-underline:after': { borderBottom: `2px solid ${theme.palette.text.primary}` },
+            }}
+          >
+            <InputLabel sx={{ color: theme.palette.text.primary }}>Topic</InputLabel>
+            <Select
+              value={formData.topic}
+              onChange={handleSelectChange}
+              label="Topic"
+              sx={{ color: theme.palette.text.primary }}
+            >
+              <MenuItem value="Camps">Camps</MenuItem>
+              <MenuItem value="Academy">Academy</MenuItem>
+              <MenuItem value="Fightwear">Fightwear</MenuItem>
+            </Select>
+          </FormControl>
+
           {fields.map((field) => (
             <TextField
               key={field}

@@ -23,6 +23,7 @@
     "firebase": "^11.9.1",
     "framer-motion": "^11.11.9",
     "gsap": "^3.12.5",
+    "isomorphic-dompurify": "^2.26.0",
     "next": "15.4.2",
     "oidc-client-ts": "^3.2.1",
     "react": "19.1.0",
@@ -32,7 +33,8 @@
     "swiper": "^11.1.14",
     "tsparticles-engine": "^2.12.0",
     "tsparticles-slim": "^2.12.0",
-    "validator": "^13.15.15"
+    "validator": "^13.15.15",
+    "zod": "^4.0.14"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

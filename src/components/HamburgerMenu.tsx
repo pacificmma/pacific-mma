@@ -1,11 +1,23 @@
 // src/components/HamburgerMenu.tsx
 import { useState } from 'react';
-import { Box, Typography, IconButton, Button, useTheme, Collapse } from '@mui/material';
+import { Box, Typography, IconButton, Button, useTheme, Collapse, SvgIcon } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Instagram from '@mui/icons-material/Instagram';
-import Facebook from '@mui/icons-material/Facebook';
-import Twitter from '@mui/icons-material/Twitter';
+import YouTube from '@mui/icons-material/YouTube';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+
+// TikTok ve X (Twitter) ikonları için custom SVG componentleri
+const TikTokIcon = () => (
+  <SvgIcon viewBox="0 0 24 24">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-.88-.05A6.33 6.33 0 0 0 5.16 20.5a6.33 6.33 0 0 0 10.86-4.43V7.83a8.24 8.24 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.2-.26z" />
+  </SvgIcon>
+);
+
+const XIcon = () => (
+  <SvgIcon viewBox="0 0 24 24">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </SvgIcon>
+);
 import menuItems from '../utils/menuItems.json';
 import { useRouter } from 'next/router';
 const logo = '/assets/logo/pacific_mma_logo_circle.png';
@@ -29,7 +41,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
       sx={{
         width: '100vw',
         height: '100vh',
-        backgroundColor: theme.palette.background.default,
+        backgroundColor: theme.palette.primary.main,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -45,7 +57,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           position: 'absolute',
           top: 16,
           right: 16,
-          color: theme.palette.text.primary,
+          color: theme.palette.primary.contrastText,
           zIndex: 10,
         }}
       >
@@ -62,34 +74,77 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           width: '100%',
         }}
       >
-        {/* 🔧 FIX: Added eslint-disable for Next.js img warning (67:9) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={logo} // ✅ Fixed: Direct string access, no .src property needed
-          alt="Pacific MMA Logo"
-          style={{ height: '80px', marginBottom: '1rem', objectFit: 'contain' }}
-        />
-        <Typography
-          textAlign="center"
-          variant="h6"
+        {/* Logo ve PACIFIC MMA yazısı */}
+        <Box
           sx={{
-            fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
-            lineHeight: { xs: 1.4, sm: 1.4 },
-            letterSpacing: '1px',
-            color: theme.palette.text.primary,
-            textTransform: 'none',
-            maxWidth: '900px',
-            margin: '0 auto',
-            fontFamily: theme.typography.fontFamily,
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '1rem',
           }}
         >
-          {/* 🔧 FIX: Escaped quotes (86:11, 86:51) */}
-          &ldquo;Travel the world and train martial arts&rdquo;
-        </Typography>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logo}
+            alt="Pacific MMA Logo"
+            style={{ height: '60px', objectFit: 'contain' }}
+          />
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 'bold',
+              color: theme.palette.primary.contrastText,
+              fontFamily: theme.typography.fontFamily,
+              fontSize: { xs: '1.2rem', sm: '1.5rem' },
+            }}
+          >
+            PACIFIC MMA
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            maxWidth: '900px',
+            margin: '0 auto',
+            textAlign: 'center',
+          }}
+        >
+          <Box
+            sx={{
+              fontSize: { xs: '1.6rem', sm: '2rem', md: '2.5rem' },
+              fontWeight: 600,
+              color: theme.palette.primary.contrastText,
+            }}
+          >
+            TRAVEL&TRAIN
+          </Box>
+
+          <Box
+            sx={{
+              transform: 'scaleX(0.9)',
+              fontSize: { xs: '1.3rem', sm: '1.7rem', md: '2rem' },
+              fontWeight: 400,
+              color: theme.palette.primary.contrastText,
+              display: 'inline-block',
+            }}
+          >
+            MIXED MARTIAL ARTS
+          </Box>
+        </Box>
+
+
       </Box>
 
-      <Box sx={{ mt: 4, width: '100%', maxWidth: '300px' }}>
-        {/* Home Button First */}
+      {/* Tüm menü itemları için tek container */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          maxWidth: '300px',
+          gap: 1.5, // Eşit boşluk için gap kullan
+          mt: 4
+        }}
+      >
+        {/* Home Button */}
         <Button
           fullWidth
           onClick={() => {
@@ -97,19 +152,19 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             toggleDrawer();
           }}
           sx={{
-            color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.text.primary,
-            mb: 2,
+            color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
             fontWeight: theme.typography.button.fontWeight,
             fontSize: theme.typography.button.fontSize,
             textTransform: 'none',
             justifyContent: 'flex-start',
-            '&:hover': { color: theme.palette.primary.main },
+            minHeight: '48px', // Sabit yükseklik
+            py: 1.5, // Eşit padding
           }}
         >
           Home
         </Button>
 
-        {/* Camp Buttons */}
+        {/* Camp Button */}
         <Button
           fullWidth
           onClick={() => {
@@ -117,18 +172,19 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             toggleDrawer();
           }}
           sx={{
-            color: currentPath === '/camp' ? theme.palette.secondary.main : theme.palette.text.primary,
-            mb: 2,
+            color: currentPath === '/camp' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
             fontWeight: theme.typography.button.fontWeight,
             fontSize: theme.typography.button.fontSize,
             textTransform: 'none',
             justifyContent: 'flex-start',
-            '&:hover': { color: theme.palette.primary.main },
+            minHeight: '48px',
+            py: 1.5,
           }}
         >
           Camp
         </Button>
 
+        {/* Youth Camp Button */}
         <Button
           fullWidth
           onClick={() => {
@@ -136,20 +192,19 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             toggleDrawer();
           }}
           sx={{
-            color: currentPath === '/youth-camp' ? theme.palette.secondary.main : theme.palette.text.primary,
-            mb: 2,
+            color: currentPath === '/youth-camp' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
             fontWeight: theme.typography.button.fontWeight,
             fontSize: theme.typography.button.fontSize,
             textTransform: 'none',
             justifyContent: 'flex-start',
-            '&:hover': { color: theme.palette.primary.main },
+            minHeight: '48px',
+            py: 1.5,
           }}
         >
           Youth Camp
         </Button>
-      </Box>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '300px', mt: 2 }}>
+        {/* Diğer menü itemları */}
         {menuItems
           .filter((item) => item.label !== 'Home' && item.label !== 'Camp' && item.label !== 'Youth Camp')
           .map((item, index) => (
@@ -161,13 +216,13 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
                 toggleDrawer();
               }}
               sx={{
-                color: currentPath === item.link ? theme.palette.secondary.main : theme.palette.text.primary,
-                mb: 2,
+                color: currentPath === item.link ? theme.palette.secondary.main : theme.palette.primary.contrastText,
                 fontWeight: theme.typography.button.fontWeight,
                 fontSize: theme.typography.button.fontSize,
                 textTransform: 'none',
                 justifyContent: 'flex-start',
-                '&:hover': { color: theme.palette.primary.main },
+                minHeight: '48px',
+                py: 1.5,
               }}
             >
               {item.label}
@@ -176,19 +231,18 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
       </Box>
 
       {/* User Menu Start */}
-      <Box sx={{ width: '100%', maxWidth: '300px', mt: 2 }}>
+      {/* <Box sx={{ width: '100%', maxWidth: '300px', mt: 2 }}>
         <Button
           fullWidth
           startIcon={<AccountCircle />}
           onClick={toggleUserMenu}
           sx={{
             justifyContent: 'flex-start',
-            color: theme.palette.text.primary,
+            color: theme.palette.primary.contrastText,
             fontWeight: theme.typography.button.fontWeight,
             fontSize: theme.typography.button.fontSize,
             textTransform: 'none',
             mb: 1,
-            '&:hover': { color: theme.palette.primary.main },
           }}
         >
           Account
@@ -202,13 +256,12 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             }}
             sx={{
               justifyContent: 'flex-start',
-              color: currentPath === '/login' ? theme.palette.secondary.main : theme.palette.text.primary,
+              color: currentPath === '/login' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
               fontWeight: theme.typography.button.fontWeight,
               fontSize: theme.typography.button.fontSize,
               textTransform: 'none',
               mb: 1,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
+              }}
           >
             Login
           </Button>
@@ -220,33 +273,35 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             }}
             sx={{
               justifyContent: 'flex-start',
-              color: currentPath === '/signup' ? theme.palette.secondary.main : theme.palette.text.primary,
+              color: currentPath === '/signup' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
               fontWeight: theme.typography.button.fontWeight,
               fontSize: theme.typography.button.fontSize,
               textTransform: 'none',
               mb: 1,
-              '&:hover': { color: theme.palette.primary.main },
-            }}
+              }}
           >
             Sign Up
           </Button>
         </Collapse>
-      </Box>
+      </Box> */}
       {/* User Menu End */}
 
       <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="body2" fontWeight="bold" sx={{ mb: 1, color: theme.palette.text.primary }}>
+        <Typography variant="body2" fontWeight="bold" sx={{ mb: 1, color: theme.palette.primary.contrastText }}>
           Follow us on social media:
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          <IconButton sx={{ color: theme.palette.text.primary }}>
+          <IconButton sx={{ color: theme.palette.primary.contrastText }}>
+            <TikTokIcon />
+          </IconButton>
+          <IconButton sx={{ color: theme.palette.primary.contrastText }}>
             <Instagram />
           </IconButton>
-          <IconButton sx={{ color: theme.palette.text.primary }}>
-            <Facebook />
+          <IconButton sx={{ color: theme.palette.primary.contrastText }}>
+            <XIcon />
           </IconButton>
-          <IconButton sx={{ color: theme.palette.text.primary }}>
-            <Twitter />
+          <IconButton sx={{ color: theme.palette.primary.contrastText }}>
+            <YouTube />
           </IconButton>
         </Box>
       </Box>

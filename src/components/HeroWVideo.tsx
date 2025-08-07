@@ -16,12 +16,12 @@ const Hero = () => {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && videoRef.current?.paused) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       // ✅ FIX: Safe cleanup - check if document exists
       if (typeof document !== 'undefined') {
@@ -93,7 +93,7 @@ const Hero = () => {
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '1rem', sm: '2rem', md: '2.5rem' },
+            fontSize: { xs: '1rem', sm: '2rem', md: '4.5rem' },
             lineHeight: { xs: 1.4, sm: 1.4 },
             letterSpacing: '1px',
             color: theme.palette.primary.contrastText,
@@ -103,12 +103,26 @@ const Hero = () => {
             fontFamily: theme.typography.fontFamily,
           }}
         >
-          We create unparalleled{' '}
-          <span style={{ color: theme.palette.secondary.main }}>
-            Mixed Martial Arts (MMA) training and travel experiences
-          </span>{' '}
-          for fighters worldwide.
+          TRAVEL & TRAIN
         </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            fontSize: { xs: '1rem', sm: '2rem', md: '2.8rem' },
+            lineHeight: { xs: 1.4, sm: 1.4 },
+            letterSpacing: '1px',
+            color: theme.palette.primary.contrastText,
+            textTransform: 'none',
+            maxWidth: '900px',
+            margin: '0 auto',
+            fontFamily: theme.typography.fontFamily,
+          }}
+        >
+          <span style={{ color: theme.palette.secondary.main }}>
+           <b>Mixed Martial Arts (MMA)</b>
+          </span>
+        </Typography>
+
       </Box>
       {/* SVG wave */}
       <Box

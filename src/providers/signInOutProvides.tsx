@@ -14,7 +14,7 @@ export default function SignInOutButtons() {
   if (user) {
     return (
       <Box display="flex" alignItems="center" gap={2}>
-        <Typography>Hello, {user.displayName || user.email}</Typography>
+        <Typography>Hello, {user.fullName || user.email}</Typography>
         <Button variant="outlined" color="secondary" onClick={logout}>
           Sign out
         </Button>

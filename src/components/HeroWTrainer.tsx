@@ -100,7 +100,7 @@ const HeroWTrainer = () => {
               paddingTop: 0,
             }}
           >
-            Pacific MMA Academy
+            PACIFIC MMA ACADEMY
           </Typography>
 
           <Typography

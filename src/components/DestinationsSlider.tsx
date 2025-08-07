@@ -55,6 +55,10 @@ const DestinationSlider = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [pausedPosition, setPausedPosition] = useState(0);
+  const [isAutoSliding, setIsAutoSliding] = useState(true);
   
   const animationRef = useRef<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,16 +70,16 @@ const DestinationSlider = () => {
 
   // Başlangıç pozisyonu - ortadaki set
   const initialPosition = -slidingDistance;
-  // 🔧 FIX: Desktop sonsuz animasyon fonksiyonu - useCallback ile wrap edildi (107:6, 124:6)
-  const startInfiniteAnimation = useCallback(() => {
-    if (!isPaused && !isMobile && isMountedRef.current) {
+  // Otomatik slide fonksiyonu - her platform için
+  const startAutoSlide = useCallback(() => {
+    if (!isPaused && isMountedRef.current && isAutoSliding) {
       const animate = () => {
-        if (isPaused || isMobile || !isMountedRef.current) return;
+        if (isPaused || !isMountedRef.current || !isAutoSliding) return;
         
         setCurrentPosition(prev => {
-          const newPosition = prev - 2; // Daha yavaş hareket için 1 piksel
+          const newPosition = prev - (isMobile ? 1 : 2); // Mobilde daha yavaş
           
-          // Eğer çok sola gittiyse, sessizce ortaya sıfırla
+          // Sonsuz döngü için sınır kontrolu
           if (newPosition <= -slidingDistance * 2) {
             return -slidingDistance;
           }
@@ -88,10 +92,10 @@ const DestinationSlider = () => {
       
       animationRef.current = requestAnimationFrame(animate);
     }
-  }, [isPaused, isMobile, slidingDistance]);
+  }, [isPaused, isMobile, slidingDistance, isAutoSliding]);
 
-  // Animasyonu durdur
-  const stopInfiniteAnimation = () => {
+  // Auto slide'i durdur
+  const stopAutoSlide = () => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
@@ -102,53 +106,58 @@ const DestinationSlider = () => {
     }
   };
 
-  // Component mount edildiğinde animasyonu başlat
+  // Component mount edildiğinde auto slide'i başlat
   useEffect(() => {
     isMountedRef.current = true;
     setCurrentPosition(initialPosition);
     
-    if (!isMobile) {
-      // Kısa bir delay ile başlat
-      timeoutRef.current = setTimeout(() => {
-        startInfiniteAnimation();
-      }, 100);
-    }
+    // Tüm platformlar için auto slide başlat
+    timeoutRef.current = setTimeout(() => {
+      startAutoSlide();
+    }, 100);
 
     return () => {
       isMountedRef.current = false;
-      stopInfiniteAnimation();
+      stopAutoSlide();
     };
-  }, [isMobile, initialPosition, startInfiniteAnimation]);
+  }, [initialPosition, startAutoSlide]);
 
-  // Pause durumu değiştiğinde animasyonu kontrol et
+  // Pause ve auto slide durumunu kontrol et
   useEffect(() => {
-    if (!isMobile && isMountedRef.current) {
-      if (isPaused) {
-        stopInfiniteAnimation();
+    if (isMountedRef.current) {
+      if (isPaused || !isAutoSliding) {
+        stopAutoSlide();
       } else {
-        // Mevcut pozisyondan devam et - kısa delay ile
+        // Kaldığı pozisyondan devam et
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
         timeoutRef.current = setTimeout(() => {
-          startInfiniteAnimation();
+          startAutoSlide();
         }, 100);
       }
     }
-  }, [isPaused, isMobile, startInfiniteAnimation]);
+  }, [isPaused, isAutoSliding, startAutoSlide]);
 
-  // Mouse event handlers - individual card hover
+  // Mouse/Touch event handlers - hem desktop hem mobil
   const handleCardMouseEnter = (index: number) => {
-    if (!isMobile) {
+    if (!isDragging) {
       setHoveredCard(index);
+      setPausedPosition(currentPosition); // Mevcut pozisyonu kaydet
       setIsPaused(true);
+      setIsAutoSliding(false);
     }
   };
 
   const handleCardMouseLeave = () => {
-    if (!isMobile) {
+    if (!isDragging) {
       setHoveredCard(null);
-      setIsPaused(false);
+      // Kaldığı yerden devam et
+      setCurrentPosition(pausedPosition);
+      setTimeout(() => {
+        setIsPaused(false);
+        setIsAutoSliding(true);
+      }, 150);
     }
   };
 
@@ -199,47 +208,67 @@ const DestinationSlider = () => {
     }
   };
 
-  // 🔧 FIX: Drag handlers - proper typing and removed unused params (189:28, 189:35, 189:40, 189:46)
-  const handleDragStart = () => {
-    if (isMobile) {
-      setIsDragging(true);
+  // Touch/Drag handlers - tüm platformlar
+  const handleDragStart = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setIsDragging(true);
+    setDragStartX(info.point.x);
+    setDragOffset(0);
+    setPausedPosition(currentPosition);
+    setIsPaused(true);
+    setIsAutoSliding(false);
+  };
+
+  const handleDrag = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isDragging) {
+      setDragOffset(info.offset.x);
     }
   };
 
-  // 🔧 FIX: Proper typing for handleDragEnd with framer-motion PanInfo
   const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (isMobile) {
-      const dragDistance = info.offset.x;
-      const threshold = 50;
+    const dragDistance = info.offset.x;
+    const velocity = info.velocity.x;
+    const threshold = 80;
+    const velocityThreshold = 300;
 
-      if (Math.abs(dragDistance) > threshold) {
-        if (dragDistance > 0) {
-          // Sağa sürükleme - önceki slide
-          const newPosition = currentPosition + cardWidth;
-          setCurrentPosition(newPosition);
+    // Velocity tabanlı veya mesafe tabanlı karar verme
+    const shouldSlide = Math.abs(dragDistance) > threshold || Math.abs(velocity) > velocityThreshold;
 
-          // Sınır kontrolü
-          if (newPosition >= 0) {
-            setTimeout(() => {
-              setCurrentPosition(-slidingDistance);
-            }, 300);
-          }
-        } else {
-          // Sola sürükleme - sonraki slide
-          const newPosition = currentPosition - cardWidth;
-          setCurrentPosition(newPosition);
+    if (shouldSlide) {
+      const direction = dragDistance > 0 || velocity > 0 ? 1 : -1;
+      const cardOffset = Math.round(Math.abs(dragDistance) / cardWidth) + 1;
+      const slideDistance = cardWidth * Math.min(cardOffset, 2); // Max 2 kart kaydırma
+      
+      const newPosition = pausedPosition + (direction * slideDistance);
+      setCurrentPosition(newPosition);
 
-          // Sınır kontrolü
-          if (newPosition <= -slidingDistance * 2) {
-            setTimeout(() => {
-              setCurrentPosition(-slidingDistance);
-            }, 300);
-          }
-        }
+      // Sınır kontrolü ve sonsuz döngü
+      if (newPosition >= 0) {
+        setTimeout(() => {
+          const adjustedPosition = -slidingDistance + (newPosition % cardWidth);
+          setCurrentPosition(adjustedPosition);
+          setPausedPosition(adjustedPosition);
+        }, 300);
+      } else if (newPosition <= -slidingDistance * 2) {
+        setTimeout(() => {
+          const adjustedPosition = -slidingDistance + (Math.abs(newPosition) % cardWidth);
+          setCurrentPosition(adjustedPosition);
+          setPausedPosition(adjustedPosition);
+        }, 300);
+      } else {
+        setPausedPosition(newPosition);
       }
-
-      setTimeout(() => setIsDragging(false), 100);
+    } else {
+      // Snap back to paused position
+      setCurrentPosition(pausedPosition);
     }
+
+    // Reset drag state ve auto slide'i yeniden başlat
+    setDragOffset(0);
+    setTimeout(() => {
+      setIsDragging(false);
+      setIsPaused(false);
+      setIsAutoSliding(true);
+    }, 200);
   };
 
   // ✅ FIXED: Book sayfasındaki exact code
@@ -334,7 +363,7 @@ const DestinationSlider = () => {
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            Explore Our Camps
+            BESPOKE FIGHT CAMPS
           </Typography>
         </Box>
 
@@ -386,21 +415,26 @@ const DestinationSlider = () => {
           {/* Slider */}
           <Box
             component={motion.div}
-            animate={{ x: currentPosition }}
-            transition={{ 
-              type: "tween", 
-              ease: "linear", 
-              duration: isPaused ? 0.3 : 0 
+            animate={{ 
+              x: isMobile && isDragging ? currentPosition + dragOffset : currentPosition 
             }}
-            drag={isMobile ? "x" : false}
-            dragConstraints={isMobile ? { left: -slidingDistance * 2.5, right: slidingDistance * 0.5 } : false}
-            dragElastic={0.1}
+            transition={{ 
+              type: isPaused || (isMobile && isDragging) ? "spring" : "linear",
+              damping: isPaused || (isMobile && isDragging) ? 25 : 0,
+              stiffness: isPaused || (isMobile && isDragging) ? 300 : 0,
+              duration: isPaused ? 0.4 : (isMobile && !isDragging ? 0.6 : 0)
+            }}
+            drag="x"
+            dragConstraints={false}
+            dragElastic={0.05}
+            dragMomentum={true}
             onDragStart={handleDragStart}
+            onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             sx={{
               display: 'flex',
               gap: 2,
-              cursor: isMobile ? (isDragging ? 'grabbing' : 'grab') : 'default',
+              cursor: isDragging ? 'grabbing' : 'grab',
               paddingLeft: { xs: 2, md: 0 },
               paddingRight: { xs: 2, md: 0 },
               userSelect: 'none',
@@ -413,8 +447,16 @@ const DestinationSlider = () => {
                 key={`${destination.country}-${index}`}
                 onMouseEnter={() => handleCardMouseEnter(index)}
                 onMouseLeave={handleCardMouseLeave}
-                whileHover={!isMobile && !isDragging ? { scale: 1.03 } : {}}
-                transition={{ duration: 0.2 }}
+                whileHover={!isMobile && !isDragging && hoveredCard === index ? { 
+                  scale: 1.03,
+                  y: -5 
+                } : {}}
+                transition={{ 
+                  type: "spring",
+                  damping: 20,
+                  stiffness: 300,
+                  duration: 0.3 
+                }}
               >
                 <Box
                   onClick={() => handleCardClick(destination)}
@@ -427,9 +469,10 @@ const DestinationSlider = () => {
                     position: 'relative',
                     cursor: isDragging ? 'grabbing' : 'pointer',
                     boxShadow: hoveredCard === index && !isMobile 
-                      ? '0px 8px 20px rgba(0,0,0,0.3)' 
+                      ? '0px 12px 30px rgba(0,0,0,0.4)' 
                       : '0px 4px 12px rgba(0,0,0,0.2)',
-                    transition: 'box-shadow 0.3s ease',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                    transform: hoveredCard === index && !isMobile ? 'translateY(-2px)' : 'translateY(0)',
                   }}
                 >
                   <Box

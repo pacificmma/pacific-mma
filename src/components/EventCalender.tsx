@@ -70,7 +70,7 @@ const EventCalendar = () => {
           mx: 'auto',
           fontFamily: theme.typography.fontFamily,
         }}>
-        Upcoming Tours
+        Upcoming Events
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography onClick={handlePrevMonth} sx={{ cursor: 'pointer', fontWeight: 'bold', color: theme.palette.text.primary }}>{'<'}</Typography>

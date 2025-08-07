@@ -15,6 +15,7 @@ import {
 import { destinations } from '../../utils/destinations';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import NotifyMe from '../../components/NotifyMe';
 
 const slugify = (text: string) =>
   text.toLowerCase().replace(/\s+/g, '-');
@@ -32,6 +33,7 @@ interface DestinationType {
   whatYouWillEnjoy: string[];
   generalInfo: string[];
   descriptionPage: string;
+  notifyMe?: boolean;
 }
 
 const DestinationDetails = () => {
@@ -53,8 +55,10 @@ const DestinationDetails = () => {
   const router = useRouter();
   const { slug } = router.query;
   
-  // ✅ FIXED: No casting needed now - types match
-  const destination = destinations.find((d) => slugify(d.country) === slug);
+  // ✅ FIXED: Handle router loading state
+  const destination = typeof slug === 'string' 
+    ? destinations.find((d) => slugify(d.country) === slug)
+    : null;
 
   useEffect(() => {
     // ✅ FIX: Only run on client-side
@@ -112,6 +116,22 @@ const DestinationDetails = () => {
     setSnackbarOpen(true);
   };
 
+  // Show loading state if router is not ready yet
+  if (router.isFallback || !router.isReady) {
+    return (
+      <>
+        <Header />
+        <Container maxWidth="md" sx={{ mt: 10, mb: 10, textAlign: 'center' }}>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            Loading...
+          </Typography>
+        </Container>
+        <Footer />
+      </>
+    );
+  }
+
+  // Show not found if destination doesn't exist
   if (!destination) {
     return (
       <>
@@ -146,242 +166,272 @@ const DestinationDetails = () => {
   return (
     <>
       <Header />
-      
-      {/* Hero Section */}
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100vw',
-          height: { xs: '50vh', sm: '60vh', md: '70vh' },
-          backgroundImage: `url(${destination.image})`, // ✅ FIXED: Direct string usage (no .src needed)
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mb: 6,
-        }}
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          }}
-        />
-        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <Typography
-            variant="h2"
+      <Box sx={{ backgroundColor: theme.palette.background.paper }}>
+        {/* Hero Section */}
+        <Box sx={{ backgroundColor: theme.palette.primary.main, py: 6 }}>
+          <Container
             sx={{
-              color: theme.palette.primary.contrastText,
-              fontWeight: 'bold',
-              fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
-              mb: 2,
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: 4,
+              position: 'relative',
             }}
           >
-            {destination.country}
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              color: theme.palette.primary.contrastText,
-              fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-              mb: 3,
-            }}
-          >
-            {destination.title}
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: theme.palette.primary.contrastText,
-              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-              mb: 1,
-            }}
-          >
-            Duration: {destination.nights}
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: theme.palette.primary.contrastText,
-              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-            }}
-          >
-            Date: {new Date(destination.date).toLocaleDateString()}
-          </Typography>
-        </Container>
-      </Box>
-
-      {/* Main Content */}
-      <Container maxWidth="lg" sx={{ mb: 8 }}>
-        {/* What You Will Enjoy Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: theme.palette.text.primary, mb: 3 }}>
-            What You Will Enjoy
-          </Typography>
-          <Box component="ul" sx={{ pl: 3 }}>
-            {destination.whatYouWillEnjoy.map((item, index) => (
-              <Typography component="li" key={index} variant="body1" sx={{ mb: 1, fontSize: '1.1rem', lineHeight: 1.6 }}>
-                {item}
+            <Box
+              component="img"
+              src={destination.image}
+              alt={destination.country}
+              sx={{
+                width: 520,
+                height: 420,
+                objectFit: 'cover',
+                borderRadius: '16px',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
+                transform: 'translate(-60px, 60px)',
+                zIndex: 2,
+                position: 'relative',
+                [theme.breakpoints.down('md')]: {
+                  width: '100%',
+                  height: 'auto',
+                  transform: 'none',
+                },
+              }}
+            />
+            <Box sx={{ color: theme.palette.primary.contrastText, maxWidth: '600px' }}>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                {destination.title}
               </Typography>
-            ))}
-          </Box>
-        </Box>
-
-        {/* General Information Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: theme.palette.text.primary, mb: 3 }}>
-            General Information
-          </Typography>
-          <Box component="ul" sx={{ pl: 3 }}>
-            {destination.generalInfo.map((info, index) => (
-              <Typography component="li" key={index} variant="body1" sx={{ mb: 1, fontSize: '1.1rem', lineHeight: 1.6 }}>
-                {info}
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {destination.nights} — Starting from €{destination.price} —{' '}
+                {new Date(destination.date).toLocaleDateString()}
               </Typography>
-            ))}
-          </Box>
+              {destination.notifyMe && (
+                <Box sx={{ mt: 3 }}>
+                  <NotifyMe 
+                    destinationCountry={destination.country}
+                    destinationTitle={destination.title}
+                  />
+                </Box>
+              )}
+            </Box>
+          </Container>
         </Box>
 
-        {/* Description Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: theme.palette.text.primary, mb: 3 }}>
-            About This Experience
-          </Typography>
-          <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 5 }}>
-            {destination.descriptionPage}
-          </Typography>
-        </Box>
-
-        <Box sx={{ textAlign: 'center', mt: 6 }}>
-          <Button
-            variant="contained"
-            onClick={handleScrollToForm}
+        {/* Content Section */}
+        <Container maxWidth="lg" sx={{ py: 6, color: theme.palette.text.primary }}>
+          <Box
             sx={{
-              backgroundColor: theme.palette.secondary.main,
-              color: theme.palette.primary.contrastText,
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              borderRadius: '20px',
-              padding: '10px 24px',
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.dark,
-              },
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 6,
             }}
           >
-            Book Now
-          </Button>
-        </Box>
-      </Container>
+            <Box sx={{ flexGrow: 2, minWidth: 0, maxWidth: { md: 'calc(100% - 640px)' } }}>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                What will you enjoy?
+              </Typography>
+              <Box component="ul" sx={{ pl: 3, mb: 4 }}>
+                {destination.whatYouWillEnjoy.map((item, idx) => (
+                  <li key={idx}><Typography variant="body1">{item}</Typography></li>
+                ))}
+              </Box>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                General Information
+              </Typography>
+              <Box sx={{ mb: 4, pl: 2 }}>
+                {destination.generalInfo.map((info, idx) => (
+                  <Typography variant="body1" key={idx} gutterBottom>
+                    {info}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
 
-      {/* Booking Form */}
-      {showForm && (
-        <Container ref={formRef} maxWidth="md" sx={{ mt: 8, mb: 10 }}>
-          <Box sx={{ backgroundColor: theme.palette.background.default, padding: 4, borderRadius: '16px', boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }}>
-            <Typography variant="h5" fontWeight="bold" gutterBottom>
-              Book Your Trip — {destination.country} ({new Date(destination.date).toLocaleDateString()})
+            {destination.videoUrl && (
+              <Box sx={{ 
+                width: 600, 
+                height: 340, 
+                flexShrink: 0, 
+                borderRadius: '12px', 
+                overflow: 'hidden', 
+                boxShadow: '0px 6px 16px rgba(0,0,0,0.25)', 
+                [theme.breakpoints.down('md')]: { 
+                  width: '100%', 
+                  height: 'auto' 
+                } 
+              }}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={destination.videoUrl.replace('watch?v=', 'embed/')}
+                  title="Destination Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ border: 0 }}
+                />
+              </Box>
+            )}
+          </Box>
+
+          <Box mt={6}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Description
             </Typography>
-            <Box component="form" sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-              <TextField 
-                label="Full Name" 
-                fullWidth 
-                required 
-                value={formData.fullName} 
-                onChange={(e) => handleChange('fullName', e.target.value)} 
-                InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
-                InputProps={{ style: { color: theme.palette.text.primary } }}
+            <Typography variant="body1" sx={{ lineHeight: 1.8, mb: 5 }}>
+              {destination.descriptionPage}
+            </Typography>
+          </Box>
+
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            {destination.notifyMe ? (
+              <NotifyMe 
+                destinationCountry={destination.country}
+                destinationTitle={destination.title}
               />
-              <TextField 
-                label="Email" 
-                fullWidth 
-                required 
-                type="email" 
-                value={formData.email} 
-                onChange={(e) => handleChange('email', e.target.value)} 
-                InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
-                InputProps={{ style: { color: theme.palette.text.primary } }}
-              />
-              <TextField 
-                label="Phone Number" 
-                fullWidth 
-                required 
-                value={formData.phoneNumber} 
-                onChange={(e) => handleChange('phoneNumber', e.target.value)} 
-                InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
-                InputProps={{ style: { color: theme.palette.text.primary } }}
-              />
-              <TextField 
-                label="Meal Plan" 
-                select 
-                fullWidth 
-                value={formData.mealPlan} 
-                onChange={(e) => handleChange('mealPlan', e.target.value)} 
-                InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
-                InputProps={{ style: { color: theme.palette.text.primary } }}
-              >
-                <MenuItem value="All Inclusive">All Inclusive</MenuItem>
-                <MenuItem value="Half Board">Half Board</MenuItem>
-                <MenuItem value="Breakfast Only">Breakfast Only</MenuItem>
-                <MenuItem value="Self Catering">Self Catering</MenuItem>
-              </TextField>
-              <TextField 
-                label="Comfort Level" 
-                select 
-                fullWidth 
-                value={formData.comfortLevel} 
-                onChange={(e) => handleChange('comfortLevel', e.target.value)} 
-                InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
-                InputProps={{ style: { color: theme.palette.text.primary } }}
-              >
-                <MenuItem value="Budget">Budget</MenuItem>
-                <MenuItem value="Standard">Standard</MenuItem>
-                <MenuItem value="Luxury">Luxury</MenuItem>
-              </TextField>
-              <TextField 
-                label="Personal Note (Optional)" 
-                fullWidth 
-                multiline 
-                rows={3} 
-                value={formData.personalNote} 
-                onChange={(e) => handleChange('personalNote', e.target.value)} 
-                sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }} 
-                InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
-                InputProps={{ style: { color: theme.palette.text.primary } }}
-              />
-              <Button 
-                variant="contained" 
-                onClick={handleSubmit} 
-                sx={{ 
-                  gridColumn: { xs: '1', sm: '1 / -1' }, 
-                  backgroundColor: theme.palette.secondary.main, 
-                  color: theme.palette.primary.contrastText, 
-                  fontWeight: 'bold', 
-                  fontSize: '1rem', 
-                  borderRadius: '20px', 
-                  padding: '12px 24px', 
-                  '&:hover': { backgroundColor: theme.palette.secondary.dark } 
+            ) : (
+              <Button
+                variant="contained"
+                onClick={handleScrollToForm}
+                sx={{
+                  backgroundColor: theme.palette.secondary.main,
+                  color: theme.palette.primary.contrastText,
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  borderRadius: '20px',
+                  padding: '10px 24px',
+                  '&:hover': {
+                    backgroundColor: theme.palette.secondary.dark,
+                  },
                 }}
               >
-                Submit Booking
+                Book Now
               </Button>
-            </Box>
+            )}
           </Box>
         </Container>
-      )}
+
+        {/* Booking Form */}
+        {showForm && (
+          <Container ref={formRef} maxWidth="md" sx={{ mt: 8, mb: 10 }}>
+            <Box sx={{ backgroundColor: theme.palette.background.default, padding: 4, borderRadius: '16px', boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }}>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                Book Your Trip — {destination.country} ({new Date(destination.date).toLocaleDateString()})
+              </Typography>
+              <Box component="form" sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+                <TextField 
+                  label="Full Name" 
+                  fullWidth 
+                  required 
+                  value={formData.fullName} 
+                  onChange={(e) => handleChange('fullName', e.target.value)} 
+                  InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
+                  InputProps={{ style: { color: theme.palette.text.primary } }}
+                />
+                <TextField 
+                  label="Email" 
+                  type="email" 
+                  fullWidth 
+                  required 
+                  value={formData.email} 
+                  onChange={(e) => handleChange('email', e.target.value)} 
+                  InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
+                  InputProps={{ style: { color: theme.palette.text.primary } }}
+                />
+                <TextField 
+                  label="Phone Number" 
+                  fullWidth 
+                  required 
+                  value={formData.phoneNumber} 
+                  onChange={(e) => handleChange('phoneNumber', e.target.value)} 
+                  InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
+                  InputProps={{ style: { color: theme.palette.text.primary } }}
+                />
+                <TextField 
+                  label="Selected Package" 
+                  value={`${destination.country} – ${destination.nights}`} 
+                  fullWidth 
+                  disabled 
+                  InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
+                  InputProps={{ style: { color: theme.palette.text.primary } }}
+                />
+                <TextField 
+                  select 
+                  label="Meal Plan" 
+                  fullWidth 
+                  required 
+                  value={formData.mealPlan} 
+                  onChange={(e) => handleChange('mealPlan', e.target.value)} 
+                  InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
+                  InputProps={{ style: { color: theme.palette.text.primary } }}
+                >
+                  <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                  <MenuItem value="carnivore">Carnivore</MenuItem>
+                  <MenuItem value="pescatarian">Pescatarian</MenuItem>
+                  <MenuItem value="no_preference">No Preference</MenuItem>
+                </TextField>
+                <TextField 
+                  select 
+                  label="Comfort Level" 
+                  fullWidth 
+                  required 
+                  value={formData.comfortLevel} 
+                  onChange={(e) => handleChange('comfortLevel', e.target.value)} 
+                  InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
+                  InputProps={{ style: { color: theme.palette.text.primary } }}
+                >
+                  <MenuItem value="basic">Basic</MenuItem>
+                  <MenuItem value="standart">Standard</MenuItem>
+                  <MenuItem value="deluxe">Deluxe</MenuItem>
+                  <MenuItem value="vip">VIP</MenuItem>
+                </TextField>
+                <TextField 
+                  label="Personal Note" 
+                  fullWidth 
+                  multiline 
+                  rows={4} 
+                  value={formData.personalNote} 
+                  onChange={(e) => handleChange('personalNote', e.target.value)} 
+                  sx={{ gridColumn: '1 / -1' }} 
+                  InputLabelProps={{ style: { color: theme.palette.text.primary } }} 
+                  InputProps={{ style: { color: theme.palette.text.primary } }}
+                />
+              </Box>
+              <Box sx={{ textAlign: 'center', mt: 4 }}>
+                <Button 
+                  onClick={handleSubmit} 
+                  variant="contained" 
+                  sx={{ 
+                    backgroundColor: theme.palette.secondary.main, 
+                    color: theme.palette.primary.contrastText, 
+                    fontWeight: 'bold', 
+                    padding: '10px 24px', 
+                    borderRadius: '20px', 
+                    '&:hover': { backgroundColor: theme.palette.secondary.dark } 
+                  }}
+                >
+                  Submit Booking
+                </Button>
+              </Box>
+            </Box>
+          </Container>
+        )}
+      </Box>
 
       {/* Success/Error Snackbar */}
       <Snackbar 
         open={snackbarOpen} 
-        autoHideDuration={6000} 
-        onClose={() => setSnackbarOpen(false)}
+        autoHideDuration={4000} 
+        onClose={() => setSnackbarOpen(false)} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert 
-          onClose={() => setSnackbarOpen(false)} 
           severity={snackbarSeverity} 
-          sx={{ width: '100%' }}
+          variant="filled" 
+          onClose={() => setSnackbarOpen(false)}
         >
           {snackbarMessage}
         </Alert>

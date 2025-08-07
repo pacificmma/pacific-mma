@@ -154,7 +154,7 @@ const Header = () => {
                   fontFamily: theme.typography.fontFamily,
                 }}
               >
-                Pacific MMA
+                PACIFIC MMA
               </Typography>
             </Link>
           </Box>
@@ -391,7 +391,7 @@ const Header = () => {
                 '&:hover': { backgroundColor: theme.palette.secondary.dark },
               }}
             >
-              Book Now
+              Book
             </Button>
           </Box>
         </Toolbar>
