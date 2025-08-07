@@ -345,10 +345,11 @@ const DestinationSlider = () => {
           sx={{
             textAlign: { xs: 'center', md: 'left' },
             maxWidth: '200px',
-            mb: { xs: '1.5rem', md: '2rem' },
+            mb: { xs: '3rem', md: '4rem' },
             flex: '0 0 15%',
             zIndex: 2,
-            mx: { xs: 'auto', md: '2rem' },
+            mx: { xs: 'auto', md: '4rem' },
+            ml: { xs: 'auto', md: '1rem' },
           }}
         >
           <Typography

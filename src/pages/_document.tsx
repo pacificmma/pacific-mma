@@ -6,8 +6,12 @@ export default function MyDocument() { // Fonksiyon adını MyDocument olarak de
     <Html lang="en">
       <Head>
         {/* Favicon ve apple-touch-icon, public klasörüne kopyalandığı için direkt "/" ile erişilir */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/logo192.png" /> {/* Eğer logo192.png public'e kopyalandıysa */}
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/logo/pacific_mma_logo_circle.png" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/assets/logo/pacific_mma_logo_circle.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/logo/pacific_mma_logo_circle.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/assets/logo/pacific_mma_logo_circle.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/pacific_mma_logo_circle.png" />
+        <link rel="shortcut icon" href="/assets/logo/pacific_mma_logo_circle.png" />
 
         {/* Mevcut index.html'den taşınan meta etiketleri */}
         <meta name="theme-color" content="#000000" />

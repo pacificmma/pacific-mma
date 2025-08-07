@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import Head from 'next/head';
 import Header from '../components/Header';
 import HeroWVideo from '../components/HeroWVideo';
 import DestinationSlider from '../components/DestinationsSlider';
@@ -18,6 +19,9 @@ const Home = () => {
   }, []);
   return (
     <>
+      <Head>
+        <title>PACIFIC MMA</title>
+      </Head>
       <Header />
       <HeroWVideo />
       <Box sx={{ width: '100%', overflow: 'hidden', position: 'relative' }}>
