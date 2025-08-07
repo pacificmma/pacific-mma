@@ -12,7 +12,7 @@ const ContactUsInfo = () => {
       <Box
         sx={{
           width: "100%",
-          height: { xs: "40vh", md: "80vh" },
+          height: { xs: "50vh", md: "60vh" },
           backgroundImage: `url(${teamPhoto})`,
           backgroundSize: "cover",
           backgroundPosition: "center top",

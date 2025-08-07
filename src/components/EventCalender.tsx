@@ -143,7 +143,7 @@ const EventCalendar = () => {
             '&:hover': { backgroundColor: theme.palette.secondary.dark, color: 'white' },
           }}
         >
-          Book Now
+          Book
         </Button>
       </Box>
     </Box>

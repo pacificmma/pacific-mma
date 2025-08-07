@@ -2,8 +2,8 @@
 import React from 'react';
 import { Box, Typography, Button, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
-import { StaticImageData } from 'next/image';
-const backgroundVideo = '/assets/videos/trainingWhero.mp4';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 const BrendaWBrothers = '/assets/img/home_page/brenda_brothers.jpeg';
 
 const HeroWTrainer = () => {
@@ -22,47 +22,13 @@ const HeroWTrainer = () => {
         justifyContent: 'center',
         px: 2,
         py: { xs: 2, md: 6 },
+        backgroundColor: theme.palette.primary.main,
       }}
     >
-      {/* Background video */}
-      <Box
-        component="video"
-        autoPlay
-        loop
-        muted
-        playsInline
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: '100%',
-          height: '100%',
-          transform: 'translate(-50%, -50%)',
-          objectFit: 'cover',
-          zIndex: 0,
-        }}
-      >
-        <source src={backgroundVideo} type="video/mp4" />
-        Your browser does not support the video tag.
-      </Box>
-
-      {/* Overlay */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          zIndex: 1,
-        }}
-      />
 
       {/* Content Container */}
       <Box
         sx={{
-          zIndex: 2,
           maxWidth: '1600px',
           width: '100%',
           display: 'flex',
@@ -71,9 +37,6 @@ const HeroWTrainer = () => {
           justifyContent: 'space-between',
           gap: { xs: '2rem', md: '3rem' },
           padding: { xs: '2rem', md: '4rem' },
-          borderRadius: '25px',
-          opacity: '0.9',
-          backgroundColor: theme.palette.primary.main,
         }}
       >
         {/* Text Content */}
@@ -87,21 +50,36 @@ const HeroWTrainer = () => {
             justifyContent: 'flex-start',
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
-              lineHeight: { xs: 1.4, sm: 1.4 },
-              letterSpacing: '1px',
-              color: theme.palette.primary.contrastText,
-              textTransform: 'none',
-              fontFamily: theme.typography.fontFamily,
-              marginTop: 0,
-              paddingTop: 0,
-            }}
-          >
-            PACIFIC MMA ACADEMY
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1.4rem', sm: '2rem', md: '2.6rem' },
+                lineHeight: { xs: 1.4, sm: 1.4 },
+                letterSpacing: '0.6px',
+                color: theme.palette.primary.contrastText,
+                textTransform: 'none',
+                fontFamily: theme.typography.fontFamily,
+                marginTop: 0,
+                paddingTop: 0,
+              }}
+            >
+              Where Every Warrior's Journey Begins
+            </Typography>
+            <InstagramIcon 
+              onClick={() => window.open('https://www.instagram.com/pacificmma.academy/', '_blank')}
+              sx={{ 
+                fontSize: { xs: '1.8rem', md: '2.4rem' },
+                color: theme.palette.primary.contrastText,
+                cursor: 'pointer',
+                '&:hover': {
+                  color: theme.palette.secondary.main,
+                  transform: 'scale(1.1)',
+                },
+                transition: 'all 0.3s ease',
+              }} 
+            />
+          </Box>
 
           <Typography
             variant="body1"
@@ -115,9 +93,7 @@ const HeroWTrainer = () => {
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            Come, discover the deep waters of mixed martial arts at the Pacific Mixed Martial
-            Arts Academy. Under the expert guidance of our Chief Instructor, Brenda King, we offer
-            a rigorous and comprehensive curriculum designed to cultivate well-rounded fighters.
+            Train under legendary lineage at PACIFIC MMA ACADEMY. Chief Instructor Brenda King—certified by Erik Paulson, Rigan Machado, and Dan Inosanto—brings world-class Brazilian Jiu-Jitsu, Mixed Martial Arts, Muay Thai, Jeet-Kune-Do, Shooto, and Submission Wrestling to Belmont, California.
           </Typography>
 
           <Typography
@@ -131,10 +107,7 @@ const HeroWTrainer = () => {
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            Our academy provides classes, coaching, and private training in{' '}
-            <span style={{ fontWeight: 'bold', color: theme.palette.text.secondary, fontSize: '1rem', fontFamily: theme.typography.fontFamily }}>
-              Brazilian Jiu-Jitsu, Muay Thai, Kickboxing, Boxing, and Combat Wrestling.
-            </span>
+            From Silicon Valley executives to future champions, from youth programs to elite training camps, we forge complete warriors. When legends visit the Bay Area, they train here. When you're ready to transform, your journey begins here.
           </Typography>
 
           <Typography
@@ -148,15 +121,14 @@ const HeroWTrainer = () => {
               fontFamily: theme.typography.fontFamily,
             }}
           >
-            Affiliated with Eric Paulson&apos;s CSW Academy and frequently visited by top-tier mixed
-            martial artists, our academy fosters a friendly culture and nurturing environment for
-            both adults and children. Visit our state-of-the-art facility in the Bay Area, California,
-            to learn more about our classes, workshops, and schedule.
+            Experience the difference. Join the legacy.
           </Typography>
 
           <Box sx={{ 
             display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: { xs: 'center', md: 'flex-start' },
+            gap: 2,
             width: '100%'
           }}>
             <Button
@@ -170,12 +142,28 @@ const HeroWTrainer = () => {
                 fontWeight: 'bold',
                 fontFamily: theme.typography.fontFamily,
                 borderRadius: '30px',
-                maxWidth: '180px',
                 '&:hover': { backgroundColor: theme.palette.secondary.dark, color: 'white' },
               }}
             >
               Learn More
             </Button>
+            <Button
+              variant="outlined"
+              startIcon={<CalendarMonthIcon />}
+              onClick={() => router.push('/academy#schedule')}
+              sx={{
+                backgroundColor: theme.palette.secondary.main,
+                color: theme.palette.primary.contrastText,
+                padding: '10px 24px',
+                fontSize: { xs: '1rem', md: '1.1rem' },
+                fontWeight: 'bold',
+                fontFamily: theme.typography.fontFamily,
+                borderRadius: '30px',
+                '&:hover': { backgroundColor: theme.palette.secondary.dark, color: 'white' },
+              }}
+            >
+              Schedule
+            </Button>    
           </Box>
         </Box>
 

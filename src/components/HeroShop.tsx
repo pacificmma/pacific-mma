@@ -156,7 +156,7 @@ const HeroShop = () => {
         }}
           onClick={() => (router.push('/gear'))}
         >
-          Visit Shop
+          Visit Store
         </Button>
       </Box>
     </Box>

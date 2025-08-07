@@ -60,14 +60,14 @@ const HeroWPartners = () => {
       image: trainingImage,
     },
     {
-      title: 'Striking',
-      items: strikingItems,
-      image: strikingImage,
-    },
-    {
       title: 'Grappling',
       items: grapplingItems,
       image: grapplingImage,
+    },
+    {
+      title: 'Striking',
+      items: strikingItems,
+      image: strikingImage,
     },
   ];
 
@@ -107,49 +107,52 @@ const HeroWPartners = () => {
         borderBottom: `5px solid ${theme.palette.secondary.main}`,
       }}
     >
+      {/* Headline at the top */}
+      <Typography
+        variant="h6"
+        sx={{
+          fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+          lineHeight: { xs: 1.4, sm: 1.4 },
+          letterSpacing: '1px',
+          color: theme.palette.text.primary,
+          textTransform: 'none',
+          fontFamily: theme.typography.fontFamily,
+          textAlign: 'center',
+          mb: 4,
+        }}
+      >
+        Train With The Best
+      </Typography>
+      
       <Box
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
-          gap: '2rem',
+          gap: { xs: '2rem', md: '4rem' },
+          maxWidth: '1200px',
+          margin: '0 auto',
         }}
       >
         <Box
           sx={{
-            flex: 1,
+            flex: { xs: 1, md: '0 0 45%' },
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             alignItems: 'center',
           }}
         >
-          {/* Headline above left image */}
-          <Typography
-            variant="h6"
-            sx={{
-              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
-              lineHeight: { xs: 1.4, sm: 1.4 },
-              letterSpacing: '1px',
-              color: theme.palette.text.primary,
-              textTransform: 'none',
-              fontFamily: theme.typography.fontFamily,
-              textAlign: 'center',
-              mb: 2,
-            }}
-          >
-            Train With The Best
-          </Typography>
-          
           <Box
             ref={imageRef}
-            component="img"
-            src={accordionData[activeAccordion !== null ? activeAccordion : 0].image} // ✅ Fixed: Direct string access, no .src property needed
-            alt={accordionData[activeAccordion !== null ? activeAccordion : 0].title}
             sx={{
               width: '100%',
-              maxWidth: '500px',
+              maxWidth: { xs: '100%', md: '500px' },
+              height: { xs: '400px', sm: '500px', md: '550px' },
+              backgroundImage: `url(${accordionData[activeAccordion !== null ? activeAccordion : 0].image})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 35%',
               borderRadius: 2,
               boxShadow: 3,
               transition: 'opacity 0.3s ease, transform 0.3s ease',
@@ -159,10 +162,12 @@ const HeroWPartners = () => {
 
         <Box
           sx={{
-            flex: 1,
+            flex: { xs: 1, md: '0 0 45%' },
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-start',
+            width: '100%',
+            minWidth: { xs: '100%', sm: '400px', md: '450px' },
           }}
         >
 
@@ -216,6 +221,7 @@ const HeroWPartners = () => {
       <Box sx={{ textAlign: 'center', mt: 4 }}>
         <Button
           variant="contained"
+          href="/book"
           sx={{
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.primary.contrastText,

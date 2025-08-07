@@ -9,6 +9,7 @@ import {
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
@@ -40,8 +41,10 @@ const customExperience = {
 
 const BookingPage = () => {
   const theme = useTheme();
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const formRef = useRef<HTMLDivElement | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<string>('');
 
   const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
@@ -74,11 +77,18 @@ const BookingPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // URL'den destination parametresini al
+    const { destination } = router.query;
+    if (destination && typeof destination === 'string') {
+      setSelectedDestination(destination);
+    }
+    
     const interval = setInterval(() => {
       setSlideshowIndex((prev) => (prev + 1) % customExperience.image.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [router.query]);
 
   const handleCustomTripClick = () => {
     setShowForm(true);
@@ -111,7 +121,7 @@ const BookingPage = () => {
         {/* Hero */}
         <Box
           sx={{
-            height: '60vh',
+            height: { xs: '50vh', md: '60vh' },
             backgroundImage: `url(${BookingHeroPhoto})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -160,7 +170,8 @@ const BookingPage = () => {
                         if (dest.country === 'Custom Experience') {
                           handleCustomTripClick();
                         } else {
-                          window.location.href = `/destination/${dest.country.toLowerCase().replace(/\s+/g, '-')}`;
+                          setSelectedDestination(dest.country);
+                          handleCustomTripClick();
                         }
                       }}
                       sx={{
@@ -254,7 +265,8 @@ const BookingPage = () => {
                             if (dest.country === 'Custom Experience') {
                               handleCustomTripClick();
                             } else {
-                              window.location.href = `/destination/${dest.country.toLowerCase().replace(/\s+/g, '-')}`;
+                              setSelectedDestination(dest.country);
+                              handleCustomTripClick();
                             }
                           }}
                           variant="contained"
@@ -292,9 +304,11 @@ const BookingPage = () => {
         </Container>
 
         {/* Custom Form */}
-        <Box ref={formRef}>
-          <CustomTripForm />
-        </Box>
+        {showForm && (
+          <Box ref={formRef}>
+            <CustomTripForm selectedDestination={selectedDestination} />
+          </Box>
+        )}
       </Box>
       <Footer />
     </>

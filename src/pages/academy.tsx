@@ -25,7 +25,7 @@ const AcademyPage = () => {
             <Box
                 sx={{
                     width: '100%',
-                    minHeight: '70vh',
+                    height: { xs: '50vh', md: '60vh' },
                     backgroundImage: `url(${BrendaWStudents})`, // ✅ Direct string usage
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',

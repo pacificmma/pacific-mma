@@ -11,7 +11,7 @@ const CampHeroWPhoto = () => {
       sx={{
         position: 'relative',
         width: '100vw',
-        height: { xs: '40vh', sm: '60vh' },
+        height: { xs: '50vh', md: '60vh' },
         overflow: 'hidden',
         backgroundColor: theme.palette.background.default,
         borderBottom: `5px solid ${theme.palette.secondary.main}`,

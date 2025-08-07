@@ -49,7 +49,7 @@ const YouthCamp = () => {
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+            fontSize: { xs: '1.4rem', sm: '2rem', md: '2.6rem' },
             lineHeight: { xs: 1.4, sm: 1.4 },
             letterSpacing: '1px',
             color: theme.palette.primary.contrastText,
@@ -59,24 +59,19 @@ const YouthCamp = () => {
             fontFamily: theme.typography.fontFamily,
           }}
         >
-          Youth MMA Camp
+          Where Young Warriors Discover the World
         </Typography>
 
         <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 3, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
-          Introduce your child to the world of martial arts in a fun, engaging, and empowering environment.
-          Our Youth MMA Camp offers kids the chance to train with experienced coaches, develop discipline,
-          build confidence, and make new friends — all while having an amazing time!
+          Give your child more than martial arts—give them a passport to adventure. Our Youth MMA Camps blend world-class training with unforgettable journeys, creating confident warriors who explore fearlessly. Under expert supervision, kids master Brazilian Jiu-Jitsu, Kickboxing, and self-defense while discovering new places, cultures, and friendships that last a lifetime.
         </Typography>
 
         <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 3, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
-          Through a mix of Brazilian Jiu-Jitsu, Kickboxing, and playful strength exercises, children will gain
-          essential self-defense skills and a love for movement. No experience required — just curiosity and energy!
+          From local adventure days to exclusive youth retreats, we transform curious kids into capable young warriors. They’ll train where champions train, explore like adventurers, and return home with skills, stories, and unshakeable confidence.
         </Typography>
 
         <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 4, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
-          Each session is designed not only to improve physical health, but also to foster social skills and sportsmanship.
-          With a strong emphasis on respect, teamwork, and self-discipline, our camp helps young martial artists grow into
-          confident and responsible individuals — all in a safe and supervised setting parents can trust.
+          Where discipline meets discovery. Where young warriors rise
         </Typography>
 
         <Button
@@ -92,7 +87,7 @@ const YouthCamp = () => {
             '&:hover': { backgroundColor: theme.palette.secondary.dark, color: 'white' },
           }}
         >
-          Learn More
+          Explore Youth Camps
         </Button>
       </Container>
     </Box>

@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '../utils/fireBaseAuthProvider';
+import { SecurityValidator, SimpleAuditLogger } from '../utils/security';
 
 const ContactUs = () => {
   const theme = useTheme();
@@ -25,42 +26,109 @@ const ContactUs = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
   const fields: Array<keyof typeof formData> = ['name', 'email', 'message'];
+  const characterLimits = { name: 50, email: 100, message: 500 };
 
   const handleChange = (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [field]: e.target.value });
+    const rawValue = e.target.value;
+    const limit = characterLimits[field as keyof typeof characterLimits];
+    
+    // Sanitize input to prevent XSS attacks
+    const sanitizedValue = SecurityValidator.sanitizeInput(rawValue);
+    
+    if (!limit || sanitizedValue.length <= limit) {
+      setFormData({ ...formData, [field]: sanitizedValue });
+    }
   };
 
   const handleSelectChange = (e: SelectChangeEvent) => {
-    setFormData({ ...formData, topic: e.target.value });
+    const sanitizedTopic = SecurityValidator.sanitizeInput(e.target.value);
+    setFormData({ ...formData, topic: sanitizedTopic });
+  };
+
+  const isFormValid = () => {
+    // Character limits check
+    const withinLimits = fields.every(field => {
+      const limit = characterLimits[field as keyof typeof characterLimits];
+      return !limit || formData[field].length <= limit;
+    });
+
+    // Security validation checks
+    const nameValid = SecurityValidator.validateString(formData.name, 1, 50);
+    const emailValid = SecurityValidator.validateEmail(formData.email);
+    const messageValid = SecurityValidator.validateString(formData.message, 1, 500);
+    const topicValid = SecurityValidator.validateString(formData.topic, 1, 50);
+
+    return withinLimits && nameValid && emailValid && messageValid && topicValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Security logging - form submission attempt
+    SimpleAuditLogger.logSecurityEvent('DATA_UPDATE', 'anonymous', {
+      action: 'contact_form_submission_attempt',
+      topic: formData.topic
+    }, 'LOW');
+    
+    if (!isFormValid()) {
+      setSnackbarMessage('Please ensure all fields are properly filled and within character limits.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      
+      // Log invalid form submission
+      SimpleAuditLogger.logSecurityEvent('SUSPICIOUS_ACTIVITY', 'anonymous', {
+        action: 'invalid_form_submission',
+        formData: SecurityValidator.maskSensitiveData(formData)
+      }, 'MEDIUM');
+      return;
+    }
+    
     setLoading(true);
     try {
       const functions = getFunctions(app);
       const contactUsFunction = httpsCallable(functions, 'contactUs');
       
-      const result = await contactUsFunction({
+      // Sanitize all data before sending
+      const sanitizedData = SecurityValidator.sanitizeForDatabase({
         name: formData.name,
         email: formData.email,
         message: formData.message,
         topic: formData.topic,
       });
+      
+      const result = await contactUsFunction(sanitizedData);
 
       const data = result.data as any;
       if (data.success) {
         setSnackbarMessage('Thank you! We received your message and will respond within 24 hours.');
         setSnackbarSeverity('success');
         setFormData({ name: '', email: '', message: '', topic: '' });
+        
+        // Log successful form submission
+        SimpleAuditLogger.logSecurityEvent('DATA_UPDATE', 'anonymous', {
+          action: 'contact_form_submitted_successfully',
+          topic: formData.topic
+        }, 'LOW');
       } else {
         setSnackbarMessage(`Error: ${data.message || 'Failed to send message'}`);
         setSnackbarSeverity('error');
+        
+        // Log failed form submission
+        SimpleAuditLogger.logSecurityEvent('SYSTEM', 'anonymous', {
+          action: 'contact_form_submission_failed',
+          error: data.message
+        }, 'MEDIUM');
       }
     } catch (error: any) {
       console.error('Contact form error:', error);
       setSnackbarMessage(error.message || 'Something went wrong. Please try again later.');
       setSnackbarSeverity('error');
+      
+      // Log system error
+      SimpleAuditLogger.logSecurityEvent('SYSTEM', 'anonymous', {
+        action: 'contact_form_system_error',
+        error: error.message
+      }, 'HIGH');
     } finally {
       setSnackbarOpen(true);
       setLoading(false);
@@ -167,33 +235,52 @@ const ContactUs = () => {
             </Select>
           </FormControl>
 
-          {fields.map((field) => (
-            <TextField
-              key={field}
-              label={field.charAt(0).toUpperCase() + field.slice(1)}
-              variant="standard"
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              value={formData[field]}
-              onChange={handleChange(field)}
-              multiline={field === 'message'}
-              rows={field === 'message' ? 4 : 1}
-              InputLabelProps={{ sx: { color: theme.palette.text.primary } }}
-              InputProps={{ disableUnderline: false, sx: { color: theme.palette.text.primary } }}
-              sx={{
-                '& .MuiInput-underline:before': { borderBottom: `1px solid ${theme.palette.text.primary}` },
-                '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottom: `2px solid ${theme.palette.text.primary}` },
-                '& .MuiInput-underline:after': { borderBottom: `2px solid ${theme.palette.text.primary}` },
-              }}
-              fullWidth
-              required
-            />
-          ))}
+          {fields.map((field) => {
+            const limit = characterLimits[field as keyof typeof characterLimits];
+            const currentLength = formData[field].length;
+            const isNearLimit = currentLength > limit * 0.8;
+            
+            return (
+              <Box key={field}>
+                <TextField
+                  label={field.charAt(0).toUpperCase() + field.slice(1)}
+                  variant="standard"
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={formData[field]}
+                  onChange={handleChange(field)}
+                  multiline={field === 'message'}
+                  rows={field === 'message' ? 4 : 1}
+                  InputLabelProps={{ sx: { color: theme.palette.text.primary } }}
+                  InputProps={{ disableUnderline: false, sx: { color: theme.palette.text.primary } }}
+                  sx={{
+                    '& .MuiInput-underline:before': { borderBottom: `1px solid ${theme.palette.text.primary}` },
+                    '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderBottom: `2px solid ${theme.palette.text.primary}` },
+                    '& .MuiInput-underline:after': { borderBottom: `2px solid ${theme.palette.text.primary}` },
+                  }}
+                  fullWidth
+                  required
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: isNearLimit ? theme.palette.warning.main : theme.palette.text.secondary,
+                    fontSize: '0.75rem',
+                    display: 'block',
+                    textAlign: 'right',
+                    mt: 0.5,
+                  }}
+                >
+                  {currentLength}/{limit}
+                </Typography>
+              </Box>
+            );
+          })}
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               type="submit"
               variant="contained"
-              disabled={loading}
+              disabled={loading || !isFormValid()}
               sx={{
                 backgroundColor: theme.palette.secondary.main,
                 color: theme.palette.primary.contrastText,
@@ -202,6 +289,10 @@ const ContactUs = () => {
                 fontWeight: 'bold',
                 borderRadius: '30px',
                 '&:hover': { backgroundColor: theme.palette.secondary.dark },
+                '&:disabled': {
+                  backgroundColor: theme.palette.grey[400],
+                  color: theme.palette.grey[600],
+                },
               }}
             >
               {loading ? 'Sending...' : 'Send'}

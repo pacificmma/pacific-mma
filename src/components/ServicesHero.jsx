@@ -39,7 +39,7 @@ const ServicesHero = () => {
           backgroundImage: `url(${ServicesHeroPhoto})`, // ✅ Direct string usage
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: '400px',
+          height: { xs: '50vh', md: '60vh' },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

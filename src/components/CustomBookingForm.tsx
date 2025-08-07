@@ -54,13 +54,34 @@ const gymOptions = [
 ];
 const trainingOptions = ['Boxing', 'Muay Thai', 'Wrestling', 'BJJ'];
 const destinationOptions = [
-  'Florida', 'Brazil', 'California', 'New York', 'Las Vegas', 'Japan', 'Thailand',
+  'Florida', 'Brazil', 'California', 'New York', 'Las Vegas', 'Nevada', 'Japan', 'Thailand', 
+  'San Francisco', 'Phuket', 'Bangkok', 'Miami', 'Los Angeles', 'San Diego', 'Chicago', 
+  'Austin', 'Denver', 'Seattle', 'Phoenix', 'Atlanta'
 ];
 
-const CustomTripForm = () => {
+interface CustomTripFormProps {
+  selectedDestination?: string;
+}
+
+const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
   const theme = useTheme();
+  
+  // Seçilen destinasyonu default olarak ayarla
+  const getInitialDestination = () => {
+    if (selectedDestination) {
+      const matchedDestination = destinationOptions.find(dest => 
+        dest.toLowerCase() === selectedDestination.toLowerCase()
+      );
+      if (matchedDestination) {
+        return [{ label: matchedDestination, value: matchedDestination }];
+      }
+    }
+    return [];
+  };
+  
   const [formData, setFormData] = useState<FormData>({
-    name: '', phone: '', email: '', startDate: null, endDate: null, destination: [],
+    name: '', phone: '', email: '', startDate: null, endDate: null, 
+    destination: getInitialDestination(),
     training: [], gym: [], mealPlan: '', comfort: '', budget: '', note: '',
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -159,6 +180,9 @@ const CustomTripForm = () => {
             />
 
             <Box sx={{ mt: 4, p: 2, border: `1px solid ${theme.palette.text.primary}`, borderRadius: 2, backgroundColor: theme.palette.background.paper }}>
+              <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: theme.palette.secondary.main, textAlign: 'center', fontSize: '0.9rem' }}>
+                ✈️ To ensure the best experience, we plan trips 90+ days in advance for premium arrangements
+              </Typography>
               <Typography variant="body1" sx={{ mb: 1, fontWeight: theme.typography.body1.fontWeight, color: theme.palette.text.primary }}>
                 Start Date
               </Typography>
@@ -167,6 +191,7 @@ const CustomTripForm = () => {
                   label="Start Date"
                   value={formData.startDate}
                   onChange={(newValue) => handleChange('startDate', newValue)}
+                  minDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
                   slotProps={{ textField: { fullWidth: true } }}
                   sx={{ '& label': { color: theme.palette.text.primary } }}
                 />
@@ -180,6 +205,7 @@ const CustomTripForm = () => {
                   label="End Date"
                   value={formData.endDate}
                   onChange={(newValue) => handleChange('endDate', newValue)}
+                  minDate={formData.startDate || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
                   slotProps={{ textField: { fullWidth: true } }}
                   sx={{ '& label': { color: theme.palette.text.primary } }}
                 />

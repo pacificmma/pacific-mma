@@ -399,7 +399,7 @@ const GearPage = () => {
       {/* Hero */}
       <Box
         sx={{
-          height: { xs: '40vh', md: '50vh' },
+          height: { xs: '50vh', md: '60vh' },
           backgroundImage: `url(${GearPageHeroPhoto})`, // Corrected
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -408,6 +408,7 @@ const GearPage = () => {
           justifyContent: 'center',
           color: theme.palette.primary.contrastText,
           textAlign: 'center',
+          borderBottom: `5px solid ${theme.palette.secondary.main}`,
         }}
       >
         <Typography 
