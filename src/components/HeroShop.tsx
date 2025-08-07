@@ -67,7 +67,7 @@ const HeroShop = () => {
             fontFamily: theme.typography.fontFamily,
           }}
         >
-          Fightwear
+          Fightwear 
         </Typography>
 
         <Typography

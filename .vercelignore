@@ -1,0 +1,21 @@
+# Firebase Functions
+functions/
+
+# Firebase cache
+.firebase/
+
+# Logs
+*.log
+
+# Environment variables (already handled by Vercel)
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
