@@ -149,13 +149,16 @@ const HeroWPartners = () => {
             sx={{
               width: '100%',
               maxWidth: { xs: '100%', md: '500px' },
-              height: { xs: '400px', sm: '500px', md: '550px' },
+              height: { xs: '300px', sm: '400px', md: '550px' },
               backgroundImage: `url(${accordionData[activeAccordion !== null ? activeAccordion : 0].image})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center 35%',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
               borderRadius: 2,
               boxShadow: 3,
               transition: 'opacity 0.3s ease, transform 0.3s ease',
+              minHeight: { xs: '300px', sm: '400px', md: '550px' },
+              display: 'block',
             }}
           />
         </Box>
