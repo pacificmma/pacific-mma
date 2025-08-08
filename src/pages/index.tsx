@@ -33,7 +33,9 @@ const Home = () => {
       <EventCalendar />
       <YouthCamp />
       <HeroShop />
-      <ContactUs />
+      <Box id="contact-section">
+        <ContactUs />
+      </Box>
       <Footer />
     </>
   );

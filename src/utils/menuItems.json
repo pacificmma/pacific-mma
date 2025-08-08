@@ -4,6 +4,6 @@
     {"label": "Gear", "link": "/gear"},
     { "label": "About Us", "link": "/about-us" },
     { "label": "Services", "link": "/services" },
-    { "label": "Contact", "link": "/contact" }
+    { "label": "Contact", "link": "#contact" }
   ]
   

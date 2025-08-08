@@ -107,7 +107,7 @@ const Header = () => {
           sx={{
             justifyContent: 'space-between',
             px: 2,
-            minHeight: '80px',
+            minHeight: { xs: '60px', sm: '70px', md: '80px' },
           }}
         >
           {/* Left Section - Logo and Title */}
@@ -137,21 +137,29 @@ const Header = () => {
                 gap: '8px'
               }}
             >
-              <Image
-                src={Logo}
-                alt="Pacific MMA Logo"
-                width={100}
-                height={100}
-                style={{
-                  objectFit: 'contain'
+              <Box
+                sx={{
+                  width: { xs: 60, sm: 80, md: 100 },
+                  height: { xs: 60, sm: 80, md: 100 },
+                  position: 'relative'
                 }}
-              />
+              >
+                <Image
+                  src={Logo}
+                  alt="Pacific MMA Logo"
+                  fill
+                  style={{
+                    objectFit: 'contain'
+                  }}
+                />
+              </Box>
               <Typography
-                variant="h6"
                 sx={{
                   fontWeight: 'bold',
                   color: theme.palette.text.secondary,
                   fontFamily: theme.typography.fontFamily,
+                  fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
+                  display: { xs: 'none', sm: 'block' }
                 }}
               >
                 PACIFIC MMA
@@ -161,7 +169,20 @@ const Header = () => {
 
           {/* Center Section - Navigation Menu */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: { md: 1, lg: 2 }, 
+              position: 'absolute', 
+              left: '50%', 
+              transform: 'translateX(-50%)',
+              '@media (max-width: 1024px)': {
+                display: 'none'
+              },
+              '@media (min-width: 1025px)': {
+                display: 'flex'
+              }
+            }}>
               {/* Home Button */}
               <Button
                 onClick={() => router.push('/')}
@@ -245,7 +266,26 @@ const Header = () => {
                 .map((item, index) => (
                   <Button
                     key={index}
-                    onClick={() => router.push(item.link)}
+                    onClick={() => {
+                      if (item.label === 'Contact' && currentPath === '/') {
+                        // Scroll to contact section if on homepage
+                        const contactSection = document.getElementById('contact-section');
+                        if (contactSection) {
+                          contactSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      } else if (item.label === 'Contact') {
+                        // Navigate to homepage then scroll to contact
+                        router.push('/');
+                        setTimeout(() => {
+                          const contactSection = document.getElementById('contact-section');
+                          if (contactSection) {
+                            contactSection.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }, 500);
+                      } else {
+                        router.push(item.link);
+                      }
+                    }}
                     sx={{
                       color: currentPath === item.link
                         ? theme.palette.secondary.main

@@ -54,8 +54,8 @@ const gymOptions = [
 ];
 const trainingOptions = ['Boxing', 'Muay Thai', 'Wrestling', 'BJJ'];
 const destinationOptions = [
-  'Florida', 'Brazil', 'California', 'New York', 'Las Vegas', 'Nevada', 'Japan', 'Thailand', 
-  'San Francisco', 'Phuket', 'Bangkok', 'Miami', 'Los Angeles', 'San Diego', 'Chicago', 
+  'Florida', 'Brazil', 'California', 'New York', 'Las Vegas', 'Nevada', 'Japan', 'Thailand',
+  'San Francisco', 'Phuket', 'Bangkok', 'Miami', 'Los Angeles', 'San Diego', 'Chicago',
   'Austin', 'Denver', 'Seattle', 'Phoenix', 'Atlanta'
 ];
 
@@ -65,11 +65,11 @@ interface CustomTripFormProps {
 
 const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
   const theme = useTheme();
-  
+
   // Seçilen destinasyonu default olarak ayarla
   const getInitialDestination = () => {
     if (selectedDestination) {
-      const matchedDestination = destinationOptions.find(dest => 
+      const matchedDestination = destinationOptions.find(dest =>
         dest.toLowerCase() === selectedDestination.toLowerCase()
       );
       if (matchedDestination) {
@@ -78,9 +78,9 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
     }
     return [];
   };
-  
+
   const [formData, setFormData] = useState<FormData>({
-    name: '', phone: '', email: '', startDate: null, endDate: null, 
+    name: '', phone: '', email: '', startDate: null, endDate: null,
     destination: getInitialDestination(),
     training: [], gym: [], mealPlan: '', comfort: '', budget: '', note: '',
   });
@@ -215,7 +215,7 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
 
           <Grid item xs={12} md={6}>
             <Typography variant="body1" sx={{ mb: 1, fontWeight: theme.typography.body1.fontWeight, color: theme.palette.text.primary, zIndex: 1 }}>
-              Preferred Destinations
+              Select Destinations
             </Typography>
             <Select
               isMulti
@@ -232,7 +232,7 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
 
 
             <Typography variant="body1" sx={{ mt: 3, mb: 1, fontWeight: theme.typography.body1.fontWeight, color: theme.palette.text.primary, zIndex: 1 }}>
-              Preferred Trainings
+              Select Trainings
             </Typography>
             <Select
               isMulti
@@ -249,7 +249,7 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
 
 
             <Typography variant="body1" sx={{ mt: 3, mb: 1, fontWeight: theme.typography.body1.fontWeight, color: theme.palette.text.primary, zIndex: 1 }}>
-              Preferred Gyms
+              Select Gyms
             </Typography>
             <Select
               isMulti
@@ -357,16 +357,16 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
           </Grid>
         </Grid>
       </Paper>
-      
-      <Snackbar 
-        open={snackbarOpen} 
-        autoHideDuration={4000} 
-        onClose={() => setSnackbarOpen(false)} 
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          severity={snackbarSeverity} 
-          variant="filled" 
+        <Alert
+          severity={snackbarSeverity}
+          variant="filled"
           onClose={() => setSnackbarOpen(false)}
         >
           {snackbarMessage}

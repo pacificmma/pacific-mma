@@ -39,7 +39,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
   return (
     <Box
       sx={{
-        width: '100vw',
+        width: '100%',
         height: '100vh',
         backgroundColor: theme.palette.primary.main,
         display: 'flex',
@@ -86,7 +86,10 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           <img
             src={logo}
             alt="Pacific MMA Logo"
-            style={{ height: '60px', objectFit: 'contain' }}
+            style={{ 
+              height: window.innerWidth < 360 ? '40px' : '60px', 
+              objectFit: 'contain' 
+            }}
           />
           <Typography
             variant="h6"
@@ -94,7 +97,11 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
               fontWeight: 'bold',
               color: theme.palette.primary.contrastText,
               fontFamily: theme.typography.fontFamily,
-              fontSize: { xs: '1.2rem', sm: '1.5rem' },
+              fontSize: { 
+                xs: '1rem', 
+                sm: '1.2rem', 
+                md: '1.5rem' 
+              },
             }}
           >
             PACIFIC MMA
@@ -109,7 +116,12 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
         >
           <Box
             sx={{
-              fontSize: { xs: '1.6rem', sm: '2rem', md: '2.5rem' },
+              fontSize: { 
+                xs: '1.2rem', 
+                sm: '1.5rem', 
+                md: '2rem', 
+                lg: '2.5rem' 
+              },
               fontWeight: 600,
               color: theme.palette.primary.contrastText,
             }}
@@ -120,7 +132,12 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           <Box
             sx={{
               transform: 'scaleX(0.9)',
-              fontSize: { xs: '1.3rem', sm: '1.7rem', md: '2rem' },
+              fontSize: { 
+                xs: '1rem', 
+                sm: '1.3rem', 
+                md: '1.6rem', 
+                lg: '2rem' 
+              },
               fontWeight: 400,
               color: theme.palette.primary.contrastText,
               display: 'inline-block',
@@ -157,7 +174,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             fontSize: theme.typography.button.fontSize,
             textTransform: 'none',
             justifyContent: 'flex-start',
-            minHeight: '48px', // Sabit yükseklik
+            minHeight: { xs: '40px', sm: '44px', md: '48px' }, // Sabit yükseklik
             py: 1.5, // Eşit padding
           }}
         >
@@ -177,7 +194,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             fontSize: theme.typography.button.fontSize,
             textTransform: 'none',
             justifyContent: 'flex-start',
-            minHeight: '48px',
+            minHeight: { xs: '40px', sm: '44px', md: '48px' },
             py: 1.5,
           }}
         >
@@ -197,7 +214,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             fontSize: theme.typography.button.fontSize,
             textTransform: 'none',
             justifyContent: 'flex-start',
-            minHeight: '48px',
+            minHeight: { xs: '40px', sm: '44px', md: '48px' },
             py: 1.5,
           }}
         >
@@ -212,8 +229,29 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
               key={index}
               fullWidth
               onClick={() => {
-                router.push(item.link);
-                toggleDrawer();
+                if (item.label === 'Contact' && currentPath === '/') {
+                  // Scroll to contact section if on homepage
+                  toggleDrawer();
+                  setTimeout(() => {
+                    const contactSection = document.getElementById('contact-section');
+                    if (contactSection) {
+                      contactSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }, 300);
+                } else if (item.label === 'Contact') {
+                  // Navigate to homepage then scroll to contact
+                  router.push('/');
+                  toggleDrawer();
+                  setTimeout(() => {
+                    const contactSection = document.getElementById('contact-section');
+                    if (contactSection) {
+                      contactSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }, 800);
+                } else {
+                  router.push(item.link);
+                  toggleDrawer();
+                }
               }}
               sx={{
                 color: currentPath === item.link ? theme.palette.secondary.main : theme.palette.primary.contrastText,
@@ -221,7 +259,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
                 fontSize: theme.typography.button.fontSize,
                 textTransform: 'none',
                 justifyContent: 'flex-start',
-                minHeight: '48px',
+                minHeight: { xs: '40px', sm: '44px', md: '48px' },
                 py: 1.5,
               }}
             >

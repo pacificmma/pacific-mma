@@ -39,7 +39,7 @@ const Footer = () => {
           Stay in the Loop
         </Typography>
         <Typography variant="body2" sx={{ mb: 2, color: theme.palette.primary.contrastText }}>
-          Sign up with your email to receive news and updates.
+          Sign up to receive news and updates.
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'center', md: 'flex-start' } }}>
           <TextField

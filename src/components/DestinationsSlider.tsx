@@ -55,7 +55,12 @@ const DestinationSlider = () => {
   
   const animationRef = useRef<number | null>(null);
   
-  const cardWidth = isMobile ? 256 : 366; // 240+16 veya 350+16 (gap dahil)
+  const isXL = useMediaQuery(theme.breakpoints.up('xl'));
+  const isLG = useMediaQuery(theme.breakpoints.up('lg'));
+  const isMD = useMediaQuery(theme.breakpoints.up('md'));
+  const isSM = useMediaQuery(theme.breakpoints.up('sm'));
+  
+  const cardWidth = isXL ? 450 : isLG ? 400 : isMD ? 366 : isSM ? 300 : 256;
   const totalCards = destinations.length;
   const totalWidth = cardWidth * totalCards;
   
@@ -72,7 +77,8 @@ const DestinationSlider = () => {
   const animate = useCallback(() => {
     if (!isPaused) {
       setOffset(prev => {
-        const newOffset = prev - 2; // Piksel hızı
+        const speed = isMobile ? 1 : 2; // Mobilde daha yavaş
+        const newOffset = prev - speed;
         // Bir set tamamlandığında sıfırla
         if (Math.abs(newOffset) >= totalWidth) {
           return 0;
@@ -129,7 +135,7 @@ const DestinationSlider = () => {
         background: theme.palette.background.paper,
         width: '100%',
         overflow: 'hidden',
-        py: 4
+        py: { xs: 3, sm: 4, md: 5, lg: 6 }
       }}
     >
       <Box
@@ -145,7 +151,13 @@ const DestinationSlider = () => {
           sx={{
             textAlign: { xs: 'center', md: 'left' },
             maxWidth: '200px',
-            mb: { xs: '3rem', md: '4rem' },
+            mb: { 
+              xs: '2rem', 
+              sm: '2.5rem', 
+              md: '3rem', 
+              lg: '3.5rem', 
+              xl: '4rem' 
+            },
             flex: '0 0 15%',
             zIndex: 2,
             mx: { xs: 'auto', md: '4rem' },
@@ -155,7 +167,13 @@ const DestinationSlider = () => {
           <Typography
             variant="h6"
             sx={{
-              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+              fontSize: { 
+                xs: '1.2rem', 
+                sm: '1.8rem', 
+                md: '2.2rem', 
+                lg: '2.8rem', 
+                xl: '3.2rem' 
+              },
               lineHeight: { xs: 1.4, sm: 1.4 },
               letterSpacing: '1px',
               color: theme.palette.text.primary,
@@ -198,8 +216,20 @@ const DestinationSlider = () => {
                 onMouseLeave={() => setHoveredIndex(null)}
                 sx={{
                   flex: '0 0 auto',
-                  width: { xs: '240px', md: '350px' },
-                  height: { xs: '300px', md: '440px' },
+                  width: { 
+                    xs: '240px', 
+                    sm: '280px', 
+                    md: '320px', 
+                    lg: '380px', 
+                    xl: '420px' 
+                  },
+                  height: { 
+                    xs: '300px', 
+                    sm: '350px', 
+                    md: '400px', 
+                    lg: '480px', 
+                    xl: '540px' 
+                  },
                   borderRadius: '12px',
                   overflow: 'hidden',
                   position: 'relative',
@@ -235,7 +265,13 @@ const DestinationSlider = () => {
                     height: '33.33%',
                     background: 'rgba(0, 0, 0, 0.7)',
                     color: '#fff',
-                    p: { xs: 1, md: 1.5 },
+                    p: { 
+                      xs: 1, 
+                      sm: 1.25, 
+                      md: 1.5, 
+                      lg: 1.75, 
+                      xl: 2 
+                    },
                     zIndex: 1,
                     transition: 'height 0.3s ease',
                     display: 'flex',

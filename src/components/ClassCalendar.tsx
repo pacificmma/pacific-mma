@@ -450,7 +450,13 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                 >
                   <Card
                     sx={{
-                      height: 600, // Increased from 400px to 600px for longer cards
+                      height: { 
+                        xs: 400, 
+                        sm: 450, 
+                        md: 500, 
+                        lg: 550, 
+                        xl: 600 
+                      },
                       backgroundColor: isToday
                         ? theme.palette.action.selected
                         : theme.palette.background.paper,
@@ -459,7 +465,11 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                         : `1px solid ${theme.palette.divider}`,
                     }}
                   >
-                    <CardContent sx={{ overflowY: 'auto', height: '100%', p: 3 }}>
+                    <CardContent sx={{ 
+                      overflowY: 'auto', 
+                      height: '100%', 
+                      p: { xs: 2, sm: 2.5, md: 3 } 
+                    }}>
                       <Typography
                         variant="h6"
                         sx={{
