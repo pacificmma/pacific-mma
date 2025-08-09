@@ -20,16 +20,18 @@ const Hero = () => {
   const [debugInfo, setDebugInfo] = useState<string>('Initializing...');
   const [showMobileDebug, setShowMobileDebug] = useState(false);
 
-  // Mobile-friendly debug logging
+  // Mobile-friendly debug logging - only in development
   const mobileLog = (message: string) => {
-    console.log(message);
-    setDebugInfo(prev => {
-      const timestamp = new Date().toLocaleTimeString();
-      const newLog = `[${timestamp}] ${message}`;
-      // Keep only last 3 logs for mobile display
-      const logs = prev.split('\n').slice(-2);
-      return [...logs, newLog].join('\n');
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log(message);
+      setDebugInfo(prev => {
+        const timestamp = new Date().toLocaleTimeString();
+        const newLog = `[${timestamp}] ${message}`;
+        // Keep only last 3 logs for mobile display
+        const logs = prev.split('\n').slice(-2);
+        return [...logs, newLog].join('\n');
+      });
+    }
   };
 
   // Enhanced video recovery system
@@ -231,7 +233,7 @@ const Hero = () => {
       intersectionObserverRef.current.observe(videoContainerRef.current);
     };
 
-    // Force recovery check every 5 seconds
+    // Aggressive recovery check every 2 seconds
     const setupForceRecoveryInterval = () => {
       forceRecoveryIntervalRef.current = setInterval(() => {
         const video = videoRef.current;
@@ -239,29 +241,26 @@ const Hero = () => {
 
         const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
         
-        // More aggressive recovery - check multiple conditions
+        // Very aggressive recovery - multiple conditions
         if (document.visibilityState === 'visible') {
-          // If video shows as playing but hasn't updated time in 8 seconds
-          if (timeSinceLastPlay > 8000) {
-            mobileLog(`Force recovery: Video inactive for ${Math.floor(timeSinceLastPlay / 1000)}s`);
+          // If video shows as playing but hasn't updated time in 3 seconds
+          if (timeSinceLastPlay > 3000) {
             setIsVideoPlaying(false);
             handleVideoRecovery();
           }
           
           // If video is paused but should be playing
           else if (video.paused && isVideoPlaying) {
-            mobileLog('Force recovery: Video paused but state shows playing');
             setIsVideoPlaying(false);
             handleVideoRecovery();
           }
           
           // If video element exists but readyState is low
-          else if (video.readyState < 2 && timeSinceLastPlay > 3000) {
-            mobileLog('Force recovery: Video not ready');
+          else if (video.readyState < 2 && timeSinceLastPlay > 1500) {
             handleVideoRecovery();
           }
         }
-      }, 5000); // Check every 5 seconds
+      }, 2000); // Check every 2 seconds
     };
 
     // Add all event listeners
@@ -455,54 +454,57 @@ const Hero = () => {
         </Box>
       </Box>
 
-      {/* Mobile Debug Toggle */}
-      <Box
-        onClick={() => setShowMobileDebug(!showMobileDebug)}
-        sx={{
-          position: 'fixed',
-          top: 10,
-          right: 10,
-          width: 50,
-          height: 50,
-          backgroundColor: (() => {
-            // Check actual video state, not just our state
-            const video = videoRef.current;
-            const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
-            
-            if (videoError) return 'rgba(255,0,0,0.8)'; // Red for error
-            if (!video) return 'rgba(128,128,128,0.8)'; // Gray for no video
-            if (video.paused || timeSinceLastPlay > 5000) return 'rgba(255,165,0,0.8)'; // Orange for paused/inactive
-            if (isVideoPlaying && video.currentTime > 0 && !video.paused) return 'rgba(0,255,0,0.8)'; // Green for playing
-            return 'rgba(255,165,0,0.8)'; // Default orange
-          })(),
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '20px',
-          zIndex: 9999,
-          cursor: 'pointer',
-          border: '2px solid white',
-          animation: (() => {
-            const video = videoRef.current;
-            const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
-            // Blink if video is stuck
-            if (video && !video.paused && timeSinceLastPlay > 5000) {
-              return 'blink 1s infinite';
+      {/* Debug Toggle - Only in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <Box
+          onClick={() => setShowMobileDebug(!showMobileDebug)}
+          sx={{
+            position: 'fixed',
+            top: 10,
+            right: 10,
+            width: 40,
+            height: 40,
+            backgroundColor: (() => {
+              // Check actual video state, not just our state
+              const video = videoRef.current;
+              const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
+              
+              if (videoError) return 'rgba(255,0,0,0.7)'; // Red for error
+              if (!video) return 'rgba(128,128,128,0.7)'; // Gray for no video
+              if (video.paused || timeSinceLastPlay > 2000) return 'rgba(255,165,0,0.7)'; // Orange for paused/inactive
+              if (isVideoPlaying && video.currentTime > 0 && !video.paused) return 'rgba(0,255,0,0.7)'; // Green for playing
+              return 'rgba(255,165,0,0.7)'; // Default orange
+            })(),
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px',
+            zIndex: 9999,
+            cursor: 'pointer',
+            border: '1px solid white',
+            opacity: 0.8,
+            animation: (() => {
+              const video = videoRef.current;
+              const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
+              // Blink if video is stuck
+              if (video && !video.paused && timeSinceLastPlay > 2000) {
+                return 'blink 1s infinite';
+              }
+              return 'none';
+            })(),
+            '@keyframes blink': {
+              '0%, 50%': { opacity: 0.8 },
+              '51%, 100%': { opacity: 0.3 }
             }
-            return 'none';
-          })(),
-          '@keyframes blink': {
-            '0%, 50%': { opacity: 1 },
-            '51%, 100%': { opacity: 0.5 }
-          }
-        }}
-      >
-        📹
-      </Box>
+          }}
+        >
+          🎥
+        </Box>
+      )}
 
-      {/* Mobile Debug Panel */}
-      {showMobileDebug && (
+      {/* Mobile Debug Panel - Only in development */}
+      {process.env.NODE_ENV === 'development' && showMobileDebug && (
         <Box
           sx={{
             position: 'fixed',
