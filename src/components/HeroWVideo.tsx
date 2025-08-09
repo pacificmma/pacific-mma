@@ -1,162 +1,144 @@
-// src/components/HeroWVideo.tsx - BULLETPROOF VIDEO SYSTEM (FIXED)
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+// src/components/HeroWVideo.tsx - HYBRID VIDEO + FALLBACK SYSTEM
+import React, { useRef, useEffect, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
 
 const firstHeroVideo = '/assets/videos/first_hero_video.mp4';
+const fallbackImage = '/assets/img/home_page/video_poster.jpg';
 
 const Hero = () => {
   const theme = useTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const playPromiseRef = useRef<Promise<void> | null>(null);
-
-  const waitForCanPlay = (video: HTMLVideoElement) =>
-    new Promise<void>((resolve) => {
-      if (video.readyState >= 2) return resolve();
-      const onReady = () => resolve();
-      video.addEventListener('canplay', onReady, { once: true });
-    });
-
-  const hardResetSource = useCallback(async (video: HTMLVideoElement) => {
-    const src = video.currentSrc || video.src;
-    try {
-      video.pause();
-      // detach
-      video.removeAttribute('src');
-      video.load();
-      // reattach
-      if (src) video.src = src;
-      video.load();
-      await waitForCanPlay(video);
-    } catch {}
-  }, []);
-
-  const nudge = async (video: HTMLVideoElement) => {
-    try {
-      // tiny seek to force a new frame on Safari/iOS
-      video.currentTime = Math.max(0, video.currentTime + 0.001);
-    } catch {}
-  };
-
-  const ensureVideoPlays = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return false;
-
-    try {
-      // cancel any pending play()
-      if (playPromiseRef.current) {
-        await playPromiseRef.current.catch(() => {});
-        playPromiseRef.current = null;
-      }
-
-      // ensure optimal props
-      video.muted = true;
-      video.loop = true;
-      (video as any).playsInline = true; // TS quirk
-      video.preload = 'auto';
-
-      if (video.readyState < 2) {
-        video.load();
-        await waitForCanPlay(video);
-      }
-
-      // first attempt
-      playPromiseRef.current = video.play();
-      await playPromiseRef.current;
-      setIsPlaying(true);
-      return true;
-    } catch {
-      // try a gentle nudge
-      try {
-        const v = videoRef.current;
-        if (!v) return false;
-        await nudge(v);
-        playPromiseRef.current = v.play();
-        await playPromiseRef.current;
-        setIsPlaying(true);
-        return true;
-      } catch {
-        // last resort: hard reset src then play
-        try {
-          const v = videoRef.current;
-          if (!v) return false;
-          await hardResetSource(v);
-          await nudge(v);
-          playPromiseRef.current = v.play();
-          await playPromiseRef.current;
-          setIsPlaying(true);
-          return true;
-        } catch {
-          // still blocked (likely autoplay policy) – will retry on interaction/focus
-          setIsPlaying(false);
-          return false;
-        }
-      }
-    }
-  }, [hardResetSource]);
-
-  const initializeVideo = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    // attempt immediate play
-    void ensureVideoPlays();
-  }, [ensureVideoPlays]);
-
-  const handleVisibilityChange = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (document.visibilityState === 'visible') {
-      void ensureVideoPlays();
-    } else {
-      video.pause();
-      setIsPlaying(false);
-    }
-  }, [ensureVideoPlays]);
-
-  const handleUserInteraction = useCallback(() => {
-    void ensureVideoPlays();
-  }, [ensureVideoPlays]);
+  const [showFallback, setShowFallback] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // init
-    const timer = setTimeout(initializeVideo, 100);
+    const video = videoRef.current;
+    if (!video) return;
 
-    // visibility / focus
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleVisibilityChange);
+    // Set up video for maximum compatibility
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.controls = false;
+    video.preload = 'metadata';
 
-    // iOS/Safari bfcache return
-    const onPageShow = (e: Event) => {
-      const pageTransitionEvent = e as any;
-      if (pageTransitionEvent?.persisted) {
-        void ensureVideoPlays();
-      } else {
-        void ensureVideoPlays();
+    // Fallback timeout - if video doesn't start in 3 seconds, show fallback
+    fallbackTimeoutRef.current = setTimeout(() => {
+      if (video.paused || video.readyState < 3) {
+        console.warn('Video not playing after 3 seconds, showing fallback');
+        setShowFallback(true);
+      }
+    }, 3000);
+
+    // Try to play immediately
+    const tryPlay = async () => {
+      try {
+        await video.play();
+        // Video started successfully, clear fallback timeout
+        if (fallbackTimeoutRef.current) {
+          clearTimeout(fallbackTimeoutRef.current);
+        }
+        setShowFallback(false);
+        setVideoFailed(false);
+      } catch (error) {
+        console.warn('Auto-play failed, will retry on user interaction:', error);
       }
     };
-    const onPageHide = () => {
-      const v = videoRef.current;
-      if (v) v.pause();
-      setIsPlaying(false);
+
+    // Event listeners for video state
+    const onLoadedData = () => {
+      tryPlay();
     };
-    window.addEventListener('pageshow', onPageShow as any);
-    window.addEventListener('pagehide', onPageHide);
 
-    // keep listeners active (no { once: true })
-    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
-    document.addEventListener('click', handleUserInteraction);
+    const onCanPlay = () => {
+      tryPlay();
+    };
 
+    const onPlay = () => {
+      setShowFallback(false);
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+      }
+    };
+
+    const onPause = () => {
+      // If video pauses unexpectedly, try to restart
+      setTimeout(() => {
+        if (video && video.paused && !videoFailed) {
+          tryPlay();
+        }
+      }, 100);
+    };
+
+    const onError = () => {
+      console.error('Video failed to load');
+      setVideoFailed(true);
+      setShowFallback(true);
+    };
+
+    const onStalled = () => {
+      console.warn('Video stalled');
+      setShowFallback(true);
+      // Try to recover after a moment
+      setTimeout(() => {
+        if (video && video.readyState >= 2) {
+          tryPlay();
+        }
+      }, 1000);
+    };
+
+    // Attach event listeners
+    video.addEventListener('loadeddata', onLoadedData);
+    video.addEventListener('canplay', onCanPlay);
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+    video.addEventListener('error', onError);
+    video.addEventListener('stalled', onStalled);
+
+    // Visibility change handler
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !videoFailed) {
+        setTimeout(() => {
+          if (video && video.paused) {
+            tryPlay();
+          }
+        }, 500);
+      }
+    };
+
+    // User interaction handler
+    const onUserInteraction = () => {
+      if (!videoFailed && video && video.paused) {
+        tryPlay();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener('touchstart', onUserInteraction, { once: true });
+    document.addEventListener('click', onUserInteraction, { once: true });
+
+    // Initial load attempt
+    video.load();
+    
     return () => {
-      clearTimeout(timer);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleVisibilityChange);
-      window.removeEventListener('pageshow', onPageShow as any);
-      window.removeEventListener('pagehide', onPageHide);
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('click', handleUserInteraction);
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+      }
+      
+      video.removeEventListener('loadeddata', onLoadedData);
+      video.removeEventListener('canplay', onCanPlay);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+      video.removeEventListener('error', onError);
+      video.removeEventListener('stalled', onStalled);
+      
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('touchstart', onUserInteraction);
+      document.removeEventListener('click', onUserInteraction);
     };
-  }, [initializeVideo, handleVisibilityChange, handleUserInteraction, ensureVideoPlays]);
+  }, [videoFailed]);
 
   return (
     <Box
@@ -169,61 +151,79 @@ const Hero = () => {
         width: '100vw',
         height: { xs: '60vh', sm: '70vh', md: '45vh', lg: '45vh' },
         overflow: 'hidden',
-        m: 0,
-        p: 0,
+        margin: 0,
+        padding: 0,
         background: theme.palette.background.paper,
       }}
     >
       <Header />
-
+      
       {/* Video Layer */}
       <Box
         sx={{
           position: 'absolute',
-          inset: 0,
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
           overflow: 'hidden',
         }}
       >
+        {/* Video Element */}
         <video
           ref={videoRef}
           src={firstHeroVideo}
-          poster="/assets/img/home_page/video_poster.jpg"
+          poster={fallbackImage}
           autoPlay
           loop
           muted
           playsInline
-          preload="auto"
-          // don't apply CSS filters directly to the video on iOS
+          preload="metadata"
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'cover',
+            opacity: showFallback ? 0 : 1,
+            transition: 'opacity 0.5s ease',
             transform: 'translateZ(0)',
             WebkitTransform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
           }}
-          onLoadedData={() => void ensureVideoPlays()}
-          onCanPlay={() => void ensureVideoPlays()}
-          onPlay={() => {
-            setIsPlaying(true);
-            // remove poster if it sticks on iOS
-            try {
-              const v = videoRef.current;
-              if (v) v.removeAttribute('poster');
-            } catch {}
-          }}
-          onPause={() => setIsPlaying(false)}
-          onWaiting={() => void ensureVideoPlays()}
-          onStalled={() => void ensureVideoPlays()}
         />
 
-        {/* Dim Overlay instead of CSS filter on <video> */}
+        {/* Fallback Background - Animated Static Image */}
+        {showFallback && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${fallbackImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: showFallback ? 1 : 0,
+              transition: 'opacity 0.5s ease',
+              // Subtle animation to give life to static image
+              animation: 'slowPan 20s ease-in-out infinite alternate',
+              '@keyframes slowPan': {
+                '0%': { transform: 'scale(1.0) translateX(0%)' },
+                '100%': { transform: 'scale(1.05) translateX(-2%)' },
+              },
+            }}
+          />
+        )}
+
+        {/* Dim Overlay */}
         <Box
           sx={{
             position: 'absolute',
-            inset: 0,
-            background: 'rgba(0,0,0,0.2)',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.3)',
             pointerEvents: 'none',
           }}
         />
@@ -283,22 +283,43 @@ const Hero = () => {
         </Box>
       </Box>
 
-      {/* Dev Debug Dot */}
+      {/* Debug indicator - Development only */}
       {process.env.NODE_ENV === 'development' && (
         <Box
           sx={{
             position: 'fixed',
             top: 10,
             right: 10,
-            width: 30,
-            height: 30,
-            borderRadius: '50%',
-            backgroundColor: isPlaying ? 'green' : 'orange',
-            border: '2px solid white',
+            display: 'flex',
+            gap: 1,
             zIndex: 9999,
-            opacity: 0.7,
           }}
-        />
+        >
+          {/* Video status */}
+          <Box
+            sx={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              backgroundColor: videoRef.current?.paused === false ? 'green' : 'red',
+              border: '1px solid white',
+              opacity: 0.8,
+            }}
+            title="Video Status"
+          />
+          {/* Fallback status */}
+          <Box
+            sx={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              backgroundColor: showFallback ? 'orange' : 'transparent',
+              border: '1px solid white',
+              opacity: 0.8,
+            }}
+            title="Fallback Status"
+          />
+        </Box>
       )}
 
       {/* SVG Wave */}
@@ -332,6 +353,7 @@ const Hero = () => {
           />
         </svg>
       </Box>
+      
       <Box
         sx={{
           position: 'absolute',
