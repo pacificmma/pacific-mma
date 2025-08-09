@@ -35,11 +35,11 @@ const HeroWTrainer = () => {
           flexDirection: { xs: 'column', md: 'row' },
           alignItems: { xs: 'center', md: 'flex-start' },
           justifyContent: 'space-between',
-          gap: { xs: '2rem', md: '3rem' },
-          padding: { xs: '1rem', sm: '2rem', md: '3rem' },
+          gap: { xs: '1rem', md: '1.5rem' },
+          padding: { xs: '0.5rem', sm: '1rem', md: '1.5rem' },
         }}
       >
-        {/* Text Content */}
+        {/* Text Content with Title */}
         <Box 
           sx={{ 
             flex: { xs: '1', md: '1.2' }, 
@@ -48,13 +48,21 @@ const HeroWTrainer = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-start',
+            order: { xs: 2, md: 1 }, // İkinci sırada mobilde, birinci sırada desktop'ta
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+          {/* Title and Instagram Icon - Show only on desktop */}
+          <Box sx={{ 
+            display: { xs: 'none', md: 'flex' }, 
+            alignItems: 'center', 
+            justifyContent: 'flex-start', 
+            gap: 2, 
+            mb: 1 
+          }}>
             <Typography
               variant="h6"
               sx={{
-                fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
+                fontSize: { xs: '1.5rem', sm: '2.3rem', md: '3rem' },
                 lineHeight: { xs: 1.4, sm: 1.4 },
                 letterSpacing: '0.6px',
                 color: theme.palette.primary.contrastText,
@@ -183,18 +191,58 @@ const HeroWTrainer = () => {
           </Box>
         </Box>
 
-        {/* Image */}
+        {/* Image Section - Mobile Title Above */}
         <Box
           sx={{
             flex: { xs: '1', md: '0.8' },
             display: 'flex',
+            flexDirection: 'column',
             justifyContent: { xs: 'center', md: 'flex-end' },
-            alignItems: 'flex-start',
+            alignItems: 'center',
             height: '100%',
             mt: 0,
             pt: 0,
+            order: { xs: 1, md: 2 }, // İlk sırada mobilde, ikinci sırada desktop'ta
           }}
         >
+          {/* Title and Instagram Icon - Show only on mobile */}
+          <Box sx={{ 
+            display: { xs: 'flex', md: 'none' }, 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: 2, 
+            mb: 2 
+          }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1.5rem', sm: '2.3rem', md: '3rem' },
+                lineHeight: { xs: 1.4, sm: 1.4 },
+                letterSpacing: '0.6px',
+                color: theme.palette.primary.contrastText,
+                textTransform: 'none',
+                fontFamily: theme.typography.fontFamily,
+                marginTop: 0,
+                paddingTop: 0,
+              }}
+            >
+             PACIFIC MMA ACADEMY
+            </Typography>
+            <InstagramIcon 
+              onClick={() => window.open('https://www.instagram.com/pacificmma.academy/', '_blank')}
+              sx={{ 
+                fontSize: { xs: '1.8rem', md: '2.4rem' },
+                color: theme.palette.primary.contrastText,
+                cursor: 'pointer',
+                '&:hover': {
+                  color: theme.palette.secondary.main,
+                  transform: 'scale(1.1)',
+                },
+                transition: 'all 0.3s ease',
+              }} 
+            />
+          </Box>
+          
           <Box
             component="img"
             src={BrendaWBrothers}

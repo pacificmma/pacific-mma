@@ -40,16 +40,25 @@ const customExperience: Destination = {
 
 const destinations = [customExperience, ...originalDestinations] as Destination[];
 
-// Sonsuz döngü için kartları 3 kez kopyala
-const infiniteCards = [...destinations, ...destinations, ...destinations];
+// CSS-based infinite scroll için kartları 2 kez kopyala
+const infiniteCards = [...destinations, ...destinations];
 
 const DestinationSlider = () => {
   const theme = useTheme();
   const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
+  const isXL = useMediaQuery(theme.breakpoints.up('xl'));
+  const isLG = useMediaQuery(theme.breakpoints.up('lg'));
+  const isMD = useMediaQuery(theme.breakpoints.up('md'));
+  const isSM = useMediaQuery(theme.breakpoints.up('sm'));
+  
+  const cardWidth = isXL ? 450 : isLG ? 400 : isMD ? 366 : isSM ? 300 : 256;
+  const totalCards = destinations.length;
+  const totalWidth = cardWidth * totalCards;
+  
   const [slideshowIndex, setSlideshowIndex] = useState(0);
-  const [offset, setOffset] = useState(0);
+  const [translateX, setTranslateX] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
@@ -62,20 +71,11 @@ const DestinationSlider = () => {
   const animationRef = useRef<number | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   
-  const isXL = useMediaQuery(theme.breakpoints.up('xl'));
-  const isLG = useMediaQuery(theme.breakpoints.up('lg'));
-  const isMD = useMediaQuery(theme.breakpoints.up('md'));
-  const isSM = useMediaQuery(theme.breakpoints.up('sm'));
-  
-  const cardWidth = isXL ? 450 : isLG ? 400 : isMD ? 366 : isSM ? 300 : 256;
-  const totalCards = destinations.length;
-  const totalWidth = cardWidth * totalCards;
-  
   // Custom experience slideshow
   useEffect(() => {
     const interval = setInterval(() => {
       setSlideshowIndex((prev) => (prev + 1) % (customExperience.image as string[]).length);
-    }, 2000);
+    }, 1000);
     
     return () => clearInterval(interval);
   }, []);
@@ -112,18 +112,8 @@ const DestinationSlider = () => {
     setIsDragging(false);
     
     if (Math.abs(swipeDistance) > minSwipeDistance) {
-      // Swipe yapıldıysa offset'i güncelle
-      setOffset(prev => {
-        let newOffset = prev - swipeDistance;
-        // Sonsuz döngü için sınırları kontrol et
-        while (newOffset <= -totalWidth) {
-          newOffset += totalWidth;
-        }
-        while (newOffset >= 0) {
-          newOffset -= totalWidth;
-        }
-        return newOffset;
-      });
+      // Swipe yapıldıysa translateX'i güncelle - hiç boundary kontrolü yok
+      setTranslateX(prev => prev - swipeDistance);
     }
     
     // Drag offset'i sıfırla
@@ -135,21 +125,20 @@ const DestinationSlider = () => {
     }, 1500);
   };
 
-  // Sürekli kayma animasyonu
+  // CSS-based infinite scroll - hiç reset olmayan sistem
   const animate = useCallback(() => {
     if (!isPaused && !isDragging) {
-      setOffset(prev => {
-        const speed = isMobile ? 0.8 : 2; // Mobilde biraz daha yavaş
-        const newOffset = prev - speed;
-        // Bir set tamamlandığında sıfırla
-        if (Math.abs(newOffset) >= totalWidth) {
-          return 0;
-        }
-        return newOffset;
+      setTranslateX(prev => {
+        const speed = isMobile ? 1.5 : 3.5;
+        const newTranslateX = prev - speed;
+        
+        // Hiç reset yok, sürekli azalan değer
+        // CSS ile modulo effect yaratacağız
+        return newTranslateX;
       });
     }
     animationRef.current = requestAnimationFrame(animate);
-  }, [isPaused, isDragging, totalWidth, isMobile]);
+  }, [isPaused, isDragging, isMobile]);
   
   // Animasyonu başlat/durdur
   useEffect(() => {
@@ -167,6 +156,35 @@ const DestinationSlider = () => {
       }
     };
   }, [animate, isPaused, isDragging]);
+
+  // Desktop için ok tuşları - smooth slide geçiş (hızlanma + yavaşlama)
+  const createSmoothSlide = (direction: 'prev' | 'next') => {
+    if (isMobile) return;
+    
+    const totalFrames = 20; // Toplam animasyon frame sayısı
+    let currentFrame = 0;
+    const baseSpeed = 8; // Temel hız
+    
+    const slideAnimation = () => {
+      if (currentFrame < totalFrames) {
+        // Easing function: hızlı başla, yavaş bitir (ease-out)
+        const progress = currentFrame / totalFrames;
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const frameSpeed = baseSpeed * (1 - easeOut) + 2; // Minimum 2px/frame
+        
+        const movement = direction === 'prev' ? frameSpeed : -frameSpeed;
+        setTranslateX(prev => prev + movement);
+        
+        currentFrame++;
+        requestAnimationFrame(slideAnimation);
+      }
+    };
+    
+    slideAnimation();
+  };
+
+  const handlePrevClick = () => createSmoothSlide('prev');
+  const handleNextClick = () => createSmoothSlide('next');
 
   // Mobil için touch feedback - kartlara dokunduğunda animasyon dursun
   const handleCardTouchStart = (index: number, e: React.TouchEvent) => {
@@ -300,14 +318,64 @@ const DestinationSlider = () => {
           onTouchMove={isMobile ? handleTouchMove : undefined}
           onTouchEnd={isMobile ? handleTouchEnd : undefined}
         >
+          {/* Sol Ok Tuşu - Sadece Desktop */}
+          {!isMobile && (
+            <IconButton
+              onClick={handlePrevClick}
+              sx={{
+                position: 'absolute',
+                left: { xs: 8, md: 16 },
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 10,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: theme.palette.primary.contrastText,
+                width: { xs: 40, md: 48 },
+                height: { xs: 40, md: 48 },
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  color: theme.palette.secondary.main,
+                },
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <ArrowBackIosNewIcon />
+            </IconButton>
+          )}
+
+          {/* Sağ Ok Tuşu - Sadece Desktop */}
+          {!isMobile && (
+            <IconButton
+              onClick={handleNextClick}
+              sx={{
+                position: 'absolute',
+                right: { xs: 8, md: 16 },
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 10,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: theme.palette.primary.contrastText,
+                width: { xs: 40, md: 48 },
+                height: { xs: 40, md: 48 },
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  color: theme.palette.secondary.main,
+                },
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <ArrowForwardIosIcon />
+            </IconButton>
+          )}
           {/* Slider Track */}
           <Box
             sx={{
               display: 'flex',
               gap: 2,
-              transform: `translateX(${offset + dragOffset}px)`,
+              transform: `translateX(${(translateX + dragOffset) % totalWidth}px)`,
               willChange: 'transform',
-              transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+              transition: isDragging ? 'none' : 'none', // Hiç transition yok, sürekli hareket
+              width: `${totalWidth * 2}px`, // 2 kopya genişliği
             }}
           >
             {infiniteCards.map((destination, index) => (
