@@ -32,7 +32,7 @@ const ServicesHero = () => {
   }, []);
 
   return (
-    <Box sx={{ backgroundColor: theme.palette.background.default, mb:'2rem'}}>
+    <Box sx={{ backgroundColor: theme.palette.background.default, mb: '2rem' }}>
       {/* Hero Section */}
       <Box
         sx={{
@@ -124,6 +124,7 @@ const ServicesHero = () => {
                     fontSize: { xs: '0.9rem', sm: '0.95rem' },
                     flex: 1
                   }}
+                >
                   {service.description}
                 </Typography>
               </CardContent>
