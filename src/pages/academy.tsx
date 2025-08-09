@@ -351,6 +351,7 @@ const AcademyPage = () => {
 
             {/* Class Calendar with separate background */}
             <Box
+                id="schedule"
                 sx={{
                     backgroundColor: currentTheme.palette.background.default,
                     color: currentTheme.palette.text.primary,

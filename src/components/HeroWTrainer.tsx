@@ -174,7 +174,41 @@ const HeroWTrainer = () => {
             <Button
               variant="outlined"
               startIcon={<CalendarMonthIcon />}
-              onClick={() => router.push('/academy#schedule')}
+              onClick={() => {
+                // Check if we're already on academy page
+                if (router.pathname === '/academy') {
+                  const scheduleElement = document.getElementById('schedule');
+                  if (scheduleElement) {
+                    scheduleElement.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'start' 
+                    });
+                  }
+                } else {
+                  // Navigate to academy page with hash
+                  router.push('/academy').then(() => {
+                    // Multiple attempts to find and scroll to element
+                    let attempts = 0;
+                    const maxAttempts = 10;
+                    
+                    const tryScroll = () => {
+                      const scheduleElement = document.getElementById('schedule');
+                      if (scheduleElement) {
+                        scheduleElement.scrollIntoView({ 
+                          behavior: 'smooth', 
+                          block: 'start' 
+                        });
+                      } else if (attempts < maxAttempts) {
+                        attempts++;
+                        setTimeout(tryScroll, 200);
+                      }
+                    };
+                    
+                    // Start trying after initial delay
+                    setTimeout(tryScroll, 300);
+                  });
+                }
+              }}
               sx={{
                 backgroundColor: theme.palette.secondary.main,
                 color: theme.palette.primary.contrastText,

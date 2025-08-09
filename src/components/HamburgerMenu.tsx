@@ -329,6 +329,31 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
       </Box> */}
       {/* User Menu End */}
 
+      {/* Book Button */}
+      <Box sx={{ width: '100%', maxWidth: { xs: '200px', sm: '220px', md: '240px' }, mt: 2, mx: 'auto' }}>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={() => {
+            router.push('/book');
+            toggleDrawer();
+          }}
+          sx={{
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.primary.contrastText,
+            fontWeight: theme.typography.button.fontWeight,
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+            borderRadius: '25px',
+            minHeight: { xs: '40px', sm: '42px' },
+            py: { xs: 1, sm: 1.2 },
+            px: { xs: 2, sm: 2.5 },
+            '&:hover': { backgroundColor: theme.palette.secondary.dark },
+          }}
+        >
+          Book
+        </Button>
+      </Box>
+
       <Box sx={{ textAlign: 'center', mb: 3 }}>
         <Typography variant="body2" fontWeight="bold" sx={{ mb: 1, color: theme.palette.primary.contrastText }}>
           Follow us on social media:
