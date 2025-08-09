@@ -199,7 +199,8 @@ const Hero = () => {
       setIsVideoPlaying(false);
       // Video is waiting for more data
       setTimeout(() => {
-        if (video.readyState < 3) {
+        const currentVideo = videoRef.current;
+        if (currentVideo && currentVideo.readyState < 3) {
           resetVideo();
         }
       }, 3000);
@@ -268,7 +269,7 @@ const Hero = () => {
     window.addEventListener('focus', handleWindowFocus);
     window.addEventListener('pageshow', handlePageShow);
     video.addEventListener('error', handleVideoError);
-    video.addEventListener('stalled', handleVideoStall);
+    video.addEventListener('stalled', handleVideoStalled);
     video.addEventListener('waiting', handleVideoWaiting);
     video.addEventListener('play', handleVideoPlay);
     video.addEventListener('pause', handleVideoPause);
@@ -307,7 +308,7 @@ const Hero = () => {
       
       if (video) {
         video.removeEventListener('error', handleVideoError);
-        video.removeEventListener('stalled', handleVideoStall);
+        video.removeEventListener('stalled', handleVideoStalled);
         video.removeEventListener('waiting', handleVideoWaiting);
         video.removeEventListener('play', handleVideoPlay);
         video.removeEventListener('pause', handleVideoPause);
