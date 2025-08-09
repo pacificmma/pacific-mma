@@ -1,4 +1,4 @@
-// src/components/HeroWVideo.tsx - BULLETPROOF VIDEO SYSTEM
+// src/components/HeroWVideo.tsx - BULLETPROOF VIDEO SYSTEM (FIXED)
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
@@ -11,87 +11,152 @@ const Hero = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
-  // Force play function with promise handling
+  const waitForCanPlay = (video: HTMLVideoElement) =>
+    new Promise<void>((resolve) => {
+      if (video.readyState >= 2) return resolve();
+      const onReady = () => resolve();
+      video.addEventListener('canplay', onReady, { once: true });
+    });
+
+  const hardResetSource = async (video: HTMLVideoElement) => {
+    const src = video.currentSrc || video.src;
+    try {
+      video.pause();
+      // detach
+      video.removeAttribute('src');
+      video.load();
+      // reattach
+      if (src) video.src = src;
+      video.load();
+      await waitForCanPlay(video);
+    } catch {}
+  };
+
+  const nudge = async (video: HTMLVideoElement) => {
+    try {
+      // tiny seek to force a new frame on Safari/iOS
+      video.currentTime = Math.max(0, video.currentTime + 0.001);
+    } catch {}
+  };
+
   const ensureVideoPlays = useCallback(async () => {
     const video = videoRef.current;
     if (!video) return false;
 
     try {
-      // Cancel any existing play promise
+      // cancel any pending play()
       if (playPromiseRef.current) {
         await playPromiseRef.current.catch(() => {});
+        playPromiseRef.current = null;
       }
 
-      // Ensure video is ready
+      // ensure optimal props
+      video.muted = true;
+      video.loop = true;
+      (video as any).playsInline = true; // TS quirk
+      video.preload = 'auto';
+
       if (video.readyState < 2) {
         video.load();
-        await new Promise((resolve) => {
-          if (video.readyState >= 2) resolve(true);
-          else video.addEventListener('canplay', resolve, { once: true });
-        });
+        await waitForCanPlay(video);
       }
 
-      // Start playing
+      // first attempt
       playPromiseRef.current = video.play();
       await playPromiseRef.current;
       setIsPlaying(true);
       return true;
-    } catch (error) {
-      console.warn('Video play failed:', error);
-      return false;
+    } catch {
+      // try a gentle nudge
+      try {
+        const v = videoRef.current;
+        if (!v) return false;
+        await nudge(v);
+        playPromiseRef.current = v.play();
+        await playPromiseRef.current;
+        setIsPlaying(true);
+        return true;
+      } catch {
+        // last resort: hard reset src then play
+        try {
+          const v = videoRef.current;
+          if (!v) return false;
+          await hardResetSource(v);
+          await nudge(v);
+          playPromiseRef.current = v.play();
+          await playPromiseRef.current;
+          setIsPlaying(true);
+          return true;
+        } catch {
+          // still blocked (likely autoplay policy) – will retry on interaction/focus
+          setIsPlaying(false);
+          return false;
+        }
+      }
     }
   }, []);
 
-  // Initialize video with user interaction
   const initializeVideo = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
-
-    // Set optimal properties
-    video.muted = true;
-    video.loop = true;
-    video.playsInline = true;
-    video.preload = 'auto';
-
-    // Try to play immediately
-    ensureVideoPlays();
+    // attempt immediate play
+    void ensureVideoPlays();
   }, [ensureVideoPlays]);
 
-  // Handle visibility change
   const handleVisibilityChange = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
     if (document.visibilityState === 'visible') {
-      const video = videoRef.current;
-      if (video && video.paused) {
-        ensureVideoPlays();
-      }
+      void ensureVideoPlays();
+    } else {
+      video.pause();
+      setIsPlaying(false);
     }
   }, [ensureVideoPlays]);
 
-  // Handle user interaction
   const handleUserInteraction = useCallback(() => {
-    ensureVideoPlays();
+    void ensureVideoPlays();
   }, [ensureVideoPlays]);
 
   useEffect(() => {
-    // Initialize on mount
+    // init
     const timer = setTimeout(initializeVideo, 100);
 
-    // Listen for app state changes
+    // visibility / focus
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleVisibilityChange);
 
-    // Listen for user interactions (for iOS/Safari)
-    document.addEventListener('touchstart', handleUserInteraction, { once: true });
-    document.addEventListener('click', handleUserInteraction, { once: true });
+    // iOS/Safari bfcache return
+    const onPageShow = (e: Event) => {
+      // @ts-ignore - PageTransitionEvent
+      if (e && (e as any).persisted) {
+        void ensureVideoPlays();
+      } else {
+        void ensureVideoPlays();
+      }
+    };
+    const onPageHide = () => {
+      const v = videoRef.current;
+      if (v) v.pause();
+      setIsPlaying(false);
+    };
+    window.addEventListener('pageshow', onPageShow as any);
+    window.addEventListener('pagehide', onPageHide);
+
+    // keep listeners active (no { once: true })
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    document.addEventListener('click', handleUserInteraction);
 
     return () => {
       clearTimeout(timer);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleVisibilityChange);
+      window.removeEventListener('pageshow', onPageShow as any);
+      window.removeEventListener('pagehide', onPageHide);
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
     };
-  }, [initializeVideo, handleVisibilityChange, handleUserInteraction]);
+  }, [initializeVideo, handleVisibilityChange, handleUserInteraction, ensureVideoPlays]);
 
   return (
     <Box
@@ -104,21 +169,18 @@ const Hero = () => {
         width: '100vw',
         height: { xs: '60vh', sm: '70vh', md: '45vh', lg: '45vh' },
         overflow: 'hidden',
-        margin: 0,
-        padding: 0,
+        m: 0,
+        p: 0,
         background: theme.palette.background.paper,
       }}
     >
       <Header />
-      
-      {/* Video container */}
+
+      {/* Video Layer */}
       <Box
         sx={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
+          inset: 0,
           overflow: 'hidden',
         }}
       >
@@ -131,25 +193,39 @@ const Hero = () => {
           muted
           playsInline
           preload="auto"
-          webkit-playsinline="true"
-          x5-playsinline="true"
+          // don't apply CSS filters directly to the video on iOS
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            filter: 'brightness(0.8)',
-            // Hardware acceleration
             transform: 'translateZ(0)',
             WebkitTransform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
           }}
-          onLoadedData={() => ensureVideoPlays()}
-          onCanPlay={() => ensureVideoPlays()}
-          onPlay={() => setIsPlaying(true)}
+          onLoadedData={() => void ensureVideoPlays()}
+          onCanPlay={() => void ensureVideoPlays()}
+          onPlay={() => {
+            setIsPlaying(true);
+            // remove poster if it sticks on iOS
+            try {
+              const v = videoRef.current;
+              if (v) v.removeAttribute('poster');
+            } catch {}
+          }}
           onPause={() => setIsPlaying(false)}
-          onWaiting={() => ensureVideoPlays()}
-          onStalled={() => ensureVideoPlays()}
+          onWaiting={() => void ensureVideoPlays()}
+          onStalled={() => void ensureVideoPlays()}
+        />
+
+        {/* Dim Overlay instead of CSS filter on <video> */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(0,0,0,0.2)',
+            pointerEvents: 'none',
+          }}
         />
       </Box>
 
@@ -168,16 +244,10 @@ const Hero = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          px: 2,
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography
             variant="h6"
             sx={{
@@ -213,7 +283,7 @@ const Hero = () => {
         </Box>
       </Box>
 
-      {/* Development debug indicator */}
+      {/* Dev Debug Dot */}
       {process.env.NODE_ENV === 'development' && (
         <Box
           sx={{
@@ -231,7 +301,7 @@ const Hero = () => {
         />
       )}
 
-      {/* SVG wave */}
+      {/* SVG Wave */}
       <Box
         sx={{
           position: 'absolute',
