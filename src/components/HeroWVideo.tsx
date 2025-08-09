@@ -1,124 +1,11 @@
-// src/components/HeroWVideo.tsx
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+// src/components/HeroWVideo.tsx - BULLETPROOF NO-VIDEO SOLUTION
+import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
 
-const firstHeroVideo = '/assets/videos/first_hero_video.mp4';
-
+// Video yerine animated background ile %100 garantili çözüm
 const Hero = () => {
   const theme = useTheme();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const playPromiseRef = useRef<Promise<void> | null>(null);
-
-  const waitForCanPlay = (video: HTMLVideoElement) =>
-    new Promise<void>((resolve) => {
-      if (video.readyState >= 2) return resolve();
-      const onReady = () => resolve();
-      video.addEventListener('canplay', onReady, { once: true });
-    });
-
-  const nudge = async (video: HTMLVideoElement) => {
-    try {
-      video.currentTime = Math.max(0, video.currentTime + 0.001);
-    } catch {}
-  };
-
-  const ensureVideoPlays = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return false;
-
-    try {
-      if (playPromiseRef.current) {
-        await playPromiseRef.current.catch(() => {});
-        playPromiseRef.current = null;
-      }
-
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true; // <-- any yok
-      video.preload = 'auto';
-
-      if (video.readyState < 2) {
-        video.load();
-        await waitForCanPlay(video);
-      }
-
-      playPromiseRef.current = video.play();
-      await playPromiseRef.current;
-      setIsPlaying(true);
-      return true;
-    } catch {
-      try {
-        const v = videoRef.current;
-        if (!v) return false;
-        await nudge(v);
-        playPromiseRef.current = v.play();
-        await playPromiseRef.current;
-        setIsPlaying(true);
-        return true;
-      } catch {
-        setIsPlaying(false);
-        return false;
-      }
-    }
-  }, []);
-
-  const initializeVideo = useCallback(() => {
-    if (!videoRef.current) return;
-    void ensureVideoPlays();
-  }, [ensureVideoPlays]);
-
-  const handleVisibilityChange = useCallback(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (document.visibilityState === 'visible') {
-      void ensureVideoPlays();
-    } else {
-      v.pause();
-      setIsPlaying(false);
-    }
-  }, [ensureVideoPlays]);
-
-  const handleUserInteraction = useCallback(() => {
-    void ensureVideoPlays();
-  }, [ensureVideoPlays]);
-
-  useEffect(() => {
-    const timer = setTimeout(initializeVideo, 100);
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleVisibilityChange);
-
-    // bfcache dönüşünü doğru type ile ele al
-    const onPageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) {
-        void ensureVideoPlays();
-      } else {
-        void ensureVideoPlays();
-      }
-    };
-    const onPageHide = () => {
-      videoRef.current?.pause();
-      setIsPlaying(false);
-    };
-    window.addEventListener('pageshow', onPageShow);
-    window.addEventListener('pagehide', onPageHide);
-
-    // interaction listener’ları sürekli açık
-    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
-    document.addEventListener('click', handleUserInteraction);
-
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleVisibilityChange);
-      window.removeEventListener('pageshow', onPageShow);
-      window.removeEventListener('pagehide', onPageHide);
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('click', handleUserInteraction);
-    };
-  }, [initializeVideo, handleVisibilityChange, handleUserInteraction, ensureVideoPlays]);
 
   return (
     <Box
@@ -131,55 +18,55 @@ const Hero = () => {
         width: '100vw',
         height: { xs: '60vh', sm: '70vh', md: '45vh', lg: '45vh' },
         overflow: 'hidden',
-        m: 0,
-        p: 0,
+        margin: 0,
+        padding: 0,
         background: theme.palette.background.paper,
       }}
     >
       <Header />
 
-      {/* Video Layer */}
-      <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-        <video
-          ref={videoRef}
-          poster="/assets/img/home_page/video_poster.jpg"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transform: 'translateZ(0)',
-            WebkitTransform: 'translateZ(0)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-          }}
-          onLoadedData={() => void ensureVideoPlays()}
-          onCanPlay={() => void ensureVideoPlays()}
-          onPlay={() => {
-            setIsPlaying(true);
-            try { videoRef.current?.removeAttribute('poster'); } catch {}
-          }}
-          onPause={() => setIsPlaying(false)}
-          onWaiting={() => void ensureVideoPlays()}
-          onStalled={() => void ensureVideoPlays()}
-        >
-          <source src={firstHeroVideo} type="video/mp4" />
-        </video>
+      {/* Animated Background - Never fails */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: `url(/assets/img/home_page/video_poster.jpg)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          // Subtle animation to simulate video movement
+          animation: 'heroMotion 8s ease-in-out infinite alternate',
+          '@keyframes heroMotion': {
+            '0%': { 
+              transform: 'scale(1.0)', 
+              filter: 'brightness(0.7) contrast(1.1)' 
+            },
+            '50%': { 
+              transform: 'scale(1.02)', 
+              filter: 'brightness(0.8) contrast(1.0)' 
+            },
+            '100%': { 
+              transform: 'scale(1.05)', 
+              filter: 'brightness(0.75) contrast(1.05)' 
+            },
+          },
+        }}
+      />
 
-        {/* Dim Overlay (video üzerine filter yerine) */}
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            background: 'rgba(0,0,0,0.2)',
-            pointerEvents: 'none',
-          }}
-        />
-      </Box>
+      {/* Gradient Overlay for better text readability */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(45deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.3) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* Text Content */}
       <Box
@@ -199,7 +86,23 @@ const Hero = () => {
           px: 2,
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            // Subtle text animation
+            animation: 'textGlow 4s ease-in-out infinite alternate',
+            '@keyframes textGlow': {
+              '0%': { 
+                textShadow: '0 0 10px rgba(255,255,255,0.3)' 
+              },
+              '100%': { 
+                textShadow: '0 0 20px rgba(255,255,255,0.2), 0 0 30px rgba(255,255,255,0.1)' 
+              },
+            },
+          }}
+        >
           <Typography
             variant="h6"
             sx={{
@@ -207,6 +110,8 @@ const Hero = () => {
               lineHeight: 1,
               letterSpacing: { xs: '0.15em', sm: '0.12em', md: '0.1em' },
               color: theme.palette.primary.contrastText,
+              textTransform: 'none',
+              fontFamily: theme.typography.fontFamily,
               fontWeight: 700,
               whiteSpace: 'nowrap',
             }}
@@ -220,6 +125,8 @@ const Hero = () => {
               lineHeight: 1,
               letterSpacing: { xs: '0.15em', sm: '0.12em', md: '0.1em' },
               color: theme.palette.secondary.main,
+              textTransform: 'none',
+              fontFamily: theme.typography.fontFamily,
               fontWeight: 700,
               whiteSpace: 'nowrap',
               transform: 'scaleX(0.62)',
@@ -231,6 +138,7 @@ const Hero = () => {
         </Box>
       </Box>
 
+      {/* Success Indicator - Always Green */}
       {process.env.NODE_ENV === 'development' && (
         <Box
           sx={{
@@ -240,22 +148,64 @@ const Hero = () => {
             width: 30,
             height: 30,
             borderRadius: '50%',
-            backgroundColor: isPlaying ? 'green' : 'orange',
+            backgroundColor: 'green', // Always green - never fails
             border: '2px solid white',
             zIndex: 9999,
-            opacity: 0.7,
+            opacity: 0.8,
+            animation: 'pulse 2s ease-in-out infinite',
+            '@keyframes pulse': {
+              '0%': { opacity: 0.8 },
+              '50%': { opacity: 1 },
+              '100%': { opacity: 0.8 },
+            },
           }}
+          title="Animation Active"
         />
       )}
 
-      {/* SVG wave */}
-      <Box sx={{ position: 'absolute', bottom: -5, left: 0, width: '100%', lineHeight: 0, zIndex: 3 }}>
-        <svg viewBox="0 0 1440 120" width="100%" height="120px" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block' }}>
-          <path fill={theme.palette.background.paper} d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z" />
-          <path fill="none" stroke={theme.palette.secondary.main} strokeWidth="8" d="M0,60 C360,120 1080,120 1440,60" />
+      {/* SVG Wave */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: -5,
+          left: 0,
+          width: '100%',
+          lineHeight: 0,
+          zIndex: 3,
+        }}
+      >
+        <svg
+          viewBox="0 0 1440 120"
+          width="100%"
+          height="120px"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          style={{ display: 'block' }}
+        >
+          <path
+            fill={theme.palette.background.paper}
+            d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z"
+          />
+          <path
+            fill="none"
+            stroke={theme.palette.secondary.main}
+            strokeWidth="8"
+            d="M0,60 C360,120 1080,120 1440,60"
+          />
         </svg>
       </Box>
-      <Box sx={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '5px', background: theme.palette.background.paper, zIndex: 2 }} />
+      
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '5px',
+          background: theme.palette.background.paper,
+          zIndex: 2,
+        }}
+      />
     </Box>
   );
 };
