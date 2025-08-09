@@ -100,9 +100,10 @@ const Hero: React.FC = () => {
 
   // Yeni video DOM’u yaratıldıktan sonra oynatmayı dene
   useEffect(() => {
-    let t = setTimeout(() => { void tryPlay(); }, 100);
-    return () => clearTimeout(t);
+    const timeoutId = window.setTimeout(() => { void tryPlay(); }, 100);
+    return () => window.clearTimeout(timeoutId);
   }, [videoKey, tryPlay]);
+  
 
   return (
     <Box
