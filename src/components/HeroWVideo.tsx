@@ -14,25 +14,61 @@ const Hero = () => {
   const playbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const recoveryAttemptRef = useRef<number>(0);
   const lastPlayTimeRef = useRef<number>(0);
+  const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const forceRecoveryIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('Initializing...');
+  const [showMobileDebug, setShowMobileDebug] = useState(false);
 
-  // iPad/Safari video recovery system
+  // Mobile-friendly debug logging
+  const mobileLog = (message: string) => {
+    console.log(message);
+    setDebugInfo(prev => {
+      const timestamp = new Date().toLocaleTimeString();
+      const newLog = `[${timestamp}] ${message}`;
+      // Keep only last 3 logs for mobile display
+      const logs = prev.split('\n').slice(-2);
+      return [...logs, newLog].join('\n');
+    });
+  };
+
+  // Enhanced video recovery system
   const resetVideo = () => {
     const video = videoRef.current;
     if (!video) return;
 
+    mobileLog('Resetting video...');
     try {
+      // Force video to restart completely
+      video.pause();
       video.currentTime = 0;
       video.load(); // Reload video source
-      setTimeout(() => {
-        video.play().then(() => {
-          setIsVideoPlaying(true);
-          setVideoError(false);
-        }).catch(() => {
+      
+      // Multiple attempts with different timings
+      const attemptPlay = (attempt: number = 0) => {
+        if (attempt > 3) {
+          console.error('Max reset attempts reached');
           setVideoError(true);
-        });
-      }, 100);
+          return;
+        }
+
+        setTimeout(() => {
+          video.play().then(() => {
+            mobileLog(`Video reset successful on attempt ${attempt + 1}`);
+            setIsVideoPlaying(true);
+            setVideoError(false);
+            lastPlayTimeRef.current = Date.now();
+            recoveryAttemptRef.current = 0;
+          }).catch((error) => {
+            mobileLog(`Video reset attempt ${attempt + 1} failed: ${error.message}`);
+            attemptPlay(attempt + 1);
+          });
+        }, 200 * (attempt + 1)); // Progressive delay
+      };
+
+      attemptPlay();
     } catch (error) {
-      console.warn('Video reset failed:', error);
+      console.error('Video reset failed:', error);
       setVideoError(true);
     }
   };
@@ -60,7 +96,7 @@ const Hero = () => {
     // Check if video needs recovery
     if (video.paused || video.ended || video.readyState < 2 || timeSinceLastPlay > 30000) {
       recoveryAttemptRef.current++;
-      console.log(`Video recovery attempt ${recoveryAttemptRef.current}`);
+      mobileLog(`Video recovery attempt ${recoveryAttemptRef.current}`);
 
       // For mobile browsers, try different recovery strategies
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -71,12 +107,13 @@ const Hero = () => {
       } else {
         // Try simple play first
         video.play().then(() => {
+          mobileLog('Simple play recovery successful');
           setIsVideoPlaying(true);
           setVideoError(false);
           lastPlayTimeRef.current = currentTime;
           recoveryAttemptRef.current = 0; // Reset counter on success
         }).catch((error) => {
-          console.warn('Video play failed:', error);
+          mobileLog(`Video play failed: ${error.message}`);
           // If play fails, do full reset after delay
           playbackTimeoutRef.current = setTimeout(() => {
             resetVideo();
@@ -96,18 +133,19 @@ const Hero = () => {
     // Multiple event listeners for comprehensive recovery
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('Page became visible, attempting video recovery');
+        mobileLog('Page became visible, attempting video recovery');
         // Reset recovery attempts when page becomes visible
         recoveryAttemptRef.current = 0;
         setTimeout(handleVideoRecovery, 300);
       } else {
         // Page became hidden, track the time
+        mobileLog('Page became hidden');
         lastPlayTimeRef.current = Date.now();
       }
     };
 
     const handleWindowFocus = () => {
-      console.log('Window focused, attempting video recovery');
+      mobileLog('Window focused, attempting video recovery');
       recoveryAttemptRef.current = 0;
       setTimeout(handleVideoRecovery, 300);
     };
@@ -157,6 +195,47 @@ const Hero = () => {
       lastPlayTimeRef.current = Date.now();
     };
 
+    // Intersection Observer to detect when video is in view
+    const setupIntersectionObserver = () => {
+      if (!videoContainerRef.current || intersectionObserverRef.current) return;
+
+      intersectionObserverRef.current = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              console.log('Video container is visible, checking playback');
+              setTimeout(() => {
+                const video = videoRef.current;
+                if (video && video.paused) {
+                  console.log('Video is paused while visible, attempting recovery');
+                  handleVideoRecovery();
+                }
+              }, 500);
+            }
+          });
+        },
+        { threshold: 0.5 } // Trigger when 50% of video is visible
+      );
+
+      intersectionObserverRef.current.observe(videoContainerRef.current);
+    };
+
+    // Force recovery check every 10 seconds
+    const setupForceRecoveryInterval = () => {
+      forceRecoveryIntervalRef.current = setInterval(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
+        
+        // If video hasn't played for 15 seconds, force recovery
+        if (timeSinceLastPlay > 15000 && document.visibilityState === 'visible') {
+          mobileLog('Force recovery: Video inactive for too long');
+          handleVideoRecovery();
+        }
+      }, 10000); // Check every 10 seconds
+    };
+
     // Add all event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleWindowFocus);
@@ -168,12 +247,28 @@ const Hero = () => {
     video.addEventListener('pause', handleVideoPause);
     video.addEventListener('timeupdate', handleVideoTimeUpdate);
 
-    // Initial video load check
-    setTimeout(() => {
-      if (video.paused && !videoError) {
-        handleVideoRecovery();
-      }
-    }, 1000);
+    // Setup additional monitoring
+    setupIntersectionObserver();
+    setupForceRecoveryInterval();
+
+    // Initial video load check with multiple attempts
+    const initialLoadCheck = () => {
+      setTimeout(() => {
+        mobileLog('Initial load check');
+        if (video.paused && !videoError) {
+          mobileLog('Video paused on load, attempting recovery');
+          handleVideoRecovery();
+        } else if (video.readyState < 2) {
+          mobileLog('Video not ready, waiting...');
+          setTimeout(initialLoadCheck, 1000);
+        } else {
+          mobileLog('Video loaded successfully');
+          lastPlayTimeRef.current = Date.now();
+        }
+      }, 1000);
+    };
+    
+    initialLoadCheck();
 
     return () => {
       // ✅ FIX: Safe cleanup
@@ -194,6 +289,15 @@ const Hero = () => {
 
       if (playbackTimeoutRef.current) {
         clearTimeout(playbackTimeoutRef.current);
+      }
+
+      if (forceRecoveryIntervalRef.current) {
+        clearInterval(forceRecoveryIntervalRef.current);
+      }
+
+      if (intersectionObserverRef.current) {
+        intersectionObserverRef.current.disconnect();
+        intersectionObserverRef.current = null;
       }
     };
   }, []);
@@ -217,6 +321,7 @@ const Hero = () => {
       <Header />
       {/* Video container */}
       <Box
+        ref={videoContainerRef}
         sx={{
           position: 'absolute',
           top: 0,
@@ -256,6 +361,9 @@ const Hero = () => {
             perspective: 1000,
             // Force video layer
             willChange: 'transform',
+            // Debug: ensure video is visible
+            backgroundColor: 'rgba(255,0,0,0.1)', // Temporary red tint for debugging
+            opacity: videoError ? 0.3 : 1,
           }}
         />
       </Box>
@@ -318,6 +426,94 @@ const Hero = () => {
           </Typography>
         </Box>
       </Box>
+
+      {/* Mobile Debug Toggle */}
+      <Box
+        onClick={() => setShowMobileDebug(!showMobileDebug)}
+        sx={{
+          position: 'fixed',
+          top: 10,
+          right: 10,
+          width: 50,
+          height: 50,
+          backgroundColor: videoError ? 'rgba(255,0,0,0.8)' : isVideoPlaying ? 'rgba(0,255,0,0.8)' : 'rgba(255,165,0,0.8)',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '20px',
+          zIndex: 9999,
+          cursor: 'pointer',
+          border: '2px solid white',
+        }}
+      >
+        📹
+      </Box>
+
+      {/* Mobile Debug Panel */}
+      {showMobileDebug && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 70,
+            right: 10,
+            left: 10,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            color: 'white',
+            padding: 2,
+            borderRadius: 2,
+            fontSize: '14px',
+            zIndex: 9998,
+            maxHeight: '200px',
+            overflow: 'auto',
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <span>Status:</span>
+            <span>{isVideoPlaying ? '▶️ Playing' : '⏸️ Paused'}</span>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <span>Error:</span>
+            <span>{videoError ? '❌ Error' : '✅ OK'}</span>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <span>Recovery:</span>
+            <span>{recoveryAttemptRef.current}/5</span>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <span>Ready State:</span>
+            <span>{videoRef.current?.readyState || 'N/A'}</span>
+          </Box>
+          <Box sx={{ mb: 1 }}>
+            <div style={{ fontSize: '12px', color: '#ccc', marginBottom: '8px' }}>Recent Logs:</div>
+            <div style={{ fontSize: '11px', fontFamily: 'monospace', whiteSpace: 'pre-line' }}>
+              {debugInfo}
+            </div>
+          </Box>
+          <Box sx={{ textAlign: 'center', pt: 1, borderTop: '1px solid #333' }}>
+            <Box
+              component="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                mobileLog('Manual recovery triggered');
+                handleVideoRecovery();
+              }}
+              sx={{
+                backgroundColor: 'rgba(255,165,0,0.8)',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
+            >
+              🔄 Force Recovery
+            </Box>
+          </Box>
+        </Box>
+      )}
+
       {/* SVG wave */}
       <Box
         sx={{
