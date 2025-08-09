@@ -1,11 +1,9 @@
-// src/components/HeroWVideo.tsx - SAFE & SIMPLE (no hard reset)
+// src/components/HeroWVideo.tsx
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
 
-const firstHeroVideo = '/assets/videos/first_hero_video.mp4'; 
-// Not: Dosyan gerçekten public/assets/videos/... altında mı?
-// Prod’da subpath varsa absolute /... patikası 404 verebilir.
+const firstHeroVideo = '/assets/videos/first_hero_video.mp4';
 
 const Hero = () => {
   const theme = useTheme();
@@ -38,7 +36,7 @@ const Hero = () => {
 
       video.muted = true;
       video.loop = true;
-      (video as any).playsInline = true;
+      video.playsInline = true; // <-- any yok
       video.preload = 'auto';
 
       if (video.readyState < 2) {
@@ -50,7 +48,7 @@ const Hero = () => {
       await playPromiseRef.current;
       setIsPlaying(true);
       return true;
-    } catch (e1) {
+    } catch {
       try {
         const v = videoRef.current;
         if (!v) return false;
@@ -59,8 +57,7 @@ const Hero = () => {
         await playPromiseRef.current;
         setIsPlaying(true);
         return true;
-      } catch (e2) {
-        // autoplay engeli olabilir; interaction/focus’ta tekrar deneyeceğiz
+      } catch {
         setIsPlaying(false);
         return false;
       }
@@ -68,8 +65,7 @@ const Hero = () => {
   }, []);
 
   const initializeVideo = useCallback(() => {
-    const v = videoRef.current;
-    if (!v) return;
+    if (!videoRef.current) return;
     void ensureVideoPlays();
   }, [ensureVideoPlays]);
 
@@ -94,10 +90,9 @@ const Hero = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleVisibilityChange);
 
-    // bfcache dönüşü
-    const onPageShow = (e: Event) => {
-      // @ts-ignore
-      if (e && (e as any).persisted) {
+    // bfcache dönüşünü doğru type ile ele al
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
         void ensureVideoPlays();
       } else {
         void ensureVideoPlays();
@@ -107,7 +102,7 @@ const Hero = () => {
       videoRef.current?.pause();
       setIsPlaying(false);
     };
-    window.addEventListener('pageshow', onPageShow as any);
+    window.addEventListener('pageshow', onPageShow);
     window.addEventListener('pagehide', onPageHide);
 
     // interaction listener’ları sürekli açık
@@ -118,7 +113,7 @@ const Hero = () => {
       clearTimeout(timer);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleVisibilityChange);
-      window.removeEventListener('pageshow', onPageShow as any);
+      window.removeEventListener('pageshow', onPageShow);
       window.removeEventListener('pagehide', onPageHide);
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
@@ -153,7 +148,6 @@ const Hero = () => {
           muted
           playsInline
           preload="auto"
-          // controls // debug için açabilirsin
           style={{
             width: '100%',
             height: '100%',
@@ -172,19 +166,11 @@ const Hero = () => {
           onPause={() => setIsPlaying(false)}
           onWaiting={() => void ensureVideoPlays()}
           onStalled={() => void ensureVideoPlays()}
-          onError={(e) => {
-            const el = e.currentTarget;
-            const err = (el.error && el.error.message) || el.error?.code;
-            console.error('VIDEO ERROR', err, el.error);
-          }}
         >
           <source src={firstHeroVideo} type="video/mp4" />
-          {/* İstersen webm de ekleyebilirsin
-          <source src="/assets/videos/first_hero_video.webm" type="video/webm" />
-          */}
         </video>
 
-        {/* Dim Overlay (filter yerine) */}
+        {/* Dim Overlay (video üzerine filter yerine) */}
         <Box
           sx={{
             position: 'absolute',
