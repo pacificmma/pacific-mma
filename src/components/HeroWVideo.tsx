@@ -1,11 +1,108 @@
-// src/components/HeroWVideo.tsx - BULLETPROOF FALLBACK SOLUTION
-import React from 'react';
+// src/components/HeroWVideo.tsx - REMOUNT-ON-RESUME HERO VIDEO (iOS-safe)
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
 
-// Tamamen güvenilir gradyan background çözümü
-const Hero = () => {
+const asset = (p: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}${p}`;
+const HERO_VIDEO_MP4 = asset('/assets/videos/first_hero_video.mp4');
+const HERO_POSTER = asset('/assets/img/home_page/video_poster.jpg');
+
+const Hero: React.FC = () => {
   const theme = useTheme();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Remount anahtarı: değişince <video> DOM'u sıfırdan yaratılır
+  const [videoKey, setVideoKey] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
+  const waitForCanPlay = (video: HTMLVideoElement) =>
+    new Promise<void>((resolve) => {
+      if (video.readyState >= 2) return resolve();
+      const onReady = () => resolve();
+      video.addEventListener('canplay', onReady, { once: true });
+    });
+
+  const nudge = (video: HTMLVideoElement) => {
+    try { video.currentTime = Math.max(0, video.currentTime + 0.001); } catch {}
+  };
+
+  const tryPlay = useCallback(async () => {
+    const v = videoRef.current;
+    if (!v) return;
+    try {
+      v.muted = true;
+      v.loop = true;
+      v.playsInline = true;
+      v.preload = 'auto';
+
+      if (v.readyState < 2) {
+        v.load();
+        await waitForCanPlay(v);
+      }
+      await v.play();
+      setIsPlaying(true);
+    } catch {
+      // küçük bir nudge sonrası tekrar dene
+      try {
+        nudge(v);
+        await v.play();
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false); // etkileşim gelince tekrar deneyeceğiz
+      }
+    }
+  }, []);
+
+  // Görünür olunca oynat
+  const handleVisibility = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (document.visibilityState === 'visible') {
+      void tryPlay();
+    } else {
+      v.pause();
+      setIsPlaying(false);
+    }
+  }, [tryPlay]);
+
+  // iOS/Safari geri dönüşte remount
+  const handlePageShow = useCallback((e: PageTransitionEvent) => {
+    // bfcache (persisted) veya normal dönüş — ikisinde de remount etmek güvenli
+    setVideoKey((k) => k + 1);
+  }, []);
+
+  // Kullanıcı etkileşimi olursa (autoplay engelinde) tekrar dene
+  const handleUserInteraction = useCallback(() => {
+    void tryPlay();
+  }, [tryPlay]);
+
+  useEffect(() => {
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleVisibility);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('pagehide', () => {
+      videoRef.current?.pause();
+      setIsPlaying(false);
+    });
+
+    // Etkileşim dinleyicileri (once: false bırak)
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    document.addEventListener('click', handleUserInteraction);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleVisibility);
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
+    };
+  }, [handleVisibility, handlePageShow, handleUserInteraction]);
+
+  // Yeni video DOM’u yaratıldıktan sonra oynatmayı dene
+  useEffect(() => {
+    let t = setTimeout(() => { void tryPlay(); }, 100);
+    return () => clearTimeout(t);
+  }, [videoKey, tryPlay]);
 
   return (
     <Box
@@ -18,54 +115,49 @@ const Hero = () => {
         width: '100vw',
         height: { xs: '60vh', sm: '70vh', md: '45vh', lg: '45vh' },
         overflow: 'hidden',
-        margin: 0,
-        padding: 0,
-        // Güvenilir gradyan background - hiçbir zaman fail olmaz
-        background: `linear-gradient(135deg, 
-          ${theme.palette.primary.main} 0%, 
-          ${theme.palette.primary.dark} 35%, 
-          #1a1a1a 70%, 
-          ${theme.palette.primary.main} 100%)`,
+        m: 0,
+        p: 0,
+        background: theme.palette.background.paper,
       }}
     >
       <Header />
 
-      {/* Animated Pattern Background - Always works */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          opacity: 0.1,
-          background: `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 35px,
-            rgba(255,255,255,0.1) 35px,
-            rgba(255,255,255,0.1) 70px
-          )`,
-          animation: 'patternMove 20s linear infinite',
-          '@keyframes patternMove': {
-            '0%': { transform: 'translateX(-70px)' },
-            '100%': { transform: 'translateX(0px)' },
-          },
-        }}
-      />
+      {/* Video Layer */}
+      <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+        <video
+          key={videoKey}                // <-- kritik: remount anahtarı
+          ref={videoRef}
+          poster={HERO_POSTER}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+          }}
+          onLoadedData={() => void tryPlay()}
+          onCanPlay={() => void tryPlay()}
+          onPlay={() => {
+            setIsPlaying(true);
+            try { videoRef.current?.removeAttribute('poster'); } catch {}
+          }}
+          onPause={() => setIsPlaying(false)}
+          onWaiting={() => void tryPlay()}
+          onStalled={() => void tryPlay()}
+        >
+          <source src={HERO_VIDEO_MP4} type="video/mp4" />
+        </video>
 
-      {/* Darker Overlay for better text contrast */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(45deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.5) 100%)',
-          pointerEvents: 'none',
-        }}
-      />
+        {/* Overlay (filter yerine) */}
+        <Box sx={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', pointerEvents: 'none' }} />
+      </Box>
 
       {/* Text Content */}
       <Box
@@ -77,7 +169,6 @@ const Hero = () => {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           color: theme.palette.text.primary,
-          fontFamily: theme.typography.fontFamily,
           width: '100%',
           display: 'flex',
           alignItems: 'center',
@@ -85,23 +176,7 @@ const Hero = () => {
           px: 2,
         }}
       >
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center',
-            // Subtle text animation
-            animation: 'textGlow 4s ease-in-out infinite alternate',
-            '@keyframes textGlow': {
-              '0%': { 
-                textShadow: '0 0 10px rgba(255,255,255,0.3)' 
-              },
-              '100%': { 
-                textShadow: '0 0 20px rgba(255,255,255,0.2), 0 0 30px rgba(255,255,255,0.1)' 
-              },
-            },
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography
             variant="h6"
             sx={{
@@ -109,8 +184,6 @@ const Hero = () => {
               lineHeight: 1,
               letterSpacing: { xs: '0.15em', sm: '0.12em', md: '0.1em' },
               color: theme.palette.primary.contrastText,
-              textTransform: 'none',
-              fontFamily: theme.typography.fontFamily,
               fontWeight: 700,
               whiteSpace: 'nowrap',
             }}
@@ -124,8 +197,6 @@ const Hero = () => {
               lineHeight: 1,
               letterSpacing: { xs: '0.15em', sm: '0.12em', md: '0.1em' },
               color: theme.palette.secondary.main,
-              textTransform: 'none',
-              fontFamily: theme.typography.fontFamily,
               fontWeight: 700,
               whiteSpace: 'nowrap',
               transform: 'scaleX(0.62)',
@@ -137,7 +208,6 @@ const Hero = () => {
         </Box>
       </Box>
 
-      {/* Success Indicator - Always Blue for Gradient Mode */}
       {process.env.NODE_ENV === 'development' && (
         <Box
           sx={{
@@ -147,64 +217,22 @@ const Hero = () => {
             width: 30,
             height: 30,
             borderRadius: '50%',
-            backgroundColor: '#00ff00', // Bright green - gradient mode active
+            backgroundColor: isPlaying ? 'green' : 'orange',
             border: '2px solid white',
             zIndex: 9999,
-            opacity: 0.9,
-            animation: 'pulse 1.5s ease-in-out infinite',
-            '@keyframes pulse': {
-              '0%': { opacity: 0.9, transform: 'scale(1)' },
-              '50%': { opacity: 1, transform: 'scale(1.1)' },
-              '100%': { opacity: 0.9, transform: 'scale(1)' },
-            },
+            opacity: 0.7,
           }}
-          title="Gradient Background Active - Never Fails"
         />
       )}
 
-      {/* SVG Wave */}
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: -5,
-          left: 0,
-          width: '100%',
-          lineHeight: 0,
-          zIndex: 3,
-        }}
-      >
-        <svg
-          viewBox="0 0 1440 120"
-          width="100%"
-          height="120px"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-          style={{ display: 'block' }}
-        >
-          <path
-            fill={theme.palette.background.paper}
-            d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z"
-          />
-          <path
-            fill="none"
-            stroke={theme.palette.secondary.main}
-            strokeWidth="8"
-            d="M0,60 C360,120 1080,120 1440,60"
-          />
+      {/* SVG wave */}
+      <Box sx={{ position: 'absolute', bottom: -5, left: 0, width: '100%', lineHeight: 0, zIndex: 3 }}>
+        <svg viewBox="0 0 1440 120" width="100%" height="120px" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block' }}>
+          <path fill={theme.palette.background.paper} d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z" />
+          <path fill="none" stroke={theme.palette.secondary.main} strokeWidth="8" d="M0,60 C360,120 1080,120 1440,60" />
         </svg>
       </Box>
-      
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          height: '5px',
-          background: theme.palette.background.paper,
-          zIndex: 2,
-        }}
-      />
+      <Box sx={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '5px', background: theme.palette.background.paper, zIndex: 2 }} />
     </Box>
   );
 };
