@@ -160,22 +160,10 @@ const Hero = () => {
     };
 
     const handleVideoError = () => {
+      mobileLog('Video error occurred');
       setVideoError(true);
+      setIsVideoPlaying(false);
       resetVideo();
-    };
-
-    const handleVideoStall = () => {
-      console.warn('Video stalled, attempting recovery...');
-      resetVideo();
-    };
-
-    const handleVideoWaiting = () => {
-      // Video is waiting for more data
-      setTimeout(() => {
-        if (video.readyState < 3) {
-          resetVideo();
-        }
-      }, 3000);
     };
 
     const handleVideoPlay = () => {
@@ -193,6 +181,28 @@ const Hero = () => {
     const handleVideoTimeUpdate = () => {
       // Update last play time periodically during playback
       lastPlayTimeRef.current = Date.now();
+      
+      // Ensure playing state is correct during timeupdate
+      if (!isVideoPlaying) {
+        setIsVideoPlaying(true);
+      }
+    };
+
+    const handleVideoStalled = () => {
+      mobileLog('Video stalled, attempting recovery...');
+      setIsVideoPlaying(false);
+      resetVideo();
+    };
+
+    const handleVideoWaiting = () => {
+      mobileLog('Video waiting for data...');
+      setIsVideoPlaying(false);
+      // Video is waiting for more data
+      setTimeout(() => {
+        if (video.readyState < 3) {
+          resetVideo();
+        }
+      }, 3000);
     };
 
     // Intersection Observer to detect when video is in view
@@ -220,7 +230,7 @@ const Hero = () => {
       intersectionObserverRef.current.observe(videoContainerRef.current);
     };
 
-    // Force recovery check every 10 seconds
+    // Force recovery check every 5 seconds
     const setupForceRecoveryInterval = () => {
       forceRecoveryIntervalRef.current = setInterval(() => {
         const video = videoRef.current;
@@ -228,12 +238,29 @@ const Hero = () => {
 
         const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
         
-        // If video hasn't played for 15 seconds, force recovery
-        if (timeSinceLastPlay > 15000 && document.visibilityState === 'visible') {
-          mobileLog('Force recovery: Video inactive for too long');
-          handleVideoRecovery();
+        // More aggressive recovery - check multiple conditions
+        if (document.visibilityState === 'visible') {
+          // If video shows as playing but hasn't updated time in 8 seconds
+          if (timeSinceLastPlay > 8000) {
+            mobileLog(`Force recovery: Video inactive for ${Math.floor(timeSinceLastPlay / 1000)}s`);
+            setIsVideoPlaying(false);
+            handleVideoRecovery();
+          }
+          
+          // If video is paused but should be playing
+          else if (video.paused && isVideoPlaying) {
+            mobileLog('Force recovery: Video paused but state shows playing');
+            setIsVideoPlaying(false);
+            handleVideoRecovery();
+          }
+          
+          // If video element exists but readyState is low
+          else if (video.readyState < 2 && timeSinceLastPlay > 3000) {
+            mobileLog('Force recovery: Video not ready');
+            handleVideoRecovery();
+          }
         }
-      }, 10000); // Check every 10 seconds
+      }, 5000); // Check every 5 seconds
     };
 
     // Add all event listeners
@@ -436,7 +463,17 @@ const Hero = () => {
           right: 10,
           width: 50,
           height: 50,
-          backgroundColor: videoError ? 'rgba(255,0,0,0.8)' : isVideoPlaying ? 'rgba(0,255,0,0.8)' : 'rgba(255,165,0,0.8)',
+          backgroundColor: (() => {
+            // Check actual video state, not just our state
+            const video = videoRef.current;
+            const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
+            
+            if (videoError) return 'rgba(255,0,0,0.8)'; // Red for error
+            if (!video) return 'rgba(128,128,128,0.8)'; // Gray for no video
+            if (video.paused || timeSinceLastPlay > 5000) return 'rgba(255,165,0,0.8)'; // Orange for paused/inactive
+            if (isVideoPlaying && video.currentTime > 0 && !video.paused) return 'rgba(0,255,0,0.8)'; // Green for playing
+            return 'rgba(255,165,0,0.8)'; // Default orange
+          })(),
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
@@ -445,6 +482,19 @@ const Hero = () => {
           zIndex: 9999,
           cursor: 'pointer',
           border: '2px solid white',
+          animation: (() => {
+            const video = videoRef.current;
+            const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
+            // Blink if video is stuck
+            if (video && !video.paused && timeSinceLastPlay > 5000) {
+              return 'blink 1s infinite';
+            }
+            return 'none';
+          })(),
+          '@keyframes blink': {
+            '0%, 50%': { opacity: 1 },
+            '51%, 100%': { opacity: 0.5 }
+          }
         }}
       >
         📹
@@ -483,6 +533,18 @@ const Hero = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <span>Ready State:</span>
             <span>{videoRef.current?.readyState || 'N/A'}</span>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <span>Video Paused:</span>
+            <span>{videoRef.current?.paused ? '✅ Yes' : '❌ No'}</span>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <span>Current Time:</span>
+            <span>{videoRef.current?.currentTime?.toFixed(1) || '0.0'}s</span>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <span>Last Activity:</span>
+            <span>{Math.floor((Date.now() - lastPlayTimeRef.current) / 1000)}s ago</span>
           </Box>
           <Box sx={{ mb: 1 }}>
             <div style={{ fontSize: '12px', color: '#ccc', marginBottom: '8px' }}>Recent Logs:</div>
