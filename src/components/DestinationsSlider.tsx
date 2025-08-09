@@ -53,7 +53,14 @@ const DestinationSlider = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
+  // Mobil için touch/swipe state'leri
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  
   const animationRef = useRef<number | null>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   
   const isXL = useMediaQuery(theme.breakpoints.up('xl'));
   const isLG = useMediaQuery(theme.breakpoints.up('lg'));
@@ -73,11 +80,66 @@ const DestinationSlider = () => {
     return () => clearInterval(interval);
   }, []);
   
+  // Touch/swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault(); // Default davranışları engelle
+    const touch = e.touches[0] || e.changedTouches[0];
+    setTouchStart(touch.clientX);
+    setTouchEnd(touch.clientX);
+    setIsDragging(true);
+    setIsPaused(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    e.preventDefault(); // Default scroll'u engelle
+    const touch = e.touches[0] || e.changedTouches[0];
+    const currentTouch = touch.clientX;
+    const diff = touchStart - currentTouch;
+    
+    // Gerçek zamanlı drag feedback
+    setDragOffset(-diff * 0.8); // Biraz resistance ekleyelim
+    setTouchEnd(currentTouch);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const swipeDistance = touchStart - touchEnd;
+    const minSwipeDistance = 30; // Daha hassas yapalım
+    
+    setIsDragging(false);
+    
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      // Swipe yapıldıysa offset'i güncelle
+      setOffset(prev => {
+        let newOffset = prev - swipeDistance;
+        // Sonsuz döngü için sınırları kontrol et
+        while (newOffset <= -totalWidth) {
+          newOffset += totalWidth;
+        }
+        while (newOffset >= 0) {
+          newOffset -= totalWidth;
+        }
+        return newOffset;
+      });
+    }
+    
+    // Drag offset'i sıfırla
+    setDragOffset(0);
+    
+    // Animasyonu tekrar başlat
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 1500);
+  };
+
   // Sürekli kayma animasyonu
   const animate = useCallback(() => {
-    if (!isPaused) {
+    if (!isPaused && !isDragging) {
       setOffset(prev => {
-        const speed = isMobile ? 1 : 2; // Mobilde daha yavaş
+        const speed = isMobile ? 0.8 : 2; // Mobilde biraz daha yavaş
         const newOffset = prev - speed;
         // Bir set tamamlandığında sıfırla
         if (Math.abs(newOffset) >= totalWidth) {
@@ -87,11 +149,11 @@ const DestinationSlider = () => {
       });
     }
     animationRef.current = requestAnimationFrame(animate);
-  }, [isPaused, totalWidth]);
+  }, [isPaused, isDragging, totalWidth, isMobile]);
   
   // Animasyonu başlat/durdur
   useEffect(() => {
-    if (!isPaused) {
+    if (!isPaused && !isDragging) {
       animationRef.current = requestAnimationFrame(animate);
     } else {
       if (animationRef.current) {
@@ -104,7 +166,39 @@ const DestinationSlider = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [animate, isPaused]);
+  }, [animate, isPaused, isDragging]);
+
+  // Mobil için touch feedback - kartlara dokunduğunda animasyon dursun
+  const handleCardTouchStart = (index: number, e: React.TouchEvent) => {
+    if (isMobile && !isDragging) {
+      // Sadece tap ise (drag değilse) hover efekti ver
+      const timeoutId = setTimeout(() => {
+        setHoveredIndex(index);
+        setIsPaused(true);
+        // 3 saniye sonra tekrar başlat
+        setTimeout(() => {
+          setHoveredIndex(null);
+          setIsPaused(false);
+        }, 3000);
+      }, 100); // Kısa bir gecikme ile drag'den ayır
+      
+      // Drag başlarsa timeout'u iptal et
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+      };
+      
+      // Touch move veya end olursa temizle
+      const onTouchMove = () => cleanup();
+      const onTouchEnd = () => {
+        cleanup();
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+      };
+      
+      document.addEventListener('touchmove', onTouchMove, { once: true });
+      document.addEventListener('touchend', onTouchEnd, { once: true });
+    }
+  };
   
   // Card click handler
   const handleCardClick = (destination: Destination) => {
@@ -188,43 +282,54 @@ const DestinationSlider = () => {
 
         {/* Sağ taraf - Slider Container */}
         <Box
+          ref={sliderRef}
           sx={{
             position: 'relative',
             width: '100%',
             overflow: 'hidden',
-            px: { xs: 0, md: 2 }
+            px: { xs: 0, md: 2 },
+            // Mobil için smooth scrolling
+            touchAction: 'pan-x',
+            WebkitOverflowScrolling: 'touch',
+            userSelect: 'none',
+            WebkitUserSelect: 'none'
           }}
           onMouseEnter={() => !isMobile && setIsPaused(true)}
           onMouseLeave={() => !isMobile && setIsPaused(false)}
-          onTouchStart={() => isMobile && setIsPaused(true)}
-          onTouchEnd={() => isMobile && setTimeout(() => setIsPaused(false), 1000)}
+          onTouchStart={isMobile ? handleTouchStart : undefined}
+          onTouchMove={isMobile ? handleTouchMove : undefined}
+          onTouchEnd={isMobile ? handleTouchEnd : undefined}
         >
           {/* Slider Track */}
           <Box
             sx={{
               display: 'flex',
               gap: 2,
-              transform: `translateX(${offset}px)`,
+              transform: `translateX(${offset + dragOffset}px)`,
               willChange: 'transform',
+              transition: isDragging ? 'none' : 'transform 0.3s ease-out',
             }}
           >
             {infiniteCards.map((destination, index) => (
               <Box
                 key={`${destination.country}-${index}`}
                 onClick={() => handleCardClick(destination)}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseEnter={() => !isMobile && setHoveredIndex(index)}
+                onMouseLeave={() => !isMobile && setHoveredIndex(null)}
+                onTouchStart={(e) => {
+                  handleCardTouchStart(index, e);
+                }}
                 sx={{
                   flex: '0 0 auto',
                   width: { 
-                    xs: '240px', 
+                    xs: '260px', 
                     sm: '280px', 
                     md: '320px', 
                     lg: '380px', 
                     xl: '420px' 
                   },
                   height: { 
-                    xs: '380px', 
+                    xs: '400px', 
                     sm: '350px', 
                     md: '400px', 
                     lg: '480px', 
@@ -240,7 +345,9 @@ const DestinationSlider = () => {
                   transform: hoveredIndex === index && !isMobile 
                     ? 'scale(1.02) translateY(-4px)' 
                     : 'scale(1)',
-                  transition: 'all 0.3s ease',
+                  transition: isDragging ? 'none' : 'all 0.3s ease',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
                 }}
               >
                 {/* Card Image */}
