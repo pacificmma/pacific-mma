@@ -12,6 +12,8 @@ const Hero = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const [videoError, setVideoError] = useState(false);
   const playbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const recoveryAttemptRef = useRef<number>(0);
+  const lastPlayTimeRef = useRef<number>(0);
 
   // iPad/Safari video recovery system
   const resetVideo = () => {
@@ -35,7 +37,7 @@ const Hero = () => {
     }
   };
 
-  // Enhanced visibility and focus handling
+  // Enhanced visibility and focus handling with improved recovery
   const handleVideoRecovery = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -45,15 +47,42 @@ const Hero = () => {
       clearTimeout(playbackTimeoutRef.current);
     }
 
+    // Limit recovery attempts to prevent infinite loops
+    if (recoveryAttemptRef.current > 5) {
+      console.warn('Maximum recovery attempts reached, stopping video recovery');
+      setVideoError(true);
+      return;
+    }
+
+    const currentTime = Date.now();
+    const timeSinceLastPlay = currentTime - lastPlayTimeRef.current;
+
     // Check if video needs recovery
-    if (video.paused || video.ended || video.readyState < 2) {
-      // Try simple play first
-      video.play().catch(() => {
-        // If play fails, do full reset
-        playbackTimeoutRef.current = setTimeout(() => {
-          resetVideo();
-        }, 500);
-      });
+    if (video.paused || video.ended || video.readyState < 2 || timeSinceLastPlay > 30000) {
+      recoveryAttemptRef.current++;
+      console.log(`Video recovery attempt ${recoveryAttemptRef.current}`);
+
+      // For mobile browsers, try different recovery strategies
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile && timeSinceLastPlay > 10000) {
+        // For mobile after long pause, do full reset
+        resetVideo();
+      } else {
+        // Try simple play first
+        video.play().then(() => {
+          setIsVideoPlaying(true);
+          setVideoError(false);
+          lastPlayTimeRef.current = currentTime;
+          recoveryAttemptRef.current = 0; // Reset counter on success
+        }).catch((error) => {
+          console.warn('Video play failed:', error);
+          // If play fails, do full reset after delay
+          playbackTimeoutRef.current = setTimeout(() => {
+            resetVideo();
+          }, 1000);
+        });
+      }
     }
   };
 
@@ -67,12 +96,29 @@ const Hero = () => {
     // Multiple event listeners for comprehensive recovery
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        setTimeout(handleVideoRecovery, 200);
+        console.log('Page became visible, attempting video recovery');
+        // Reset recovery attempts when page becomes visible
+        recoveryAttemptRef.current = 0;
+        setTimeout(handleVideoRecovery, 300);
+      } else {
+        // Page became hidden, track the time
+        lastPlayTimeRef.current = Date.now();
       }
     };
 
     const handleWindowFocus = () => {
-      setTimeout(handleVideoRecovery, 200);
+      console.log('Window focused, attempting video recovery');
+      recoveryAttemptRef.current = 0;
+      setTimeout(handleVideoRecovery, 300);
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // Handle browser back/forward navigation
+      if (event.persisted) {
+        console.log('Page shown from cache, attempting video recovery');
+        recoveryAttemptRef.current = 0;
+        setTimeout(handleVideoRecovery, 500);
+      }
     };
 
     const handleVideoError = () => {
@@ -97,20 +143,30 @@ const Hero = () => {
     const handleVideoPlay = () => {
       setIsVideoPlaying(true);
       setVideoError(false);
+      lastPlayTimeRef.current = Date.now();
+      recoveryAttemptRef.current = 0; // Reset on successful play
     };
 
     const handleVideoPause = () => {
       setIsVideoPlaying(false);
+      lastPlayTimeRef.current = Date.now();
+    };
+
+    const handleVideoTimeUpdate = () => {
+      // Update last play time periodically during playback
+      lastPlayTimeRef.current = Date.now();
     };
 
     // Add all event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('pageshow', handlePageShow);
     video.addEventListener('error', handleVideoError);
     video.addEventListener('stalled', handleVideoStall);
     video.addEventListener('waiting', handleVideoWaiting);
     video.addEventListener('play', handleVideoPlay);
     video.addEventListener('pause', handleVideoPause);
+    video.addEventListener('timeupdate', handleVideoTimeUpdate);
 
     // Initial video load check
     setTimeout(() => {
@@ -124,6 +180,7 @@ const Hero = () => {
       if (typeof document !== 'undefined') {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
         window.removeEventListener('focus', handleWindowFocus);
+        window.removeEventListener('pageshow', handlePageShow);
       }
       
       if (video) {
@@ -132,6 +189,7 @@ const Hero = () => {
         video.removeEventListener('waiting', handleVideoWaiting);
         video.removeEventListener('play', handleVideoPlay);
         video.removeEventListener('pause', handleVideoPause);
+        video.removeEventListener('timeupdate', handleVideoTimeUpdate);
       }
 
       if (playbackTimeoutRef.current) {
@@ -176,10 +234,13 @@ const Hero = () => {
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           webkit-playsinline="true"
           x5-playsinline="true"
           crossOrigin="anonymous"
+          disablePictureInPicture
+          controlsList="nodownload noplaybackrate"
+          onContextMenu={(e) => e.preventDefault()}
           sx={{
             width: '100%',
             height: '100%',
