@@ -1,144 +1,280 @@
-// src/components/HeroWVideo.tsx - HYBRID VIDEO + FALLBACK SYSTEM
-import React, { useRef, useEffect, useState } from 'react';
+// src/components/HeroWVideo.tsx — BULLETPROOF VIDEO SYSTEM (HARDENED)
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
 
-const firstHeroVideo = '/assets/videos/first_hero_video.mp4';
-const fallbackImage = '/assets/img/home_page/video_poster.jpg';
+// --- SOURCES ---
+const SRC_MP4_HD   = '/assets/videos/first_hero_video.mp4';
+const SRC_MP4_LQ   = '/assets/videos/first_hero_video_lq.mp4';   // 720p/1.5-2Mbps
+const SRC_WEBM_LQ  = '/assets/videos/first_hero_video_lq.webm';  // opsiyonel
+const SRC_HLS      = '/assets/videos/first_hero_video.m3u8';     // varsa kullan
 
 const Hero = () => {
   const theme = useTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [showFallback, setShowFallback] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
-  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
-    // Set up video for maximum compatibility
+  // progress watchdog
+  const lastTimeRef = useRef(0);
+  const lastStampRef = useRef<number>(0);
+  const watchdogId = useRef<number | null>(null);
+
+  const playPromiseRef = useRef<Promise<void> | null>(null);
+
+  const canUseHlsNatively = () => {
+    const v = document.createElement('video') as any;
+    return v.canPlayType('application/vnd.apple.mpegurl') === 'probably' ||
+           v.canPlayType('application/vnd.apple.mpegurl') === 'maybe';
+  };
+
+  const waitForCanPlay = (video: HTMLVideoElement) =>
+    new Promise<void>((resolve) => {
+      if (video.readyState >= 2) return resolve();
+      const onReady = () => resolve();
+      video.addEventListener('canplay', onReady, { once: true });
+    });
+
+  const attachInlineAttrs = (video: HTMLVideoElement) => {
+    // React props yetmeyebilir; attribute olarak zorla
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    (video as any).playsInline = true;
+  };
+
+  const setPrimarySources = (video: HTMLVideoElement) => {
+    video.innerHTML = '';
+    if (SRC_HLS && canUseHlsNatively()) {
+      // Safari: native HLS
+      const s = document.createElement('source');
+      s.src = SRC_HLS;
+      s.type = 'application/vnd.apple.mpegurl';
+      video.appendChild(s);
+    } else {
+      // Progressive
+      const s1 = document.createElement('source');
+      s1.src = SRC_MP4_HD;
+      s1.type = 'video/mp4';
+      video.appendChild(s1);
+
+      const s2 = document.createElement('source');
+      s2.src = SRC_WEBM_LQ;
+      s2.type = 'video/webm';
+      video.appendChild(s2);
+    }
+  };
+
+  const setFallbackSources = (video: HTMLVideoElement) => {
+    video.innerHTML = '';
+    // En güvenlisi düşük bitrate MP4
+    const s = document.createElement('source');
+    s.src = SRC_MP4_LQ;
+    s.type = 'video/mp4';
+    video.appendChild(s);
+  };
+
+  const hardReset = async (video: HTMLVideoElement, fallback = false) => {
+    try {
+      video.pause();
+      // kaynakları yeniden tak
+      if (fallback) {
+        setFallbackSources(video);
+      } else {
+        setPrimarySources(video);
+      }
+      video.load();
+      await waitForCanPlay(video);
+    } catch {}
+  };
+
+  const nudge = async (video: HTMLVideoElement) => {
+    try {
+      // micro-seek iOS/Safari’ye iyi geliyor
+      video.currentTime = Math.max(0, video.currentTime + 0.001);
+    } catch {}
+  };
+
+  const safePlay = async (video: HTMLVideoElement) => {
+    // önce varsa önceki play() promise’ini beklet
+    if (playPromiseRef.current) {
+      try { await playPromiseRef.current; } catch {}
+      playPromiseRef.current = null;
+    }
+    attachInlineAttrs(video);
     video.muted = true;
     video.loop = true;
-    video.playsInline = true;
-    video.controls = false;
-    video.preload = 'metadata';
+    video.preload = 'auto';
+    playPromiseRef.current = video.play();
+    await playPromiseRef.current;
+    setIsPlaying(true);
+  };
 
-    // Fallback timeout - if video doesn't start in 3 seconds, show fallback
-    fallbackTimeoutRef.current = setTimeout(() => {
-      if (video.paused || video.readyState < 3) {
-        console.warn('Video not playing after 3 seconds, showing fallback');
-        setShowFallback(true);
+  const ensureVideoPlays = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video) return false;
+
+    try {
+      if (video.readyState < 2) {
+        video.load();
+        await waitForCanPlay(video);
       }
-    }, 3000);
-
-    // Try to play immediately
-    const tryPlay = async () => {
+      await safePlay(video);
+      setRetryCount(0);
+      return true;
+    } catch {
       try {
-        await video.play();
-        // Video started successfully, clear fallback timeout
-        if (fallbackTimeoutRef.current) {
-          clearTimeout(fallbackTimeoutRef.current);
+        const v = videoRef.current;
+        if (!v) return false;
+        await nudge(v);
+        await safePlay(v);
+        setRetryCount(0);
+        return true;
+      } catch {
+        try {
+          const v = videoRef.current;
+          if (!v) return false;
+          // hazır kaynağı koru; sadece hard reset
+          await hardReset(v, usingFallback);
+          await nudge(v);
+          await safePlay(v);
+          setRetryCount((c) => c + 1);
+          return true;
+        } catch {
+          setIsPlaying(false);
+          return false;
         }
-        setShowFallback(false);
-        setVideoFailed(false);
-      } catch (error) {
-        console.warn('Auto-play failed, will retry on user interaction:', error);
       }
-    };
+    }
+  }, [usingFallback]);
 
-    // Event listeners for video state
-    const onLoadedData = () => {
-      tryPlay();
-    };
+  const switchToFallback = async () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setUsingFallback(true);
+    await hardReset(v, true);
+    await nudge(v);
+    await safePlay(v);
+  };
 
-    const onCanPlay = () => {
-      tryPlay();
-    };
+  const initializeVideo = useCallback(async () => {
+    const v = videoRef.current;
+    if (!v) return;
 
-    const onPlay = () => {
-      setShowFallback(false);
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current);
+    // kaynakları ilk kez tak
+    setPrimarySources(v);
+    attachInlineAttrs(v);
+
+    try {
+      await ensureVideoPlays();
+    } catch {
+      // olmazsa fallback’e geç
+      await switchToFallback();
+    }
+  }, [ensureVideoPlays]);
+
+  // Visibility/focus
+  const handleVisibilityChange = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (document.visibilityState === 'visible') {
+      void ensureVideoPlays();
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  }, [ensureVideoPlays]);
+
+  const handleUserInteraction = useCallback(() => {
+    void ensureVideoPlays();
+  }, [ensureVideoPlays]);
+
+  // Watchdog: ilerleme durduysa müdahale
+  const startWatchdog = useCallback(() => {
+    stopWatchdog();
+    watchdogId.current = window.setInterval(async () => {
+      const v = videoRef.current;
+      if (!v) return;
+
+      const now = performance.now();
+      const ct = v.currentTime;
+
+      const progressed = ct > lastTimeRef.current + 0.01; // 10ms üstü
+      if (progressed) {
+        lastTimeRef.current = ct;
+        lastStampRef.current = now;
+        return;
       }
-    };
 
-    const onPause = () => {
-      // If video pauses unexpectedly, try to restart
-      setTimeout(() => {
-        if (video && video.paused && !videoFailed) {
-          tryPlay();
-        }
-      }, 100);
-    };
+      const elapsed = now - (lastStampRef.current || now);
+      // 1.5s boyunca ilerleme yoksa nudge + play
+      if (elapsed > 1500 && elapsed <= 4000) {
+        try {
+          await nudge(v);
+          await safePlay(v);
+        } catch {}
+      }
 
-    const onError = () => {
-      console.error('Video failed to load');
-      setVideoFailed(true);
-      setShowFallback(true);
-    };
-
-    const onStalled = () => {
-      console.warn('Video stalled');
-      setShowFallback(true);
-      // Try to recover after a moment
-      setTimeout(() => {
-        if (video && video.readyState >= 2) {
-          tryPlay();
-        }
-      }, 1000);
-    };
-
-    // Attach event listeners
-    video.addEventListener('loadeddata', onLoadedData);
-    video.addEventListener('canplay', onCanPlay);
-    video.addEventListener('play', onPlay);
-    video.addEventListener('pause', onPause);
-    video.addEventListener('error', onError);
-    video.addEventListener('stalled', onStalled);
-
-    // Visibility change handler
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && !videoFailed) {
-        setTimeout(() => {
-          if (video && video.paused) {
-            tryPlay();
+      // 4s üstü ise hard reset; 2. defa da fallback
+      if (elapsed > 4000) {
+        try {
+          if (retryCount < 1) {
+            await hardReset(v, usingFallback);
+            await nudge(v);
+            await safePlay(v);
+            setRetryCount((c) => c + 1);
+            lastStampRef.current = performance.now();
+          } else if (!usingFallback) {
+            await switchToFallback();
+            lastStampRef.current = performance.now();
           }
-        }, 500);
+        } catch {}
       }
+    }, 700);
+  }, [retryCount, usingFallback]);
+
+  const stopWatchdog = () => {
+    if (watchdogId.current) {
+      clearInterval(watchdogId.current);
+      watchdogId.current = null;
+    }
+  };
+
+  useEffect(() => {
+    const t = setTimeout(() => { void initializeVideo(); }, 100);
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e?.persisted) void ensureVideoPlays();
+      else void ensureVideoPlays();
     };
-
-    // User interaction handler
-    const onUserInteraction = () => {
-      if (!videoFailed && video && video.paused) {
-        tryPlay();
-      }
+    const onPageHide = () => {
+      const v = videoRef.current;
+      if (v) v.pause();
+      setIsPlaying(false);
     };
+    window.addEventListener('pageshow', onPageShow as any);
+    window.addEventListener('pagehide', onPageHide);
 
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    document.addEventListener('touchstart', onUserInteraction, { once: true });
-    document.addEventListener('click', onUserInteraction, { once: true });
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    document.addEventListener('click', handleUserInteraction);
 
-    // Initial load attempt
-    video.load();
-    
+    startWatchdog();
+
     return () => {
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current);
-      }
-      
-      video.removeEventListener('loadeddata', onLoadedData);
-      video.removeEventListener('canplay', onCanPlay);
-      video.removeEventListener('play', onPlay);
-      video.removeEventListener('pause', onPause);
-      video.removeEventListener('error', onError);
-      video.removeEventListener('stalled', onStalled);
-      
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-      document.removeEventListener('touchstart', onUserInteraction);
-      document.removeEventListener('click', onUserInteraction);
+      clearTimeout(t);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+      window.removeEventListener('pageshow', onPageShow as any);
+      window.removeEventListener('pagehide', onPageHide);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
+      stopWatchdog();
     };
-  }, [videoFailed]);
+  }, [initializeVideo, handleVisibilityChange, handleUserInteraction, startWatchdog]);
 
   return (
     <Box
@@ -151,82 +287,55 @@ const Hero = () => {
         width: '100vw',
         height: { xs: '60vh', sm: '70vh', md: '45vh', lg: '45vh' },
         overflow: 'hidden',
-        margin: 0,
-        padding: 0,
+        m: 0,
+        p: 0,
         background: theme.palette.background.paper,
       }}
     >
       <Header />
-      
+
       {/* Video Layer */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Video Element */}
+      <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <video
           ref={videoRef}
-          src={firstHeroVideo}
-          poster={fallbackImage}
+          poster="/assets/img/home_page/video_poster.jpg"
           autoPlay
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
+          crossOrigin="anonymous"
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            opacity: showFallback ? 0 : 1,
-            transition: 'opacity 0.5s ease',
             transform: 'translateZ(0)',
             WebkitTransform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+          }}
+          onLoadedData={() => void ensureVideoPlays()}
+          onCanPlay={() => void ensureVideoPlays()}
+          onPlay={() => {
+            setIsPlaying(true);
+            try { videoRef.current?.removeAttribute('poster'); } catch {}
+            lastTimeRef.current = videoRef.current?.currentTime ?? 0;
+            lastStampRef.current = performance.now();
+          }}
+          onPause={() => setIsPlaying(false)}
+          onWaiting={() => void ensureVideoPlays()}
+          onStalled={() => void ensureVideoPlays()}
+          onError={() => {
+            // kaynak hatasında direkt fallback'e in
+            if (!usingFallback) void switchToFallback();
+          }}
+          onTimeUpdate={() => {
+            lastTimeRef.current = videoRef.current?.currentTime ?? 0;
+            lastStampRef.current = performance.now();
           }}
         />
-
-        {/* Fallback Background - Animated Static Image */}
-        {showFallback && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundImage: `url(${fallbackImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              opacity: showFallback ? 1 : 0,
-              transition: 'opacity 0.5s ease',
-              // Subtle animation to give life to static image
-              animation: 'slowPan 20s ease-in-out infinite alternate',
-              '@keyframes slowPan': {
-                '0%': { transform: 'scale(1.0) translateX(0%)' },
-                '100%': { transform: 'scale(1.05) translateX(-2%)' },
-              },
-            }}
-          />
-        )}
-
         {/* Dim Overlay */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0,0,0,0.3)',
-            pointerEvents: 'none',
-          }}
-        />
+        <Box sx={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', pointerEvents: 'none' }} />
       </Box>
 
       {/* Text Content */}
@@ -283,88 +392,33 @@ const Hero = () => {
         </Box>
       </Box>
 
-      {/* Debug indicator - Development only */}
+      {/* Dev Debug Dot */}
       {process.env.NODE_ENV === 'development' && (
         <Box
           sx={{
             position: 'fixed',
             top: 10,
             right: 10,
-            display: 'flex',
-            gap: 1,
+            width: 30,
+            height: 30,
+            borderRadius: '50%',
+            backgroundColor: isPlaying ? 'green' : usingFallback ? 'gold' : 'orange',
+            border: '2px solid white',
             zIndex: 9999,
+            opacity: 0.7,
           }}
-        >
-          {/* Video status */}
-          <Box
-            sx={{
-              width: 20,
-              height: 20,
-              borderRadius: '50%',
-              backgroundColor: videoRef.current?.paused === false ? 'green' : 'red',
-              border: '1px solid white',
-              opacity: 0.8,
-            }}
-            title="Video Status"
-          />
-          {/* Fallback status */}
-          <Box
-            sx={{
-              width: 20,
-              height: 20,
-              borderRadius: '50%',
-              backgroundColor: showFallback ? 'orange' : 'transparent',
-              border: '1px solid white',
-              opacity: 0.8,
-            }}
-            title="Fallback Status"
-          />
-        </Box>
+          title={usingFallback ? 'Fallback LQ' : 'Primary'}
+        />
       )}
 
       {/* SVG Wave */}
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: -5,
-          left: 0,
-          width: '100%',
-          lineHeight: 0,
-          zIndex: 3,
-        }}
-      >
-        <svg
-          viewBox="0 0 1440 120"
-          width="100%"
-          height="120px"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-          style={{ display: 'block' }}
-        >
-          <path
-            fill={theme.palette.background.paper}
-            d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z"
-          />
-          <path
-            fill="none"
-            stroke={theme.palette.secondary.main}
-            strokeWidth="8"
-            d="M0,60 C360,120 1080,120 1440,60"
-          />
+      <Box sx={{ position: 'absolute', bottom: -5, left: 0, width: '100%', lineHeight: 0, zIndex: 3 }}>
+        <svg viewBox="0 0 1440 120" width="100%" height="120px" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block' }}>
+          <path fill={theme.palette.background.paper} d="M0,60 C360,120 1080,120 1440,60 L1440,120 L0,120 Z" />
+          <path fill="none" stroke={theme.palette.secondary.main} strokeWidth="8" d="M0,60 C360,120 1080,120 1440,60" />
         </svg>
       </Box>
-      
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          height: '5px',
-          background: theme.palette.background.paper,
-          zIndex: 2,
-        }}
-      />
+      <Box sx={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '5px', background: theme.palette.background.paper, zIndex: 2 }} />
     </Box>
   );
 };
