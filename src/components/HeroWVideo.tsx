@@ -1,9 +1,9 @@
-// src/components/HeroWVideo.tsx - BULLETPROOF NO-VIDEO SOLUTION
+// src/components/HeroWVideo.tsx - BULLETPROOF FALLBACK SOLUTION
 import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
 
-// Video yerine animated background ile %100 garantili çözüm
+// Tamamen güvenilir gradyan background çözümü
 const Hero = () => {
   const theme = useTheme();
 
@@ -20,12 +20,17 @@ const Hero = () => {
         overflow: 'hidden',
         margin: 0,
         padding: 0,
-        background: theme.palette.background.paper,
+        // Güvenilir gradyan background - hiçbir zaman fail olmaz
+        background: `linear-gradient(135deg, 
+          ${theme.palette.primary.main} 0%, 
+          ${theme.palette.primary.dark} 35%, 
+          #1a1a1a 70%, 
+          ${theme.palette.primary.main} 100%)`,
       }}
     >
       <Header />
 
-      {/* Animated Background - Never fails */}
+      {/* Animated Pattern Background - Always works */}
       <Box
         sx={{
           position: 'absolute',
@@ -33,29 +38,23 @@ const Hero = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: `url(/assets/img/home_page/video_poster.jpg)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          // Subtle animation to simulate video movement
-          animation: 'heroMotion 8s ease-in-out infinite alternate',
-          '@keyframes heroMotion': {
-            '0%': { 
-              transform: 'scale(1.0)', 
-              filter: 'brightness(0.7) contrast(1.1)' 
-            },
-            '50%': { 
-              transform: 'scale(1.02)', 
-              filter: 'brightness(0.8) contrast(1.0)' 
-            },
-            '100%': { 
-              transform: 'scale(1.05)', 
-              filter: 'brightness(0.75) contrast(1.05)' 
-            },
+          opacity: 0.1,
+          background: `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 35px,
+            rgba(255,255,255,0.1) 35px,
+            rgba(255,255,255,0.1) 70px
+          )`,
+          animation: 'patternMove 20s linear infinite',
+          '@keyframes patternMove': {
+            '0%': { transform: 'translateX(-70px)' },
+            '100%': { transform: 'translateX(0px)' },
           },
         }}
       />
 
-      {/* Gradient Overlay for better text readability */}
+      {/* Darker Overlay for better text contrast */}
       <Box
         sx={{
           position: 'absolute',
@@ -63,7 +62,7 @@ const Hero = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'linear-gradient(45deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.3) 100%)',
+          background: 'linear-gradient(45deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.5) 100%)',
           pointerEvents: 'none',
         }}
       />
@@ -138,7 +137,7 @@ const Hero = () => {
         </Box>
       </Box>
 
-      {/* Success Indicator - Always Green */}
+      {/* Success Indicator - Always Blue for Gradient Mode */}
       {process.env.NODE_ENV === 'development' && (
         <Box
           sx={{
@@ -148,18 +147,18 @@ const Hero = () => {
             width: 30,
             height: 30,
             borderRadius: '50%',
-            backgroundColor: 'green', // Always green - never fails
+            backgroundColor: '#00ff00', // Bright green - gradient mode active
             border: '2px solid white',
             zIndex: 9999,
-            opacity: 0.8,
-            animation: 'pulse 2s ease-in-out infinite',
+            opacity: 0.9,
+            animation: 'pulse 1.5s ease-in-out infinite',
             '@keyframes pulse': {
-              '0%': { opacity: 0.8 },
-              '50%': { opacity: 1 },
-              '100%': { opacity: 0.8 },
+              '0%': { opacity: 0.9, transform: 'scale(1)' },
+              '50%': { opacity: 1, transform: 'scale(1.1)' },
+              '100%': { opacity: 0.9, transform: 'scale(1)' },
             },
           }}
-          title="Animation Active"
+          title="Gradient Background Active - Never Fails"
         />
       )}
 
