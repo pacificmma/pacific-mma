@@ -84,60 +84,157 @@ const HeroShop = () => {
           Brazilian Jiu-Jitsu (Gi and No-Gi), Wrestling, Judo, Muay Thai, and Boxing. At PACIFIC MMA, we blend top-tier materials with elegant, functional design—engineered for peak performance, crafted for durability and style.
         </Typography>
 
+        {/* Ürün Kartları - Mobile Slide, Desktop Grid */}
         <Box
           sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-            gap: 4,
+            display: 'flex',
+            justifyContent: { xs: 'flex-start', md: 'center' },
+            gap: { xs: '15px', sm: '15px', md: '20px' },
+            width: { xs: '100%', md: '85%', lg: '80%' },
+            margin: '0 auto',
+            position: 'relative',
+            zIndex: 2,
+            flexDirection: 'row',
+            mt: { xs: 1, md: 0 },
+            overflowX: { xs: 'auto', md: 'visible' },
+            overflowY: 'hidden',
+            px: { xs: 2, md: 0 },
+            scrollSnapType: { xs: 'x mandatory', md: 'none' },
+            WebkitOverflowScrolling: 'touch',
+            '&::-webkit-scrollbar': {
+              display: { xs: 'none', md: 'block' },
+            },
+            scrollbarWidth: 'none',
             mb: 2,
           }}
         >
           {shopItems.map((item, index) => (
-            <motion.div
+            <Box
               key={index}
-              whileHover={{ scale: 1.05 }}
-              style={{
-                position: 'relative',
-                overflow: 'hidden',
-                borderRadius: '16px',
-                boxShadow: '0px 8px 18px rgba(0, 0, 0, 0.15)',
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                width: { xs: '75vw', sm: '65vw', md: '100%' },
+                minWidth: { xs: '280px', sm: '320px', md: 'auto' },
+                flex: { xs: '0 0 auto', md: 1 },
+                mb: { xs: 0, md: 0 },
+                scrollSnapAlign: { xs: 'center', md: 'none' },
               }}
             >
-              <Box
-                component="img"
-                src={item.src} // ✅ Fixed: Direct string access, no .src property needed
-                alt={item.alt}
-                sx={{
-                  width: '100%',
-                  height: '400px',
-                  objectFit: 'cover',
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                style={{
+                  position: 'relative',
+                  overflow: 'hidden',
                   borderRadius: '16px',
-                  transition: 'transform 0.3s ease',
-                  '&:hover': { transform: 'scale(1.08)' },
-                }}
-              />
-
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'rgba(0, 0, 0, 0.6)',
-                  color: theme.palette.primary.contrastText,
-                  p: 2,
-                  textAlign: 'center',
-                  transition: 'opacity 0.3s ease',
+                  boxShadow: '0px 8px 18px rgba(0, 0, 0, 0.15)',
+                  width: '100%',
                 }}
               >
-                <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: theme.typography.fontFamily }}>{item.alt}</Typography>
-                <Typography variant="body2" sx={{ fontFamily: theme.typography.fontFamily }}>{item.description}</Typography>
-                <Typography variant="h6" fontWeight="bold" sx={{ color: theme.palette.primary.contrastText, fontFamily: theme.typography.fontFamily }}>{item.price}</Typography>
-                <IconButton sx={{ color: theme.palette.primary.contrastText, mt: 1 }}>
-                  <ShoppingCartIcon />
-                </IconButton>
-              </Box>
-            </motion.div>
+                <Box
+                  component="img"
+                  src={item.src}
+                  alt={item.alt}
+                  sx={{
+                    width: '100%',
+                    height: { xs: '400px', sm: '450px', md: '400px' },
+                    objectFit: 'cover',
+                    borderRadius: '16px',
+                    transition: 'transform 0.3s ease',
+                    '&:hover': { transform: 'scale(1.08)' },
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    color: theme.palette.primary.contrastText,
+                    p: { xs: 2, md: 2.5 },
+                    textAlign: 'center',
+                    transition: 'opacity 0.3s ease',
+                    borderBottomLeftRadius: '16px',
+                    borderBottomRightRadius: '16px',
+                  }}
+                >
+                  <Typography 
+                    variant="h6" 
+                    fontWeight="bold" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '1.1rem', md: '1.25rem' },
+                      mb: 0.5
+                    }}
+                  >
+                    {item.alt}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '0.85rem', md: '0.9rem' },
+                      mb: 1
+                    }}
+                  >
+                    {item.description}
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    fontWeight="bold" 
+                    sx={{ 
+                      color: theme.palette.secondary.main,
+                      fontFamily: theme.typography.fontFamily,
+                      fontSize: { xs: '1.2rem', md: '1.3rem' },
+                      mb: 1
+                    }}
+                  >
+                    {item.price}
+                  </Typography>
+                  <IconButton 
+                    sx={{ 
+                      color: theme.palette.primary.contrastText,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      '&:hover': {
+                        backgroundColor: theme.palette.secondary.main,
+                        color: theme.palette.primary.contrastText,
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  >
+                    <ShoppingCartIcon />
+                  </IconButton>
+                </Box>
+              </motion.div>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Mobile Scroll Indicator */}
+        <Box
+          sx={{
+            display: { xs: 'flex', md: 'none' },
+            justifyContent: 'center',
+            gap: 1,
+            mt: 2,
+            mb: 2,
+          }}
+        >
+          {shopItems.map((_, index) => (
+            <Box
+              key={index}
+              sx={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: theme.palette.secondary.main,
+                opacity: 0.5,
+                transition: 'opacity 0.3s',
+              }}
+            />
           ))}
         </Box>
 
