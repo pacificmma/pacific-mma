@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Box, Typography, Button, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
@@ -33,8 +33,76 @@ const features = [
 const HeroWServices = () => {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'));
+  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1024px)');
   const router = useRouter();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Track scroll position for mobile indicator
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollContainerRef.current && !isLargeScreen) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        const slideWidth = scrollWidth / features.length;
+        const currentSlide = Math.round(scrollLeft / slideWidth);
+        setActiveSlide(Math.max(0, Math.min(features.length - 1, currentSlide)));
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, [isLargeScreen]);
+
+  // iPad için siyah alanları eşitle
+  useEffect(() => {
+    const equalizeTabletBoxes = () => {
+      const textBoxes = document.querySelectorAll('.tablet-text-box');
+      if (textBoxes.length === 0) return;
+      
+      let maxHeight = 0;
+      
+      // Önce doğal yükseklikleri bul
+      textBoxes.forEach((box) => {
+        const element = box as HTMLElement;
+        element.style.height = 'auto';
+        element.style.minHeight = 'auto';
+        element.style.maxHeight = 'none';
+      });
+      
+      // DOM'un yerleşmesini bekle
+      requestAnimationFrame(() => {
+        // En yüksek olanı hesapla
+        textBoxes.forEach((box) => {
+          const rect = box.getBoundingClientRect();
+          const height = rect.height;
+          if (height > maxHeight) {
+            maxHeight = height;
+          }
+        });
+        
+        // Hepsine aynı yüksekliği uygula
+        if (maxHeight > 0) {
+          textBoxes.forEach((box) => {
+            const element = box as HTMLElement;
+            element.style.height = `${maxHeight}px`;
+            element.style.minHeight = `${maxHeight}px`;
+            element.style.maxHeight = `${maxHeight}px`;
+          });
+        }
+      });
+    };
+
+    // Initial ve resize'da çalıştır
+    if (isTablet) {
+      setTimeout(equalizeTabletBoxes, 200);
+      window.addEventListener('resize', equalizeTabletBoxes);
+      return () => window.removeEventListener('resize', equalizeTabletBoxes);
+    }
+  }, [isTablet]);
 
   return (
     <Box
@@ -91,6 +159,7 @@ const HeroWServices = () => {
 
       {/* Özellik Kartları */}
       <Box
+        ref={scrollContainerRef}
         sx={{
           display: 'flex',
           justifyContent: { xs: 'flex-start', md: 'center' },
@@ -107,9 +176,11 @@ const HeroWServices = () => {
           scrollSnapType: { xs: 'x mandatory', md: 'none' },
           WebkitOverflowScrolling: 'touch',
           '&::-webkit-scrollbar': {
-            display: { xs: 'none', md: 'block' },
+            display: 'none',
           },
           scrollbarWidth: 'none',
+          touchAction: { xs: 'manipulation', md: 'auto' },
+          scrollBehavior: 'smooth',
         }}
       >
         {features.map((feature, i) => (
@@ -118,9 +189,10 @@ const HeroWServices = () => {
             sx={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              width: { xs: '85vw', sm: '75vw', md: '100%' },
-              minWidth: { xs: '280px', sm: '320px', md: 'auto' },
+              alignItems: 'stretch',
+              width: { xs: '85vw', sm: '95vw', md: '100%' },
+              minWidth: { xs: '300px', sm: '600px', md: 'auto' },
+              maxWidth: { xs: 'none', sm: '900px', md: '400px', lg: '450px' },
               flex: { xs: '0 0 auto', md: 1 },
               mb: { xs: 0, md: 0 },
               scrollSnapAlign: { xs: 'center', md: 'none' },
@@ -130,7 +202,9 @@ const HeroWServices = () => {
             <Box
               sx={{
                 width: '100%',
-                height: { xs: '500px', sm: '550px', md: '650px', lg: '700px' },
+                aspectRatio: { xs: '1/1.8', sm: '1/1.2', md: 'auto' },
+                height: { xs: 'auto', sm: 'auto', md: '750px', lg: '800px' },
+                minHeight: { xs: '650px', sm: '700px', md: 'auto' },
                 borderRadius: { xs: '10px', md: '12px' },
                 position: 'relative',
                 backgroundImage: `url(${feature.image})`,
@@ -138,34 +212,54 @@ const HeroWServices = () => {
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 overflow: 'hidden',
-                cursor: 'default',
+                cursor: { xs: 'grab', md: 'default' },
                 p: { xs: 0, md: 2 },
                 boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                transform: { xs: 'scale(1)', md: 'scale(1)' },
+                transition: 'transform 0.2s ease',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                '&:active': {
+                  cursor: { xs: 'grabbing', md: 'default' },
+                  transform: { xs: 'scale(0.98)', md: 'scale(1)' },
+                },
               }}
             >
               {/* Yazılar - Mobile ve Desktop için optimize edildi */}
               <Box
+                className={isTablet ? "tablet-text-box" : ""}
                 sx={{
                   position: 'absolute',
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  background: 'rgba(0, 0, 0, 0.8)',
+                  background: 'rgba(0, 0, 0, 0.65)',
                   padding: {
-                    xs: '16px',
-                    sm: '18px',
-                    md: '20px'
+                    xs: '16px 12px',
+                    sm: '25px 30px',
+                    md: '24px 18px'
                   },
                   textAlign: 'center',
                   borderBottomLeftRadius: { xs: '10px', md: '12px' },
                   borderBottomRightRadius: { xs: '10px', md: '12px' },
-                  height: { xs: '280px', sm: '300px', md: '350px', lg: '380px' }, // Fixed height for all cards
-                  minHeight: { xs: '280px', sm: '300px', md: '350px', lg: '380px' }, // Ensure minimum height
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-start',
                   alignItems: 'center',
-                  overflowY: 'auto',
+                  gap: { xs: 1.2, sm: 2.5, md: 2.5 },
+                  backdropFilter: 'blur(2px)',
+                  height: { xs: 'auto', sm: '500px', md: '380px', lg: '400px' },
+                  minHeight: { xs: '280px', sm: '500px', md: '380px', lg: '400px' },
+                  maxHeight: { xs: '350px', sm: '500px', md: '380px', lg: '400px' },
+                  overflowY: { xs: 'auto', sm: 'hidden', md: 'hidden' },
+                  '&::-webkit-scrollbar': {
+                    width: '4px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'rgba(255,255,255,0.3)',
+                    borderRadius: '2px',
+                  },
                 }}
               >
                 <Typography
@@ -178,12 +272,12 @@ const HeroWServices = () => {
                     fontSize: {
                       xs: '1rem',
                       sm: '1.1rem',
-                      md: '1.2rem',
-                      lg: '1.3rem'
+                      md: '1.3rem',
+                      lg: '1.5rem'
                     },
                     fontWeight: 'bold',
-                    mb: { xs: 1.5, sm: 2, md: 2 },
-                    lineHeight: 1.3,
+                    lineHeight: { xs: 1.2, sm: 1.25, md: 1.3 },
+                    mb: i === 0 ? { xs: 1, sm: 1.2, md: 1.5 } : { xs: 1, sm: 3, md: 3, lg: 3 },
                   }}
                 >
                   {feature.title}
@@ -192,16 +286,19 @@ const HeroWServices = () => {
                   variant="body2"
                   sx={{
                     color: theme.palette.primary.contrastText,
-                    textAlign: 'justify',
+                    textAlign: 'left',
                     fontFamily: theme.typography.fontFamily,
                     fontSize: {
-                      xs: '0.75rem',
-                      sm: '0.85rem',
-                      md: '0.95rem',
-                      lg: '1rem'
+                      xs: '0.8rem',
+                      sm: '0.82rem',
+                      md: '1rem',
+                      lg: '1.1rem'
                     },
-                    lineHeight: 1.6,
-                    px: { xs: 0.5, sm: 1, md: 1.5 },
+                    lineHeight: { xs: 1.3, sm: 1.35, md: 1.4 },
+                    textIndent: '1em',
+                    hyphens: 'auto',
+                    wordBreak: 'break-word',
+                    overflow: 'visible',
                   }}
                 >
                   {feature.description}
@@ -229,8 +326,18 @@ const HeroWServices = () => {
               height: '8px',
               borderRadius: '50%',
               backgroundColor: theme.palette.secondary.main,
-              opacity: 0.5,
-              transition: 'opacity 0.3s',
+              opacity: activeSlide === index ? 1 : 0.3,
+              transition: 'opacity 0.3s ease',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              if (scrollContainerRef.current) {
+                const slideWidth = scrollContainerRef.current.scrollWidth / features.length;
+                scrollContainerRef.current.scrollTo({
+                  left: slideWidth * index,
+                  behavior: 'smooth'
+                });
+              }
             }}
           />
         ))}

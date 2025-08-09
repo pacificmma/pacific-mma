@@ -121,7 +121,9 @@ const BookingPage = () => {
         {/* Hero */}
         <Box
           sx={{
-            height: { xs: '50vh', md: '60vh' },
+            height: { xs: '400px', sm: '500px', md: '600px', lg: '650px' },
+            minHeight: { xs: '50vh', md: '60vh' },
+            maxHeight: { xs: '80vh', md: '70vh' },
             backgroundImage: `url(${BookingHeroPhoto})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -176,7 +178,9 @@ const BookingPage = () => {
                       }}
                       sx={{
                         width: '100%',
-                        height: { xs: '300px', sm: '350px', md: '440px' },
+                        aspectRatio: { xs: '4/5', sm: '3/4', md: '3/4' },
+                        minHeight: { xs: '280px', sm: '320px', md: '380px' },
+                        maxHeight: { xs: '400px', sm: '450px', md: '500px' },
                         borderRadius: '12px',
                         overflow: 'hidden',
                         position: 'relative',

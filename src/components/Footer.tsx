@@ -41,24 +41,34 @@ const Footer = () => {
         <Typography variant="body2" sx={{ mb: 2, color: theme.palette.primary.contrastText }}>
           Sign up to receive news and updates.
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1.5, sm: 2 }, 
+          justifyContent: { xs: 'center', md: 'flex-start' },
+          alignItems: { xs: 'stretch', sm: 'center' },
+          maxWidth: { xs: '100%', sm: '400px', md: 'none' },
+          width: { xs: '100%', md: 'auto' }
+        }}>
           <TextField
             variant="outlined"
             placeholder="Enter your email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
             sx={{
               backgroundColor: theme.palette.background.default,
               borderRadius: 1,
-              height: '40px',
+              flex: { xs: 1, sm: 1 },
+              minWidth: { xs: '100%', sm: '200px' },
+              '& .MuiOutlinedInput-root': {
+                height: { xs: '44px', sm: '40px', md: '42px' },
+                fontSize: { xs: '16px', sm: '0.9rem' }, // 16px prevents zoom on iOS
+              },
               '& input': {
-                padding: '10px',
-                fontSize: '0.9rem',
-                height: '100%',
+                padding: { xs: '12px 14px', sm: '10px', md: '12px' },
+                fontSize: { xs: '16px', sm: '0.9rem' },
                 boxSizing: 'border-box',
-              }
-            }}
-            InputProps={{
-              sx: {
-                height: '40px',
               }
             }}
           />
@@ -69,7 +79,11 @@ const Footer = () => {
               backgroundColor: theme.palette.secondary.main,
               color: theme.palette.primary.contrastText,
               fontWeight: theme.typography.button.fontWeight,
-              padding: '0.5rem 1.5rem',
+              padding: { xs: '12px 24px', sm: '8px 16px', md: '10px 20px' },
+              height: { xs: '44px', sm: '40px', md: '42px' },
+              minWidth: { xs: '100%', sm: 'auto' },
+              fontSize: { xs: '0.95rem', sm: '0.875rem' },
+              borderRadius: 1,
               '&:hover': {
                 backgroundColor: theme.palette.secondary.dark,
               },

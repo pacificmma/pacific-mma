@@ -39,11 +39,13 @@ const ServicesHero = () => {
           backgroundImage: `url(${ServicesHeroPhoto})`, // ✅ Direct string usage
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: { xs: '50vh', md: '60vh' },
+          height: { xs: '400px', sm: '500px', md: '600px', lg: '650px' },
+          minHeight: { xs: '50vh', md: '60vh' },
+          maxHeight: { xs: '80vh', md: '70vh' },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          mb: 4,
+          mb: { xs: 3, sm: 3.5, md: 4 },
           borderBottom: `6px solid ${theme.palette.secondary.main}`,
         }}
       >
@@ -65,22 +67,63 @@ const ServicesHero = () => {
       </Box>
 
       {/* Service Cards */}
-      <Box sx={{ml: '1rem', mr: '1rem'}}>
-      <Grid container spacing={4}>
+      <Box sx={{ 
+        px: { xs: 2, sm: 3, md: 4 },
+        pb: { xs: 3, sm: 4, md: 5 }
+      }}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
         {servicesText.map((service, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: '16px', boxShadow: 3 }}>
+          <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={index}>
+            <Card sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              borderRadius: '16px', 
+              boxShadow: 3,
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 6
+              }
+            }}>
               <CardMedia
                 component="img"
                 image={photoMap[index % photoMap.length]}  // Safeguard if more texts than images
                 alt={service.title}
-                sx={{ height: 200 }}
+                sx={{ 
+                  height: { xs: '180px', sm: '200px', md: '220px' },
+                  objectFit: 'cover'
+                }}
               />
-              <CardContent sx={{ flexGrow: 1, backgroundColor: theme.palette.background.paper }}>
-                <Typography gutterBottom variant="h5" component="div" sx={{ color: theme.palette.text.primary }}>
+              <CardContent sx={{ 
+                flexGrow: 1, 
+                backgroundColor: theme.palette.background.paper,
+                p: { xs: 2, sm: 2.5, md: 3 },
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1
+              }}>
+                <Typography 
+                  variant="h6" 
+                  component="h3" 
+                  sx={{ 
+                    color: theme.palette.text.primary,
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
+                    mb: 1,
+                    lineHeight: 1.3
+                  }}
+                >
                   {service.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ color: theme.palette.text.primary }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: theme.palette.text.primary,
+                    lineHeight: 1.6,
+                    fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                    flex: 1
+                  }}
                   {service.description}
                 </Typography>
               </CardContent>

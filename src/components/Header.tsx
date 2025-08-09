@@ -29,7 +29,7 @@ import Image from 'next/image';
 const Header = () => {
   const theme = useTheme();
   const router = useRouter();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [anchorElCamps, setAnchorElCamps] = useState<null | HTMLElement>(null);
@@ -168,30 +168,23 @@ const Header = () => {
           </Box>
 
           {/* Center Section - Navigation Menu */}
-          {!isMobile && (
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: { md: 1, lg: 2 }, 
-              position: 'absolute', 
-              left: '50%', 
-              transform: 'translateX(-50%)',
-              '@media (max-width: 1024px)': {
-                display: 'none'
-              },
-              '@media (min-width: 1025px)': {
-                display: 'flex'
-              }
-            }}>
+          <Box sx={{ 
+            display: { xs: 'none', md: 'none', lg: 'flex' }, 
+            alignItems: 'center', 
+            gap: { lg: 1, xl: 2 }, 
+            position: 'absolute', 
+            left: '50%', 
+            transform: 'translateX(-50%)',
+          }}>
               {/* Home Button */}
               <Button
                 onClick={() => router.push('/')}
                 sx={{
                   color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.text.secondary,
                   fontWeight: theme.typography.button.fontWeight,
-                  fontSize: { md: '0.95rem', lg: '1rem' },
+                  fontSize: { lg: '0.9rem', xl: '1rem' },
                   borderRadius: '20px',
-                  px: 2,
+                  px: { lg: 1.5, xl: 2 },
                   minHeight: '40px',
                   '&:hover': { color: theme.palette.secondary.main },
                 }}
@@ -208,9 +201,9 @@ const Header = () => {
                       ? theme.palette.secondary.main
                       : theme.palette.text.secondary,
                     fontWeight: theme.typography.button.fontWeight,
-                    fontSize: { md: '0.95rem', lg: '1rem' },
+                    fontSize: { lg: '0.9rem', xl: '1rem' },
                     borderRadius: '20px',
-                    px: 2,
+                    px: { lg: 1.5, xl: 2 },
                     minHeight: '40px',
                     display: 'flex',
                     alignItems: 'center',
@@ -291,9 +284,9 @@ const Header = () => {
                         ? theme.palette.secondary.main
                         : theme.palette.text.secondary,
                       fontWeight: theme.typography.button.fontWeight,
-                      fontSize: { md: '0.95rem', lg: '1rem' },
+                      fontSize: { lg: '0.9rem', xl: '1rem' },
                       borderRadius: '20px',
-                      px: 2,
+                      px: { lg: 1.5, xl: 2 },
                       minHeight: '40px',
                       '&:hover': { color: theme.palette.secondary.main },
                     }}
@@ -301,8 +294,7 @@ const Header = () => {
                     {item.label}
                   </Button>
                 ))}
-            </Box>
-          )}
+          </Box>
 
           {/* Right Section - Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

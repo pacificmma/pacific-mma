@@ -1,6 +1,6 @@
 // src/components/HamburgerMenu.tsx
 import { useState } from 'react';
-import { Box, Typography, IconButton, Button, useTheme, Collapse, SvgIcon } from '@mui/material';
+import { Box, Typography, IconButton, Button, useTheme, Collapse, SvgIcon, useMediaQuery } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Instagram from '@mui/icons-material/Instagram';
 import YouTube from '@mui/icons-material/YouTube';
@@ -31,6 +31,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
   const router = useRouter(); // Initialize useRouter
   // Removed: const location = useLocation();
   const currentPath = router.pathname; // Use router.pathname
+  const isSmallScreen = useMediaQuery('(max-width:360px)');
 
   // User menu open/close state
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -40,13 +41,16 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
     <Box
       sx={{
         width: '100%',
-        height: '100vh',
+        minHeight: '100dvh', // Dynamic viewport height with fallback
+        '@supports not (height: 100dvh)': {
+          minHeight: '100vh', // Fallback for older browsers
+        },
         backgroundColor: theme.palette.primary.main,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: { xs: 2, sm: 3 },
+        padding: { xs: '1rem', sm: '1.5rem' },
         position: 'relative',
         overflowY: 'auto',
       }}
@@ -55,8 +59,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
         onClick={toggleDrawer}
         sx={{
           position: 'absolute',
-          top: 16,
-          right: 16,
+          top: { xs: 12, sm: 16 },
+          right: { xs: 12, sm: 16 },
           color: theme.palette.primary.contrastText,
           zIndex: 10,
         }}
@@ -69,8 +73,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          marginTop: 6,
-          maxWidth: '300px',
+          marginTop: { xs: 4, sm: 6 },
+          maxWidth: { xs: '280px', sm: '320px', md: '350px' },
           width: '100%',
         }}
       >
@@ -79,7 +83,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            marginBottom: '1rem',
+            marginBottom: { xs: '0.8rem', sm: '1rem' },
+            gap: { xs: 0.5, sm: 1 },
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -87,7 +92,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             src={logo}
             alt="Pacific MMA Logo"
             style={{ 
-              height: window.innerWidth < 360 ? '40px' : '60px', 
+              height: isSmallScreen ? '40px' : '60px', 
               objectFit: 'contain' 
             }}
           />
@@ -109,7 +114,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
         </Box>
         <Box
           sx={{
-            maxWidth: '900px',
+            maxWidth: { xs: '260px', sm: '300px', md: '400px' },
             margin: '0 auto',
             textAlign: 'center',
           }}
@@ -156,9 +161,9 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
-          maxWidth: '300px',
-          gap: 1.5, // Eşit boşluk için gap kullan
-          mt: 4
+          maxWidth: { xs: '280px', sm: '320px', md: '350px' },
+          gap: { xs: 1, sm: 1.5 },
+          mt: { xs: 3, sm: 4 }
         }}
       >
         {/* Home Button */}
@@ -174,8 +179,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             fontSize: { xs: '0.95rem', sm: '1rem' },
             textTransform: 'none',
             justifyContent: 'flex-start',
-            minHeight: { xs: '40px', sm: '44px', md: '48px' }, // Sabit yükseklik
-            py: 1.5, // Eşit padding
+            minHeight: { xs: '36px', sm: '40px', md: '44px' },
+            py: { xs: 1, sm: 1.5 }
           }}
         >
           Home
@@ -194,8 +199,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             fontSize: { xs: '0.95rem', sm: '1rem' },
             textTransform: 'none',
             justifyContent: 'flex-start',
-            minHeight: { xs: '40px', sm: '44px', md: '48px' },
-            py: 1.5,
+            minHeight: { xs: '36px', sm: '40px', md: '44px' },
+            py: { xs: 1, sm: 1.5 },
           }}
         >
           Camp
@@ -214,8 +219,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
             fontSize: { xs: '0.95rem', sm: '1rem' },
             textTransform: 'none',
             justifyContent: 'flex-start',
-            minHeight: { xs: '40px', sm: '44px', md: '48px' },
-            py: 1.5,
+            minHeight: { xs: '36px', sm: '40px', md: '44px' },
+            py: { xs: 1, sm: 1.5 },
           }}
         >
           Youth Camp
@@ -259,8 +264,8 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
                 fontSize: { xs: '0.95rem', sm: '1rem' },
                 textTransform: 'none',
                 justifyContent: 'flex-start',
-                minHeight: { xs: '40px', sm: '44px', md: '48px' },
-                py: 1.5,
+                minHeight: { xs: '36px', sm: '40px', md: '44px' },
+                py: { xs: 1, sm: 1.5 },
               }}
             >
               {item.label}

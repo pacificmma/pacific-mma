@@ -40,7 +40,8 @@ const YouthCamp = () => {
           position: 'relative',
           zIndex: 2,
           textAlign: 'center',
-          maxWidth: '800px',
+          maxWidth: { xs: '100%', sm: '600px', md: '800px', lg: '900px', xl: '1000px' },
+          px: { xs: 2, sm: 3, md: 4 },
           fontFamily: theme.typography.fontFamily,
         }}
       >
@@ -60,15 +61,33 @@ const YouthCamp = () => {
           Youth MMA Camp
         </Typography>
 
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 3, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="body1" sx={{ 
+          fontSize: { xs: '1rem', sm: '1.05rem', md: '1.1rem' }, 
+          lineHeight: 1.8, 
+          mb: { xs: 2, sm: 2.5, md: 3 }, 
+          color: theme.palette.text.secondary, 
+          fontFamily: theme.typography.fontFamily 
+        }}>
           Where Young Warriors Discover the World
         </Typography>
 
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 3, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="body1" sx={{ 
+          fontSize: { xs: '1rem', sm: '1.05rem', md: '1.1rem' }, 
+          lineHeight: 1.8, 
+          mb: { xs: 2, sm: 2.5, md: 3 }, 
+          color: theme.palette.text.secondary, 
+          fontFamily: theme.typography.fontFamily 
+        }}>
           Give your child more than martial arts—give them a passport to adventure. Our Youth MMA Camps blend world-class training with unforgettable journeys, creating confident warriors who explore fearlessly. Under expert supervision, kids master Brazilian Jiu-Jitsu, Kickboxing, and self-defense while discovering new places, cultures, and friendships that last a lifetime.
         </Typography>
 
-        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 3, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
+        <Typography variant="body1" sx={{ 
+          fontSize: { xs: '1rem', sm: '1.05rem', md: '1.1rem' }, 
+          lineHeight: 1.8, 
+          mb: { xs: 2, sm: 2.5, md: 3 }, 
+          color: theme.palette.text.secondary, 
+          fontFamily: theme.typography.fontFamily 
+        }}>
           From local adventure days to exclusive youth retreats, we transform curious kids into capable young warriors. They’ll train where champions train, explore like adventurers, and return home with skills, stories, and unshakeable confidence.
         </Typography>
 
@@ -81,11 +100,12 @@ const YouthCamp = () => {
           sx={{
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.primary.contrastText,
-            padding: '12px 30px',
-            fontSize: '1.2rem',
+            padding: { xs: '10px 24px', sm: '12px 30px', md: '14px 36px' },
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
             fontWeight: 'bold',
             fontFamily: theme.typography.fontFamily,
             borderRadius: '30px',
+            mt: { xs: 2, sm: 3, md: 4 },
             '&:hover': { backgroundColor: theme.palette.secondary.dark, color: 'white' },
           }}
         >

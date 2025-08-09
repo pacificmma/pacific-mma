@@ -147,16 +147,26 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 4, borderRadius: 3, backgroundColor: theme.palette.background.default, border: `1px solid ${theme.palette.divider}`, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+    <Container maxWidth="md" sx={{ 
+      mt: { xs: 2, sm: 3, md: 4 }, 
+      mb: { xs: 2, sm: 3, md: 4 },
+      px: { xs: 1, sm: 2 }
+    }}>
+      <Paper sx={{ 
+        p: { xs: 2, sm: 3, md: 4 }, 
+        borderRadius: 3, 
+        backgroundColor: theme.palette.background.default, 
+        border: `1px solid ${theme.palette.divider}`, 
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
+      }}>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: theme.typography.h5.fontWeight, color: theme.palette.text.primary, textAlign: 'center' }}>
           Custom Trip Inquiry
         </Typography>
 
         <Divider sx={{ mb: 4 }} />
 
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+          <Grid item xs={12} sm={12} md={6}>
             <TextField
               label="Full Name"
               fullWidth
@@ -167,6 +177,8 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
             <TextField
               label="Phone"
               fullWidth
+              type="tel"
+              inputMode="tel"
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               sx={{ mt: 3, '& label': { color: theme.palette.text.primary } }}
@@ -174,12 +186,21 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
             <TextField
               label="Email"
               fullWidth
+              type="email"
+              inputMode="email"
+              autoComplete="email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
               sx={{ mt: 3, '& label': { color: theme.palette.text.primary } }}
             />
 
-            <Box sx={{ mt: 4, p: 2, border: `1px solid ${theme.palette.text.primary}`, borderRadius: 2, backgroundColor: theme.palette.background.paper }}>
+            <Box sx={{ 
+              mt: { xs: 3, sm: 3.5, md: 4 }, 
+              p: { xs: 1.5, sm: 2 }, 
+              border: `1px solid ${theme.palette.text.primary}`, 
+              borderRadius: 2, 
+              backgroundColor: theme.palette.background.paper 
+            }}>
               <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic', color: theme.palette.secondary.main, textAlign: 'center', fontSize: '0.9rem' }}>
                 ✈️ To ensure the best experience, we plan trips 90+ days in advance for premium arrangements
               </Typography>
@@ -192,8 +213,21 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
                   value={formData.startDate}
                   onChange={(newValue) => handleChange('startDate', newValue)}
                   minDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
-                  slotProps={{ textField: { fullWidth: true } }}
-                  sx={{ '& label': { color: theme.palette.text.primary } }}
+                  slotProps={{ 
+                    textField: { 
+                      fullWidth: true,
+                      inputProps: {
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*'
+                      }
+                    } 
+                  }}
+                  sx={{ 
+                    '& label': { color: theme.palette.text.primary },
+                    '& .MuiInputBase-root': {
+                      fontSize: { xs: '16px', sm: '14px' }
+                    }
+                  }}
                 />
               </LocalizationProvider>
 
@@ -206,14 +240,27 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
                   value={formData.endDate}
                   onChange={(newValue) => handleChange('endDate', newValue)}
                   minDate={formData.startDate || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
-                  slotProps={{ textField: { fullWidth: true } }}
-                  sx={{ '& label': { color: theme.palette.text.primary } }}
+                  slotProps={{ 
+                    textField: { 
+                      fullWidth: true,
+                      inputProps: {
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*'
+                      }
+                    } 
+                  }}
+                  sx={{ 
+                    '& label': { color: theme.palette.text.primary },
+                    '& .MuiInputBase-root': {
+                      fontSize: { xs: '16px', sm: '14px' }
+                    }
+                  }}
                 />
               </LocalizationProvider>
             </Box>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={12} md={6}>
             <Typography variant="body1" sx={{ mb: 1, fontWeight: theme.typography.body1.fontWeight, color: theme.palette.text.primary, zIndex: 1 }}>
               Select Destinations
             </Typography>
@@ -266,7 +313,7 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
 
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <TextField
               select
               label="Meal Plan"
@@ -280,7 +327,7 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <TextField
               select
               label="Comfort Level"
@@ -294,7 +341,7 @@ const CustomTripForm = ({ selectedDestination = '' }: CustomTripFormProps) => {
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <TextField
               select
               label="Budget"

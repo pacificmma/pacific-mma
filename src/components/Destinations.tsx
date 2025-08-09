@@ -80,8 +80,16 @@ const Destinations = () => {
     };
 
     return (
-        <Box sx={{ padding: '2rem', backgroundColor: theme.palette.background.paper }}>
-            <Paper elevation={3} sx={{ p: 3, mb: 5, borderRadius: '16px', backgroundColor: theme.palette.background.default }}>
+        <Box sx={{ 
+            padding: { xs: '1rem', sm: '1.5rem', md: '2rem' }, 
+            backgroundColor: theme.palette.background.paper 
+        }}>
+            <Paper elevation={3} sx={{ 
+                p: { xs: 2, sm: 2.5, md: 3 }, 
+                mb: { xs: 3, sm: 4, md: 5 }, 
+                borderRadius: '16px', 
+                backgroundColor: theme.palette.background.default 
+            }}>
                 <Typography variant="h5" sx={{ mb: 3, fontWeight: theme.typography.h5.fontWeight, textAlign: 'center', color: theme.palette.text.primary }}>
                     Filter Destinations
                 </Typography>
@@ -90,10 +98,16 @@ const Destinations = () => {
                         display: 'flex',
                         flexWrap: 'wrap',
                         justifyContent: 'center',
-                        gap: 3,
+                        gap: { xs: 2, sm: 2.5, md: 3 },
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: { xs: 'stretch', sm: 'flex-start' },
                     }}
                 >
-                    <Box sx={{ width: '220px' }}>
+                    <Box sx={{ 
+                        width: { xs: '100%', sm: '45%', md: '220px' },
+                        minWidth: { xs: 'auto', md: '200px' },
+                        maxWidth: { xs: '100%', sm: '300px', md: '250px' }
+                    }}>
                         <Typography variant="body2" sx={{ mb: 0.5, color: theme.palette.text.primary }}>Location</Typography>
                         <Select<OptionType, true>
                             closeMenuOnSelect={false}
@@ -105,7 +119,11 @@ const Destinations = () => {
                         />
                     </Box>
 
-                    <Box sx={{ width: '220px' }}>
+                    <Box sx={{ 
+                        width: { xs: '100%', sm: '45%', md: '220px' },
+                        minWidth: { xs: 'auto', md: '200px' },
+                        maxWidth: { xs: '100%', sm: '300px', md: '250px' }
+                    }}>
                         <Typography variant="body2" sx={{ mb: 0.5, color: theme.palette.text.primary }}>Discipline</Typography>
                         <Select<OptionType, true>
                             closeMenuOnSelect={false}
@@ -117,7 +135,11 @@ const Destinations = () => {
                         />
                     </Box>
 
-                    <Box sx={{ width: '220px' }}>
+                    <Box sx={{ 
+                        width: { xs: '100%', sm: '45%', md: '220px' },
+                        minWidth: { xs: 'auto', md: '200px' },
+                        maxWidth: { xs: '100%', sm: '300px', md: '250px' }
+                    }}>
                         <Typography variant="body2" sx={{ mb: 0.5, color: theme.palette.text.primary }}>Gym</Typography>
                         <Select<OptionType, true>
                             closeMenuOnSelect={false}
@@ -126,19 +148,6 @@ const Destinations = () => {
                             options={formatOptions(gyms)}
                             value={selectedGyms}
                             onChange={(selected) => setSelectedGyms([...selected])}
-                        />
-                    </Box>
-
-                    <Box sx={{ width: '220px' }}>
-                        <Typography variant="body2" sx={{ mb: 0.5, color: theme.palette.text.primary }}>Select Date Range</Typography>
-                        <DatePicker
-                            selectsRange
-                            startDate={startDate}
-                            endDate={endDate}
-                            onChange={(update: [Date | null, Date | null]) => setDateRange(update)}
-                            isClearable={true}
-                            customInput={<TextField fullWidth size="small" sx={{ height: '40px', backgroundColor: theme.palette.background.paper, borderRadius: '8px' }} />}
-                            popperPlacement="bottom"
                         />
                     </Box>
                 </Box>

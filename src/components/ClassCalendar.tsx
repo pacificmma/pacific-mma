@@ -94,7 +94,9 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
   initialDate = new Date(),
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const { loading: authLoading } = useFirebaseAuth();
   
   const [currentWeek, setCurrentWeek] = useState<Date>(initialDate);
@@ -417,8 +419,8 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* Desktop view with wider layout */}
-      {!isMobile ? (
+      {/* Desktop view - 7 columns */}
+      {isDesktop ? (
         <Box
           sx={{
             display: 'flex',
@@ -451,8 +453,6 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                   <Card
                     sx={{
                       height: { 
-                        xs: 400, 
-                        sm: 450, 
                         md: 500, 
                         lg: 550, 
                         xl: 600 
@@ -468,7 +468,7 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
                     <CardContent sx={{ 
                       overflowY: 'auto', 
                       height: '100%', 
-                      p: { xs: 2, sm: 2.5, md: 3 } 
+                      p: { md: 2.5, lg: 3 } 
                     }}>
                       <Typography
                         variant="h6"
@@ -529,8 +529,121 @@ const ClassCalendar: React.FC<ClassCalendarProps> = ({
             );
           })}
         </Box>
+      ) : isTablet ? (
+        // Tablet view - 3 columns with horizontal scroll
+        <Box sx={{ 
+          overflowX: 'auto', 
+          display: 'flex', 
+          gap: 2,
+          pb: 2,
+          '&::-webkit-scrollbar': {
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: theme.palette.action.hover,
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: theme.palette.primary.main,
+            borderRadius: '4px',
+          },
+        }}>
+          {weekDays.map((day, index) => {
+            const dayClasses = getClassesForDay(day);
+            const isToday = isSameDay(day, new Date());
+
+            return (
+              <Box
+                key={index}
+                sx={{
+                  minWidth: '300px',
+                  maxWidth: '350px',
+                  flex: '0 0 auto',
+                }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card
+                    sx={{
+                      height: 450,
+                      backgroundColor: isToday
+                        ? theme.palette.action.selected
+                        : theme.palette.background.paper,
+                      border: isToday
+                        ? `2px solid ${theme.palette.primary.main}`
+                        : `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
+                    <CardContent sx={{ 
+                      overflowY: 'auto', 
+                      height: '100%', 
+                      p: 2.5
+                    }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          mb: 2,
+                          textAlign: 'center',
+                          fontWeight: 600,
+                          fontSize: '1.1rem',
+                          color: isToday
+                            ? theme.palette.primary.main
+                            : theme.palette.text.primary,
+                        }}
+                      >
+                        {format(day, 'EEEE')}
+                        <br />
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          sx={{
+                            color: isToday
+                              ? theme.palette.primary.main
+                              : theme.palette.text.primary,
+                          }}
+                        >
+                          {format(day, 'MMM d')}
+                        </Typography>
+                      </Typography>
+
+                      <AnimatePresence>
+                        {dayClasses.length > 0 ? (
+                          dayClasses.map((classItem, classIndex) => (
+                            <motion.div
+                              key={classItem.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: classIndex * 0.1 }}
+                            >
+                              <ClassCard classItem={classItem} compact={true} />
+                            </motion.div>
+                          ))
+                        ) : (
+                          <Typography
+                            variant="body2"
+                            color="text.primary"
+                            sx={{
+                              textAlign: 'center',
+                              py: 4,
+                              fontStyle: 'italic',
+                            }}
+                          >
+                            No classes scheduled
+                          </Typography>
+                        )}
+                      </AnimatePresence>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Box>
+            );
+          })}
+        </Box>
       ) : (
-        // Mobile view remains unchanged
+        // Mobile view - Swiper with single column
         <Box sx={{ position: 'relative' }}>
           <Swiper
             modules={[Pagination, Navigation]}
