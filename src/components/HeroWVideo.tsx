@@ -88,7 +88,15 @@ const Hero: React.FC = () => {
   }, []);
 
   // Kullanıcı etkileşimi gelirse (autoplay politikasına takıldıysa) tekrar dene
-  const handleUserInteraction = useCallback(() => {
+  const handleUserInteraction = useCallback((e: Event) => {
+    // Sadece video container'ı içindeki event'lere yanıt ver
+    const target = e.target as Element;
+    const videoContainer = videoRef.current?.parentElement;
+    if (!videoContainer || !target) return;
+    
+    // Event'in video container'ının içinde olup olmadığını kontrol et
+    if (!videoContainer.contains(target)) return;
+    
     void attachAndPlay(videoKey);
   }, [attachAndPlay, videoKey]);
 
