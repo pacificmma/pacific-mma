@@ -18,7 +18,7 @@ const Hero = () => {
       video.addEventListener('canplay', onReady, { once: true });
     });
 
-  const hardResetSource = async (video: HTMLVideoElement) => {
+  const hardResetSource = useCallback(async (video: HTMLVideoElement) => {
     const src = video.currentSrc || video.src;
     try {
       video.pause();
@@ -30,7 +30,7 @@ const Hero = () => {
       video.load();
       await waitForCanPlay(video);
     } catch {}
-  };
+  }, []);
 
   const nudge = async (video: HTMLVideoElement) => {
     try {
@@ -94,7 +94,7 @@ const Hero = () => {
         }
       }
     }
-  }, []);
+  }, [hardResetSource]);
 
   const initializeVideo = useCallback(() => {
     const video = videoRef.current;
@@ -128,8 +128,8 @@ const Hero = () => {
 
     // iOS/Safari bfcache return
     const onPageShow = (e: Event) => {
-      // @ts-ignore - PageTransitionEvent
-      if (e && (e as any).persisted) {
+      const pageTransitionEvent = e as any;
+      if (pageTransitionEvent?.persisted) {
         void ensureVideoPlays();
       } else {
         void ensureVideoPlays();
