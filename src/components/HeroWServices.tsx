@@ -289,10 +289,10 @@ const HeroWServices = () => {
                     textAlign: 'left',
                     fontFamily: theme.typography.fontFamily,
                     fontSize: {
-                      xs: '1rem',
-                      sm: '1rem',
-                      md: '1.2rem',
-                      lg: '1.4rem'
+                      xs: '0.9rem',
+                      sm: '0.9rem',
+                      md: '1rem',
+                      lg: '1.1rem'
                     },
                     lineHeight: { xs: 1.3, sm: 1.35, md: 1.4 },
                     textIndent: '1em',
