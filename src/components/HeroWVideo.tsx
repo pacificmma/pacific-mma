@@ -46,9 +46,9 @@ const Hero = () => {
       video.currentTime = 0;
       video.load(); // Reload video source
       
-      // Multiple attempts with different timings
+      // Fast multiple attempts with minimal delay
       const attemptPlay = (attempt: number = 0) => {
-        if (attempt > 3) {
+        if (attempt > 2) {
           console.error('Max reset attempts reached');
           setVideoError(true);
           return;
@@ -65,7 +65,7 @@ const Hero = () => {
             mobileLog(`Video reset attempt ${attempt + 1} failed: ${error.message}`);
             attemptPlay(attempt + 1);
           });
-        }, 200 * (attempt + 1)); // Progressive delay
+        }, 100 * (attempt + 1)); // Faster progressive delay
       };
 
       attemptPlay();
@@ -86,7 +86,7 @@ const Hero = () => {
     }
 
     // Limit recovery attempts to prevent infinite loops
-    if (recoveryAttemptRef.current > 5) {
+    if (recoveryAttemptRef.current > 3) {
       console.warn('Maximum recovery attempts reached, stopping video recovery');
       setVideoError(true);
       return;
@@ -103,8 +103,8 @@ const Hero = () => {
       // For mobile browsers, try different recovery strategies
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
-      if (isMobile && timeSinceLastPlay > 10000) {
-        // For mobile after long pause, do full reset
+      if (isMobile && timeSinceLastPlay > 2000) {
+        // For mobile after short pause, do full reset
         resetVideo();
       } else {
         // Try simple play first
@@ -116,10 +116,10 @@ const Hero = () => {
           recoveryAttemptRef.current = 0; // Reset counter on success
         }).catch((error) => {
           mobileLog(`Video play failed: ${error.message}`);
-          // If play fails, do full reset after delay
+          // If play fails, do full reset with minimal delay
           playbackTimeoutRef.current = setTimeout(() => {
             resetVideo();
-          }, 1000);
+          }, 200);
         });
       }
     }
@@ -138,7 +138,7 @@ const Hero = () => {
         mobileLog('Page became visible, attempting video recovery');
         // Reset recovery attempts when page becomes visible
         recoveryAttemptRef.current = 0;
-        setTimeout(handleVideoRecovery, 300);
+        setTimeout(handleVideoRecovery, 100);
       } else {
         // Page became hidden, track the time
         mobileLog('Page became hidden');
@@ -149,15 +149,15 @@ const Hero = () => {
     const handleWindowFocus = () => {
       mobileLog('Window focused, attempting video recovery');
       recoveryAttemptRef.current = 0;
-      setTimeout(handleVideoRecovery, 300);
+      setTimeout(handleVideoRecovery, 100);
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
       // Handle browser back/forward navigation
       if (event.persisted) {
-        console.log('Page shown from cache, attempting video recovery');
+        mobileLog('Page shown from cache, attempting video recovery');
         recoveryAttemptRef.current = 0;
-        setTimeout(handleVideoRecovery, 500);
+        setTimeout(handleVideoRecovery, 150);
       }
     };
 
@@ -233,7 +233,7 @@ const Hero = () => {
       intersectionObserverRef.current.observe(videoContainerRef.current);
     };
 
-    // Aggressive recovery check every 2 seconds
+    // Ultra-aggressive recovery check every 500ms
     const setupForceRecoveryInterval = () => {
       forceRecoveryIntervalRef.current = setInterval(() => {
         const video = videoRef.current;
@@ -241,26 +241,26 @@ const Hero = () => {
 
         const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
         
-        // Very aggressive recovery - multiple conditions
+        // Ultra-aggressive recovery - immediate response
         if (document.visibilityState === 'visible') {
-          // If video shows as playing but hasn't updated time in 3 seconds
-          if (timeSinceLastPlay > 3000) {
+          // If video shows as playing but hasn't updated time in 800ms
+          if (timeSinceLastPlay > 800) {
             setIsVideoPlaying(false);
             handleVideoRecovery();
           }
           
-          // If video is paused but should be playing
+          // If video is paused but should be playing - immediate
           else if (video.paused && isVideoPlaying) {
             setIsVideoPlaying(false);
             handleVideoRecovery();
           }
           
-          // If video element exists but readyState is low
-          else if (video.readyState < 2 && timeSinceLastPlay > 1500) {
+          // If video element exists but readyState is low - immediate
+          else if (video.readyState < 2 && timeSinceLastPlay > 500) {
             handleVideoRecovery();
           }
         }
-      }, 2000); // Check every 2 seconds
+      }, 500); // Check every 500ms
     };
 
     // Add all event listeners
@@ -471,7 +471,7 @@ const Hero = () => {
               
               if (videoError) return 'rgba(255,0,0,0.7)'; // Red for error
               if (!video) return 'rgba(128,128,128,0.7)'; // Gray for no video
-              if (video.paused || timeSinceLastPlay > 2000) return 'rgba(255,165,0,0.7)'; // Orange for paused/inactive
+              if (video.paused || timeSinceLastPlay > 800) return 'rgba(255,165,0,0.7)'; // Orange for paused/inactive
               if (isVideoPlaying && video.currentTime > 0 && !video.paused) return 'rgba(0,255,0,0.7)'; // Green for playing
               return 'rgba(255,165,0,0.7)'; // Default orange
             })(),
@@ -488,8 +488,8 @@ const Hero = () => {
               const video = videoRef.current;
               const timeSinceLastPlay = Date.now() - lastPlayTimeRef.current;
               // Blink if video is stuck
-              if (video && !video.paused && timeSinceLastPlay > 2000) {
-                return 'blink 1s infinite';
+              if (video && !video.paused && timeSinceLastPlay > 800) {
+                return 'blink 0.5s infinite';
               }
               return 'none';
             })(),
@@ -531,7 +531,7 @@ const Hero = () => {
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <span>Recovery:</span>
-            <span>{recoveryAttemptRef.current}/5</span>
+            <span>{recoveryAttemptRef.current}/3</span>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <span>Ready State:</span>
