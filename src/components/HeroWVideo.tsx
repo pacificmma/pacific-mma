@@ -1,91 +1,107 @@
-// src/components/HeroWVideo.tsx - REMOUNT-ON-RESUME HERO VIDEO (iOS-safe)
+// src/components/HeroWVideo.tsx - KILL-AND-REATTACH SOURCE (iOS-proof)
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import Header from './Header';
 
 const asset = (p: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}${p}`;
-const HERO_VIDEO_MP4 = asset('/assets/videos/first_hero_video.mp4');
+const HERO_VIDEO_MP4_BASE = asset('/assets/videos/first_hero_video.mp4');
 const HERO_POSTER = asset('/assets/img/home_page/video_poster.jpg');
 
 const Hero: React.FC = () => {
   const theme = useTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Remount anahtarı: değişince <video> DOM'u sıfırdan yaratılır
   const [videoKey, setVideoKey] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
-  const waitForCanPlay = (video: HTMLVideoElement) =>
+  const ready = (v: HTMLVideoElement) =>
     new Promise<void>((resolve) => {
-      if (video.readyState >= 2) return resolve();
+      if (v.readyState >= 2) return resolve();
       const onReady = () => resolve();
-      video.addEventListener('canplay', onReady, { once: true });
+      v.addEventListener('canplay', onReady, { once: true });
     });
 
-  const nudge = (video: HTMLVideoElement) => {
-    try { video.currentTime = Math.max(0, video.currentTime + 0.001); } catch {}
-  };
+  const srcWithBuster = (k: number) => `${HERO_VIDEO_MP4_BASE}?k=${k}`;
 
-  const tryPlay = useCallback(async () => {
+  const attachAndPlay = useCallback(async (k: number) => {
     const v = videoRef.current;
     if (!v) return;
-    try {
-      v.muted = true;
-      v.loop = true;
-      v.playsInline = true;
-      v.preload = 'auto';
 
-      if (v.readyState < 2) {
-        v.load();
-        await waitForCanPlay(v);
-      }
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.preload = 'auto';
+
+    // Kaynağı tak
+    // <source> kullanmak yerine direkt v.src set edilirse iOS'ta daha stabil olur
+    v.src = srcWithBuster(k);
+    v.load();
+    await ready(v);
+
+    try {
       await v.play();
       setIsPlaying(true);
+      try { v.removeAttribute('poster'); } catch {}
     } catch {
-      // küçük bir nudge sonrası tekrar dene
+      // küçük nudge
       try {
-        nudge(v);
+        v.currentTime = Math.max(0, v.currentTime + 0.001);
         await v.play();
         setIsPlaying(true);
       } catch {
-        setIsPlaying(false); // etkileşim gelince tekrar deneyeceğiz
+        setIsPlaying(false);
       }
     }
   }, []);
 
-  // Görünür olunca oynat
-  const handleVisibility = useCallback(() => {
+  const detach = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (document.visibilityState === 'visible') {
-      void tryPlay();
-    } else {
-      v.pause();
-      setIsPlaying(false);
-    }
-  }, [tryPlay]);
+    try { v.pause(); } catch {}
+    // Kaynağı tamamen sök
+    v.removeAttribute('src');
+    // legacy <source> varsa temizle
+    while (v.firstChild) v.removeChild(v.firstChild);
+    v.load();
+    setIsPlaying(false);
+  }, []);
 
-  // iOS/Safari geri dönüşte remount
-  const handlePageShow = useCallback((e: PageTransitionEvent) => {
-    // bfcache (persisted) veya normal dönüş — ikisinde de remount etmek güvenli
+  // İlk mount: tak ve oynat
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => { void attachAndPlay(videoKey); }, 50);
+    return () => window.clearTimeout(timeoutId);
+  }, [videoKey, attachAndPlay]);
+
+  // Görünürlük değişimi: gizlenince sök, görünür olunca remount+attach
+  const handleVisibility = useCallback(() => {
+    if (document.visibilityState === 'visible') {
+      // Hem remount et hem de yeni src ile tak
+      setVideoKey((k) => k + 1);
+    } else {
+      detach();
+    }
+  }, [detach]);
+
+  // bfcache dönüşü: aynı strateji (remount + reattach)
+  const handlePageShow = useCallback((_e: PageTransitionEvent) => {
     setVideoKey((k) => k + 1);
   }, []);
 
-  // Kullanıcı etkileşimi olursa (autoplay engelinde) tekrar dene
+  // Kullanıcı etkileşimi gelirse (autoplay politikasına takıldıysa) tekrar dene
   const handleUserInteraction = useCallback(() => {
-    void tryPlay();
-  }, [tryPlay]);
+    void attachAndPlay(videoKey);
+  }, [attachAndPlay, videoKey]);
 
   useEffect(() => {
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('focus', handleVisibility);
     window.addEventListener('pageshow', handlePageShow);
-    window.addEventListener('pagehide', () => {
-      videoRef.current?.pause();
-      setIsPlaying(false);
-    });
 
-    // Etkileşim dinleyicileri (once: false bırak)
+    // Arka plana çıkarken kesin sök
+    const onPageHide = () => detach();
+    window.addEventListener('pagehide', onPageHide);
+
+    // Interaction dinleyicileri
     document.addEventListener('touchstart', handleUserInteraction, { passive: true });
     document.addEventListener('click', handleUserInteraction);
 
@@ -93,17 +109,11 @@ const Hero: React.FC = () => {
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('focus', handleVisibility);
       window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('pagehide', onPageHide);
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
     };
-  }, [handleVisibility, handlePageShow, handleUserInteraction]);
-
-  // Yeni video DOM’u yaratıldıktan sonra oynatmayı dene
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => { void tryPlay(); }, 100);
-    return () => window.clearTimeout(timeoutId);
-  }, [videoKey, tryPlay]);
-  
+  }, [handleVisibility, handlePageShow, handleUserInteraction, detach]);
 
   return (
     <Box
@@ -126,7 +136,7 @@ const Hero: React.FC = () => {
       {/* Video Layer */}
       <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <video
-          key={videoKey}                // <-- kritik: remount anahtarı
+          key={videoKey} // remount
           ref={videoRef}
           poster={HERO_POSTER}
           autoPlay
@@ -134,6 +144,7 @@ const Hero: React.FC = () => {
           muted
           playsInline
           preload="auto"
+          // IMPORTANT: <source> çocuklarını kullanmıyoruz; iOS'ta doğrudan v.src daha stabil
           style={{
             width: '100%',
             height: '100%',
@@ -143,18 +154,11 @@ const Hero: React.FC = () => {
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
           }}
-          onLoadedData={() => void tryPlay()}
-          onCanPlay={() => void tryPlay()}
-          onPlay={() => {
-            setIsPlaying(true);
-            try { videoRef.current?.removeAttribute('poster'); } catch {}
-          }}
+          onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
-          onWaiting={() => void tryPlay()}
-          onStalled={() => void tryPlay()}
-        >
-          <source src={HERO_VIDEO_MP4} type="video/mp4" />
-        </video>
+          onWaiting={() => { /* iOS beklerse, bir dahaki görünürlükte zaten reattach olacak */ }}
+          onStalled={() => { /* same */ }}
+        />
 
         {/* Overlay (filter yerine) */}
         <Box sx={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', pointerEvents: 'none' }} />
