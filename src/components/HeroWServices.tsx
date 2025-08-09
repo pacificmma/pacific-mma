@@ -42,12 +42,12 @@ const HeroWServices = () => {
         position: 'relative',
         width: '100%',
         overflow: 'hidden', // Changed from 'visible' to prevent overflow issues
-        pt: { xs: '0.8rem', sm: '1rem', md: '1.2rem' },
+        py: { xs: 3, sm: 4, md: 5 },
         background: theme.palette.primary.main,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
-        borderTop: `5px solid ${theme.palette.secondary.main}`,
+        borderTop: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
       {/* Başlık Bölümü */}
@@ -65,7 +65,7 @@ const HeroWServices = () => {
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '1.4rem', sm: '2rem', md: '2.5rem' }, // Reduced font size slightly
+            fontSize: { xs: '1.7rem', sm: '2.4rem', md: '2.8rem' }, // Standardized font size
             lineHeight: { xs: 1.3, sm: 1.3, md: 1.4 },
             letterSpacing: '1px',
             color: theme.palette.primary.contrastText,
@@ -93,14 +93,23 @@ const HeroWServices = () => {
       <Box
         sx={{
           display: 'flex',
-          justifyContent: 'center',
+          justifyContent: { xs: 'flex-start', md: 'center' },
           gap: { xs: '15px', sm: '15px', md: '20px' },
-          width: { xs: '92%', sm: '90%', md: '85%', lg: '80%' },
+          width: { xs: '100%', md: '85%', lg: '80%' },
           margin: '0 auto',
           position: 'relative',
           zIndex: 2,
-          flexDirection: { xs: 'column', md: 'row' },
+          flexDirection: 'row',
           mt: { xs: 1, md: 0 },
+          overflowX: { xs: 'auto', md: 'visible' },
+          overflowY: 'hidden',
+          px: { xs: 2, md: 0 },
+          scrollSnapType: { xs: 'x mandatory', md: 'none' },
+          WebkitOverflowScrolling: 'touch',
+          '&::-webkit-scrollbar': {
+            display: { xs: 'none', md: 'block' },
+          },
+          scrollbarWidth: 'none',
         }}
       >
         {features.map((feature, i) => (
@@ -110,17 +119,18 @@ const HeroWServices = () => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              width: '100%',
-              flex: { xs: 'none', md: 1 },
-              mb: { xs: 2, sm: 2, md: 0 }, // Added bottom margin for mobile spacing
+              width: { xs: '85vw', sm: '75vw', md: '100%' },
+              minWidth: { xs: '280px', sm: '320px', md: 'auto' },
+              flex: { xs: '0 0 auto', md: 1 },
+              mb: { xs: 0, md: 0 },
+              scrollSnapAlign: { xs: 'center', md: 'none' },
             }}
           >
             {/* Görsel */}
             <Box
               sx={{
                 width: '100%',
-                height: { xs: 'auto', sm: 'auto', md: '650px', lg: '700px' },
-                aspectRatio: { xs: '1 / 1', md: '3 / 5' },
+                height: { xs: '500px', sm: '550px', md: '650px', lg: '700px' },
                 borderRadius: { xs: '10px', md: '12px' },
                 position: 'relative',
                 backgroundImage: `url(${feature.image})`,
@@ -140,20 +150,22 @@ const HeroWServices = () => {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  background: 'rgba(0, 0, 0, 0.7)',
+                  background: 'rgba(0, 0, 0, 0.8)',
                   padding: {
-                    xs: '10px',
-                    sm: '12px',
-                    md: '16px'
+                    xs: '16px',
+                    sm: '18px',
+                    md: '20px'
                   },
                   textAlign: 'center',
                   borderBottomLeftRadius: { xs: '10px', md: '12px' },
                   borderBottomRightRadius: { xs: '10px', md: '12px' },
-                  height: { xs: 'auto', sm: 'auto', md: '350px', lg: '380px' }, // Fixed height for all cards
+                  height: { xs: '280px', sm: '300px', md: '350px', lg: '380px' }, // Fixed height for all cards
+                  minHeight: { xs: '280px', sm: '300px', md: '350px', lg: '380px' }, // Ensure minimum height
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center',
+                  justifyContent: 'flex-start',
                   alignItems: 'center',
+                  overflowY: 'auto',
                 }}
               >
                 <Typography
@@ -164,12 +176,14 @@ const HeroWServices = () => {
                     fontFamily: theme.typography.fontFamily,
                     textTransform: 'uppercase',
                     fontSize: {
+                      xs: '1rem',
                       sm: '1.1rem',
-                      md: '1.1rem',
-                      lg: '1.1rem'
+                      md: '1.2rem',
+                      lg: '1.3rem'
                     },
                     fontWeight: 'bold',
-                    mb: { xs: 0.5, sm: 0.7, md: 1 }
+                    mb: { xs: 1.5, sm: 2, md: 2 },
+                    lineHeight: 1.3,
                   }}
                 >
                   {feature.title}
@@ -178,18 +192,16 @@ const HeroWServices = () => {
                   variant="body2"
                   sx={{
                     color: theme.palette.primary.contrastText,
-                    textAlign: 'center',
+                    textAlign: 'justify',
                     fontFamily: theme.typography.fontFamily,
                     fontSize: {
-                      xs: '0.85rem',
-                      sm: '0.95rem',
-                      md: '1rem',
-                      lg: '1.1rem'
+                      xs: '0.75rem',
+                      sm: '0.85rem',
+                      md: '0.95rem',
+                      lg: '1rem'
                     },
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    px: { xs: 1, sm: 1.5, md: 2 },
+                    lineHeight: 1.6,
+                    px: { xs: 0.5, sm: 1, md: 1.5 },
                   }}
                 >
                   {feature.description}
@@ -197,6 +209,30 @@ const HeroWServices = () => {
               </Box>
             </Box>
           </Box>
+        ))}
+      </Box>
+
+      {/* Mobile Scroll Indicator */}
+      <Box
+        sx={{
+          display: { xs: 'flex', md: 'none' },
+          justifyContent: 'center',
+          gap: 1,
+          mt: 2,
+        }}
+      >
+        {features.map((_, index) => (
+          <Box
+            key={index}
+            sx={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: theme.palette.secondary.main,
+              opacity: 0.5,
+              transition: 'opacity 0.3s',
+            }}
+          />
         ))}
       </Box>
 

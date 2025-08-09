@@ -14,7 +14,7 @@ const CampHeroWPhoto = () => {
         height: { xs: '50vh', md: '60vh' },
         overflow: 'hidden',
         backgroundColor: theme.palette.background.default,
-        borderBottom: `5px solid ${theme.palette.secondary.main}`,
+        borderBottom: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
       {/* Background Image */}

@@ -140,12 +140,13 @@ const ContactUs = () => {
       sx={{
         maxWidth: '100%',
         margin: '0 auto',
-        padding: 4,
+        py: { xs: 3, sm: 4, md: 5 },
+        px: { xs: 2, sm: 3, md: 4 },
         backgroundColor: theme.palette.background.paper,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        borderTop: `5px solid ${theme.palette.secondary.main}`,
+        borderTop: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
       <Box
@@ -173,7 +174,7 @@ const ContactUs = () => {
           <Typography
             variant="h6"
             sx={{
-              fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+              fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
               lineHeight: 1.4,
               letterSpacing: '1px',
               color: theme.palette.text.primary,

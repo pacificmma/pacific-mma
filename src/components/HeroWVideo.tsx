@@ -85,44 +85,53 @@ const Hero = () => {
           transform: 'translate(-50%, -50%)',
           color: theme.palette.text.primary,
           fontFamily: theme.typography.fontFamily,
-          px: { xs: 2, sm: 4 },
           width: '100%',
-          maxWidth: '90%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <Typography
-          variant="h6"
+        <Box
           sx={{
-            fontSize: { xs: '1rem', sm: '2rem', md: '4.5rem' },
-            lineHeight: { xs: 1.4, sm: 1.4 },
-            letterSpacing: '1px',
-            color: theme.palette.primary.contrastText,
-            textTransform: 'none',
-            maxWidth: '900px',
-            margin: '0 auto',
-            fontFamily: theme.typography.fontFamily,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          TRAVEL & TRAIN
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            fontSize: { xs: '1rem', sm: '2rem', md: '2.8rem' },
-            lineHeight: { xs: 1.4, sm: 1.4 },
-            letterSpacing: '1px',
-            color: theme.palette.primary.contrastText,
-            textTransform: 'none',
-            maxWidth: '900px',
-            margin: '0 auto',
-            fontFamily: theme.typography.fontFamily,
-          }}
-        >
-          <span style={{ color: theme.palette.secondary.main }}>
-           <b>Mixed Martial Arts (MMA)</b>
-          </span>
-        </Typography>
-
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: { xs: '1.8rem', sm: '2rem', md: '4.5rem' },
+              lineHeight: 1,
+              letterSpacing: { xs: '0.15em', sm: '0.12em', md: '0.1em' },
+              color: theme.palette.primary.contrastText,
+              textTransform: 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            TRAVEL&TRAIN
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: { xs: '1.8rem', sm: '2rem', md: '4.5rem' },
+              lineHeight: 1,
+              letterSpacing: { xs: '0.15em', sm: '0.12em', md: '0.1em' },
+              color: theme.palette.secondary.main,
+              textTransform: 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+              transform: 'scaleX(0.62)',
+              transformOrigin: 'center',
+            }}
+          >
+            Mixed Martial Arts (MMA)
+          </Typography>
+        </Box>
       </Box>
       {/* SVG wave */}
       <Box

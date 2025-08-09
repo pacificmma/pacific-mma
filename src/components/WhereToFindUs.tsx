@@ -56,7 +56,7 @@ const WhereToFindUs = () => {
           color: theme.palette.text.primary,
           p: { xs: 4, md: 6 },
           textAlign: "center",
-          borderBottom: `5px solid ${theme.palette.secondary.main}`,
+          borderBottom: `6px solid ${theme.palette.secondary.main}`,
         }}
       >
         <Typography

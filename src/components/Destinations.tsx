@@ -9,7 +9,6 @@ import {
     TextField,
 } from '@mui/material';
 import { Theme } from '@mui/material/styles';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -155,14 +154,8 @@ const Destinations = () => {
                     const isHovered = hoveredIndex === index;
                     
                     return (
-                        <motion.div
+                        <div
                             key={dest.country + index}
-                            initial={{ opacity: 0, y: 50 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6 }}
-                            onMouseEnter={() => handleMouseEnter(index)}
-                            onMouseLeave={handleMouseLeave}
                             style={{ cursor: 'pointer' }}
                         >
                             <Box
@@ -180,10 +173,8 @@ const Destinations = () => {
                                     },
                                 }}
                             >
-                                <motion.div
+                                <div
                                     style={{ flex: 1 }}
-                                    animate={isHovered ? { scale: 1.05 } : { scale: 1 }}
-                                    transition={{ duration: 0.3, ease: "easeInOut" }}
                                 >
                                     <Box
                                         component="img"
@@ -194,13 +185,10 @@ const Destinations = () => {
                                             borderRadius: '6px',
                                             objectFit: 'cover',
                                             maxHeight: '500px',
-                                            boxShadow: isHovered 
-                                                ? '0px 15px 35px rgba(0,0,0,0.25)' 
-                                                : '0px 10px 25px rgba(0,0,0,0.15)',
-                                            transition: 'box-shadow 0.3s ease-in-out',
+                                            boxShadow: '0px 10px 25px rgba(0,0,0,0.15)',
                                         }}
                                     />
-                                </motion.div>
+                                </div>
 
                                 <Box
                                     sx={{
@@ -218,32 +206,23 @@ const Destinations = () => {
                                         },
                                     }}
                                 >
-                                    <motion.div
-                                        animate={isHovered ? { x: isEven ? 10 : -10 } : { x: 0 }}
-                                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                                    >
+                                    <div>
                                         <Typography variant="h5" sx={{ fontWeight: theme.typography.h5.fontWeight, letterSpacing: '1px' }}>
                                             {dest.country.toUpperCase()}
                                         </Typography>
-                                    </motion.div>
+                                    </div>
                                     
-                                    <motion.div
-                                        animate={isHovered ? { opacity: 1 } : { opacity: 0.9 }}
-                                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                                    >
+                                    <div>
                                         <Typography variant="body1" sx={{ color: theme.palette.text.primary, lineHeight: 1.6 }}>
                                             {dest.description}
                                         </Typography>
-                                    </motion.div>
+                                    </div>
                                     
                                     <Typography variant="body2" sx={{ color: theme.palette.text.primary }}>
                                         {dest.nights} — Starting from ${dest.price} — {new Date(dest.date).toLocaleDateString()}
                                     </Typography>
                                     
-                                    <motion.div
-                                        animate={isHovered ? { scale: 1.05 } : { scale: 1 }}
-                                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                                    >
+                                    <div>
                                         <Button
                                             component={Link}
                                             href={`/destination/${dest.country.toLowerCase().replace(/\s+/g, '-')}`}
@@ -262,10 +241,10 @@ const Destinations = () => {
                                         >
                                             Find Out More
                                         </Button>
-                                    </motion.div>
+                                    </div>
                                 </Box>
                             </Box>
-                        </motion.div>
+                        </div>
                     );
                 })
             )}

@@ -31,7 +31,7 @@ const Footer = () => {
         justifyContent: 'space-between',
         alignItems: 'center',
         gap: 2,
-        borderTop: `5px solid ${theme.palette.secondary.main}`,
+        borderTop: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
       <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' } }}>

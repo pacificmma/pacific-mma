@@ -31,14 +31,14 @@ const HeroShop = () => {
     <Box
       sx={{
         position: 'relative',
-        minHeight: '65vh',
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        p: { xs: 1, md: 2 },
+        py: { xs: 3, sm: 4, md: 5 },
+        px: { xs: 2, sm: 3, md: 4 },
         backgroundColor: theme.palette.primary.main,
-        borderTop: `5px solid ${theme.palette.secondary.main}`,
+        borderTop: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
       <Box
@@ -57,7 +57,7 @@ const HeroShop = () => {
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+            fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
             lineHeight: { xs: 1.4, sm: 1.4 },
             letterSpacing: '1px',
             color: theme.palette.primary.contrastText,

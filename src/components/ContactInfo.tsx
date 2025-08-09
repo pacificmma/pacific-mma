@@ -7,7 +7,7 @@ const ContactUsInfo = () => {
   const theme = useTheme();
 
   return (
-    <Box sx={{ width: "100%", borderBottom: `5px solid ${theme.palette.secondary.main}`, }}>
+    <Box sx={{ width: "100%", borderBottom: `6px solid ${theme.palette.secondary.main}`, }}>
       {/* Hero Section */}
       <Box
         sx={{

@@ -15,14 +15,14 @@ const HeroWTrainer = () => {
       sx={{
         position: 'relative',
         width: '100%',
-        minHeight: '75vh',
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        px: 2,
-        py: { xs: 2, md: 6 },
+        py: { xs: 3, sm: 4, md: 5 },
+        px: { xs: 2, sm: 3, md: 4 },
         backgroundColor: theme.palette.primary.main,
+        borderTop: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
 
@@ -36,7 +36,7 @@ const HeroWTrainer = () => {
           alignItems: { xs: 'center', md: 'flex-start' },
           justifyContent: 'space-between',
           gap: { xs: '2rem', md: '3rem' },
-          padding: { xs: '2rem', md: '4rem' },
+          padding: { xs: '1rem', sm: '2rem', md: '3rem' },
         }}
       >
         {/* Text Content */}
@@ -54,7 +54,7 @@ const HeroWTrainer = () => {
             <Typography
               variant="h6"
               sx={{
-                fontSize: { xs: '1.4rem', sm: '2rem', md: '2.6rem' },
+                fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
                 lineHeight: { xs: 1.4, sm: 1.4 },
                 letterSpacing: '0.6px',
                 color: theme.palette.primary.contrastText,
@@ -64,7 +64,7 @@ const HeroWTrainer = () => {
                 paddingTop: 0,
               }}
             >
-              Where Every Warrior's Journey Begins
+             PACIFIC MMA ACADEMY
             </Typography>
             <InstagramIcon 
               onClick={() => window.open('https://www.instagram.com/pacificmma.academy/', '_blank')}
@@ -80,6 +80,21 @@ const HeroWTrainer = () => {
               }} 
             />
           </Box>
+          <Typography
+            variant="body1"
+            sx={{
+              mt: 2,
+              mb: 3,
+              lineHeight: 1.7,
+              color: theme.palette.text.secondary,
+              fontSize: { xs: '0.9rem', md: '1rem' },
+              fontWeight: 600,
+              fontStyle: 'italic',
+              fontFamily: theme.typography.fontFamily,
+            }}
+          >
+            Where Every Warrior's Journey Begins.
+          </Typography>
 
           <Typography
             variant="body1"
@@ -104,6 +119,7 @@ const HeroWTrainer = () => {
               color: theme.palette.text.secondary,
               fontSize: { xs: '0.9rem', md: '1rem' },
               fontWeight: 600,
+              fontStyle: 'italic',
               fontFamily: theme.typography.fontFamily,
             }}
           >

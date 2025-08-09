@@ -224,7 +224,7 @@ const DestinationSlider = () => {
                     xl: '420px' 
                   },
                   height: { 
-                    xs: '300px', 
+                    xs: '380px', 
                     sm: '350px', 
                     md: '400px', 
                     lg: '480px', 

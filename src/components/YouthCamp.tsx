@@ -12,7 +12,6 @@ const YouthCamp = () => {
       sx={{
         position: 'relative',
         width: '100%',
-        minHeight: '60vh',
         backgroundImage: `url(${CampHeroPhoto})`, // ✅ Direct string usage
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -20,9 +19,8 @@ const YouthCamp = () => {
         alignItems: 'flex-start',
         justifyContent: 'center',
         color: '#fff',
-        pt: { xs: 6, md: 8 },
-        pb: { xs: 6, md: 10 },
-        borderTop: `5px solid ${theme.palette.secondary.main}`,
+        py: { xs: 3, sm: 4, md: 5 },
+        borderTop: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
       <Box
@@ -49,7 +47,7 @@ const YouthCamp = () => {
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '1.4rem', sm: '2rem', md: '2.6rem' },
+            fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
             lineHeight: { xs: 1.4, sm: 1.4 },
             letterSpacing: '1px',
             color: theme.palette.primary.contrastText,
@@ -59,6 +57,10 @@ const YouthCamp = () => {
             fontFamily: theme.typography.fontFamily,
           }}
         >
+          Youth MMA Camp
+        </Typography>
+
+        <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, mb: 3, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
           Where Young Warriors Discover the World
         </Typography>
 

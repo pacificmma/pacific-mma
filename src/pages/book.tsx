@@ -129,7 +129,7 @@ const BookingPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             textAlign: 'center',
-            borderBottom: `5px solid ${theme.palette.secondary.main}`
+            borderBottom: `6px solid ${theme.palette.secondary.main}`
           }}
         >
           <Typography

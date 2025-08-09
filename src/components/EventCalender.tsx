@@ -56,17 +56,17 @@ const EventCalendar = () => {
   }, {} as Record<string, Destination[]>);
 
   return (
-    <Box sx={{ mb: { xs: '1.5rem' }, px: { xs: 2, sm: 4, md: 8 }, backgroundColor: theme.palette.background.paper, borderTop: `5px solid ${theme.palette.secondary.main}` }}>
+    <Box sx={{ py: { xs: 3, sm: 4, md: 5 }, px: { xs: 2, sm: 3, md: 4 }, backgroundColor: theme.palette.background.paper, borderTop: `6px solid ${theme.palette.secondary.main}` }}>
       <Typography variant="h6"
         sx={{
-          fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+          fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
           lineHeight: { xs: 1.4, sm: 1.4 },
           letterSpacing: '1px',
           textAlign: 'center',
           color: theme.palette.text.primary,
           textTransform: 'none',
           maxWidth: '900px',
-          mt: '1rem',
+          mb: { xs: 3, sm: 4, md: 4 },
           mx: 'auto',
           fontFamily: theme.typography.fontFamily,
         }}>

@@ -98,9 +98,9 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
               color: theme.palette.primary.contrastText,
               fontFamily: theme.typography.fontFamily,
               fontSize: { 
-                xs: '1rem', 
-                sm: '1.2rem', 
-                md: '1.5rem' 
+                xs: '1.2rem', 
+                sm: '1.5rem', 
+                md: '1.8rem' 
               },
             }}
           >
@@ -171,7 +171,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           sx={{
             color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
             fontWeight: theme.typography.button.fontWeight,
-            fontSize: theme.typography.button.fontSize,
+            fontSize: { xs: '0.95rem', sm: '1rem' },
             textTransform: 'none',
             justifyContent: 'flex-start',
             minHeight: { xs: '40px', sm: '44px', md: '48px' }, // Sabit yükseklik
@@ -191,7 +191,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           sx={{
             color: currentPath === '/camp' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
             fontWeight: theme.typography.button.fontWeight,
-            fontSize: theme.typography.button.fontSize,
+            fontSize: { xs: '0.95rem', sm: '1rem' },
             textTransform: 'none',
             justifyContent: 'flex-start',
             minHeight: { xs: '40px', sm: '44px', md: '48px' },
@@ -211,7 +211,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
           sx={{
             color: currentPath === '/youth-camp' ? theme.palette.secondary.main : theme.palette.primary.contrastText,
             fontWeight: theme.typography.button.fontWeight,
-            fontSize: theme.typography.button.fontSize,
+            fontSize: { xs: '0.95rem', sm: '1rem' },
             textTransform: 'none',
             justifyContent: 'flex-start',
             minHeight: { xs: '40px', sm: '44px', md: '48px' },
@@ -256,7 +256,7 @@ const HamburgerMenu = ({ toggleDrawer }: HamburgerMenuProps) => {
               sx={{
                 color: currentPath === item.link ? theme.palette.secondary.main : theme.palette.primary.contrastText,
                 fontWeight: theme.typography.button.fontWeight,
-                fontSize: theme.typography.button.fontSize,
+                fontSize: { xs: '0.95rem', sm: '1rem' },
                 textTransform: 'none',
                 justifyContent: 'flex-start',
                 minHeight: { xs: '40px', sm: '44px', md: '48px' },

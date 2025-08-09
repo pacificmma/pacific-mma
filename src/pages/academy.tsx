@@ -32,7 +32,6 @@ const AcademyPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderBottom: `5px solid ${currentTheme.palette.secondary.main}`,
                     position: 'relative',
                 }}
             >
@@ -65,44 +64,9 @@ const AcademyPage = () => {
                             fontFamily: currentTheme.typography.fontFamily,
                         }}
                     >
-                        Pacific MMA Academy
-                    </Typography>
-                    <Typography variant="h5" sx={{ mb: 3, color: currentTheme.palette.text.secondary }}>
-                        A legacy of excellence — training law enforcement, children, and martial artists across disciplines.
+                        PACIFIC MMA ACADEMY
                     </Typography>
                 </Box>
-            </Box>
-
-            {/* About Section */}
-            <Box
-                sx={{
-                    backgroundColor: currentTheme.palette.background.paper,
-                    color: currentTheme.palette.text.primary,
-                    p: { xs: 3, md: 6 },
-                    textAlign: 'center',
-                }}
-            >
-                <Typography
-                    variant="h6"
-                    sx={{
-                        fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
-                        lineHeight: { xs: 1.4, sm: 1.4 },
-                        letterSpacing: '1px',
-                        color: currentTheme.palette.text.primary,
-                        textTransform: 'none',
-                        maxWidth: '900px',
-                        margin: '0 auto',
-                        fontFamily: currentTheme.typography.fontFamily,
-                    }}
-                >
-                    About Brenda King
-                </Typography>
-                <Typography variant="body1" sx={{ maxWidth: '800px', mx: 'auto', lineHeight: 1.8 }}>
-                    Located in Redwood City, CA, Pacific MMA Academy ranks among the TOP 20 Bay Area martial arts schools.
-                    We offer top-tier classes in Brazilian Jiu-Jitsu, STX Kickboxing, Jeet Kune Do, Kali-Escrima, and a
-                    remarkable children&apos;s program. Our renowned Striking Coach, Brenda King, brings over 30 years of experience,
-                    holding certifications under Guro Dan Inosanto, Sensei Eric Paulson, and Guro Daniel Sullivan.
-                </Typography>
             </Box>
 
             {/* Brenda Alone Section */}
@@ -111,9 +75,9 @@ const AcademyPage = () => {
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' },
                     alignItems: 'stretch',
-                    backgroundColor: currentTheme.palette.primary.main,
+                    backgroundColor: currentTheme.palette.background.paper,
                     color: currentTheme.palette.primary.contrastText,
-                    borderTop: `5px solid ${currentTheme.palette.secondary.main}`,
+                    borderTop: `6px solid ${currentTheme.palette.secondary.main}`,
                     p: { xs: 3, md: 6 },
                     minHeight: { xs: 'auto', md: '400px' },
                 }}
@@ -138,16 +102,14 @@ const AcademyPage = () => {
                         flexDirection: 'column',
                         justifyContent: 'center',
                         minHeight: '100%',
+                        color: currentTheme.palette.primary.dark
                     }}
                 >
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: currentTheme.palette.primary.contrastText }}>
-                        Brenda&apos;s Martial Arts Journey
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: currentTheme.palette.primary.dark, fontStyle: 'italic', }}>
+                        Where Every Warrior’s Journey Begins
                     </Typography>
                     <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-                        Brenda is not only a coach but a lifelong student of the arts. She&apos;s authorized to teach Jeet Kune Do and Filipino
-                        Martial Arts under Guro Dan Inosanto, a Pro Coach in Combat Submission Wrestling under Sensei Eric Paulson, and a
-                        Purple Belt in Brazilian Jiu-Jitsu. Brenda&apos;s rich background ensures every class is packed with authentic techniques
-                        and modern applications.
+                        PACIFIC MMA ACADEMY isn’t just where we teach martial arts—it’s where legendary lineage meets modern excellence. Under the masterful guidance of Chief Instructor Brenda King, we carry forward the teachings of martial arts royalty directly to you.
                     </Typography>
                 </Box>
             </Box>
@@ -158,8 +120,8 @@ const AcademyPage = () => {
                     display: 'flex',
                     flexDirection: { xs: 'column-reverse', md: 'row' },
                     alignItems: 'stretch',
-                    backgroundColor: currentTheme.palette.background.paper,
-                    borderTop: `5px solid ${currentTheme.palette.secondary.main}`,
+                    backgroundColor: currentTheme.palette.primary.main,
+                    borderTop: `6px solid ${currentTheme.palette.secondary.main}`,
                     color: currentTheme.palette.text.primary,
                     p: { xs: 3, md: 6 },
                     minHeight: { xs: 'auto', md: '400px' },
@@ -172,16 +134,161 @@ const AcademyPage = () => {
                         flexDirection: 'column',
                         justifyContent: 'center',
                         minHeight: '100%',
+                        color: currentTheme.palette.text.secondary,
                     }}
                 >
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: currentTheme.palette.text.primary }}>
-                        A Space for All Ages
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        Legendary Lineage, Unmatched Excellence
                     </Typography>
                     <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-                        Our academy is a trusted training ground for law enforcement, corporate teams, and children alike. We offer specialized
-                        self-defense programs tailored for companies like Twitter, Scandinavian Airlines, and the US Navy Sea Cadets.
-                        Whether you&apos;re stepping on the mat for fitness, competition, or personal growth, you&apos;ll find an encouraging
-                        and inclusive community here.
+                        Train under Brenda King, whose martial arts journey traces directly to the source. As a certified instructor under Erik Paulson (legendary MMA fighter and founder of CSW Academy), Rigan Machado (Brazilian Jiu-Jitsu coral belt), and Dan Inosanto (Bruce Lee’s protégé and JKD authority), Brenda brings you techniques passed down from the masters themselves. This isn’t just instruction—it’s the preservation and evolution of martial arts history.
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, mt: 2 }}>
+                        The PACIFIC MMA ACADEMY Difference
+                    </Typography>
+                    <Typography variant="body1" sx={{ lineHeight: 1.8, mb: 2 }}>
+                        Our comprehensive curriculum encompasses:
+                    </Typography>
+                    <Box component="ul" sx={{
+                        listStyle: 'none',
+                        padding: 0,
+                        margin: 0,
+                        '& li': {
+                            position: 'relative',
+                            paddingLeft: '24px',
+                            marginBottom: '12px',
+                            lineHeight: 1.8,
+                            color: currentTheme.palette.text.secondary,
+                            '&:before': {
+                                content: '"•"',
+                                position: 'absolute',
+                                left: 0,
+                                color: currentTheme.palette.secondary.main,
+                                fontWeight: 'bold',
+                            }
+                        }
+                    }}>
+                        <li><strong>Brazilian Jiu-Jitsu</strong> - Direct Machado lineage and technique.</li>
+                        <li><strong>MMA & Shooto</strong> - Erik Paulson's proven CSW system.</li>
+                        <li><strong>JKD</strong> - Authentic Inosanto methodology.</li>
+                        <li><strong>Muay Thai & Kickboxing</strong> - Championship-tested striking.</li>
+                        <li><strong>Submission Wrestling</strong> - Where all arts converge.</li>
+                    </Box>
+                </Box>
+                <Box
+                    component="img"
+                    src={BrendaWTraining} // ✅ Direct string usage
+                    alt="Brenda Training"
+                    sx={{
+                        width: { xs: '100%', md: '50%' },
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '12px',
+                        mb: { xs: 3, md: 0 },
+                        ml: { md: 4 },
+                    }}
+                />
+            </Box>
+
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    alignItems: 'stretch',
+                    backgroundColor: currentTheme.palette.background.paper,
+                    color: currentTheme.palette.primary.contrastText,
+                    borderTop: `6px solid ${currentTheme.palette.secondary.main}`,
+                    p: { xs: 3, md: 6 },
+                    minHeight: { xs: 'auto', md: '400px' },
+                }}
+            >
+                <Box
+                    component="img"
+                    src={BrendaWAlone} // ✅ Direct string usage
+                    alt="Brenda Alone"
+                    sx={{
+                        width: { xs: '100%', md: '50%' },
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '12px',
+                        mb: { xs: 3, md: 0 },
+                        mr: { md: 4 },
+                    }}
+                />
+                <Box
+                    sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        minHeight: '100%',
+                        color: currentTheme.palette.primary.dark
+                    }}
+                >
+                    <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
+                        When legends visit the Bay Area, they train here. When champions need West Coast preparation, they choose PACIFIC MMA ACADEMY. When Silicon Valley executives seek transformation, their journey begins on our mats.
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2, mt: 2 }}>
+                        Your Path to Greatness
+                    </Typography>
+                    <Box component="ul" sx={{
+                        listStyle: 'none',
+                        padding: 0,
+                        margin: 0,
+                        '& li': {
+                            position: 'relative',
+                            paddingLeft: '24px',
+                            marginBottom: '12px',
+                            lineHeight: 1.8,
+                            color: currentTheme.palette.primary.dark,
+                            '&:before': {
+                                content: '"•"',
+                                position: 'absolute',
+                                left: 0,
+                                color: currentTheme.palette.secondary.main,
+                                fontWeight: 'bold',
+                            }
+                        }
+                    }}>
+                        <li><strong>World-class group classes</strong> built on decades of proven methodology.</li>
+                        <li><strong>Specialized coaching</strong> from instructors who embody martial arts history.</li>
+                        <li><strong>Private sessions</strong> that fast-track your development.</li>
+                        <li><strong>Youth classes</strong> instilling warrior values and lifetime discipline.</li>
+                        <li><strong>Direct pathway</strong> to our exclusive PACIFIC MMA CAMPS worldwide.</li>
+                    </Box>
+                </Box>
+            </Box>
+
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column-reverse', md: 'row' },
+                    alignItems: 'stretch',
+                    backgroundColor: currentTheme.palette.primary.main,
+                    borderTop: `6px solid ${currentTheme.palette.secondary.main}`,
+                    color: currentTheme.palette.text.primary,
+                    p: { xs: 3, md: 6 },
+                    minHeight: { xs: 'auto', md: '400px' },
+                }}
+            >
+                <Box
+                    sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        minHeight: '100%',
+                        color: currentTheme.palette.text.secondary,
+                    }}
+                >
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, }}>
+                        Join the Pacific Warriors
+                    </Typography>
+                    <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
+                        At PACIFIC MMA ACADEMY, you’re not just learning techniques—you’re becoming part of a martial arts legacy that stretches from Bruce Lee, Karl Gotch, Satoru Sayama, and Yorinaga Nakamura to today’s MMA champions. Our facility at 1300 Elmer Street, Belmont, California, is where tradition meets innovation.
+                    </Typography>
+                    <Typography variant="body1" sx={{ lineHeight: 1.8, fontStyle: 'italic' }}>
+                        Train with history. Transform your future. The Pacific warrior legacy continues with you
                     </Typography>
                 </Box>
                 <Box
@@ -200,11 +307,12 @@ const AcademyPage = () => {
             </Box>
 
             {/* Class Schedule Section */}
-            <Box
+            {/* <Box
+                id="schedule"
                 sx={{
-                    backgroundColor: currentTheme.palette.primary.main,
-                    color: currentTheme.palette.primary.contrastText, // Changed to contrastText for better visibility
-                    borderTop: `5px solid ${currentTheme.palette.secondary.main}`,
+                    backgroundColor: currentTheme.palette.background.paper,
+                    color: currentTheme.palette.primary.dark, // Changed to contrastText for better visibility
+                    borderTop: `6px solid ${currentTheme.palette.secondary.main}`,
                     p: { xs: 3, md: 6 },
                     textAlign: 'center',
                 }}
@@ -215,7 +323,7 @@ const AcademyPage = () => {
                         fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
                         lineHeight: { xs: 1.4, sm: 1.4 },
                         letterSpacing: '1px',
-                        color: currentTheme.palette.primary.contrastText, // Changed to contrastText
+                        color: currentTheme.palette.primary.dark, // Changed to contrastText
                         textTransform: 'none',
                         maxWidth: '900px',
                         margin: '0 auto 2rem auto',
@@ -224,21 +332,21 @@ const AcademyPage = () => {
                 >
                     Class Schedule
                 </Typography>
-                <Typography 
-                    variant="body1" 
-                    sx={{ 
-                        maxWidth: '800px', 
-                        mx: 'auto', 
+                <Typography
+                    variant="body1"
+                    sx={{
+                        maxWidth: '800px',
+                        mx: 'auto',
                         lineHeight: 1.8,
                         mb: 4,
-                        color: currentTheme.palette.primary.contrastText // Changed to contrastText
+                        color: currentTheme.palette.primary.dark // Changed to contrastText
                     }}
                 >
-                    Join our comprehensive training program with classes designed for all skill levels. 
+                    Join our comprehensive training program with classes designed for all skill levels.
                     From beginner-friendly sessions to advanced techniques, discover the perfect class for your martial arts journey.
                 </Typography>
-            </Box>
-            
+            </Box> */}
+
             {/* Class Calendar with separate background */}
             <Box
                 sx={{

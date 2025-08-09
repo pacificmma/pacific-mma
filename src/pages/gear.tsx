@@ -408,7 +408,7 @@ const GearPage = () => {
           justifyContent: 'center',
           color: theme.palette.primary.contrastText,
           textAlign: 'center',
-          borderBottom: `5px solid ${theme.palette.secondary.main}`,
+          borderBottom: `6px solid ${theme.palette.secondary.main}`,
         }}
       >
         <Typography 

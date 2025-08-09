@@ -98,20 +98,20 @@ const HeroWPartners = () => {
       ref={sectionRef}
       sx={{
         position: 'relative',
-        p: { xs: 2, md: 4 },
+        py: { xs: 3, sm: 4, md: 5 },
+        px: { xs: 2, sm: 3, md: 4 },
         backgroundColor: theme.palette.background.paper,
         color: theme.palette.text.primary,
         overflow: 'hidden',
         fontFamily: theme.typography.fontFamily,
-        borderTop: `5px solid ${theme.palette.secondary.main}`,
-        borderBottom: `5px solid ${theme.palette.secondary.main}`,
+        borderTop: `6px solid ${theme.palette.secondary.main}`,
       }}
     >
       {/* Headline at the top */}
       <Typography
         variant="h6"
         sx={{
-          fontSize: { xs: '1.4rem', sm: '2.5rem', md: '3rem' },
+          fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
           lineHeight: { xs: 1.4, sm: 1.4 },
           letterSpacing: '1px',
           color: theme.palette.text.primary,
@@ -150,17 +150,28 @@ const HeroWPartners = () => {
               width: '100%',
               maxWidth: { xs: '100%', md: '500px' },
               height: { xs: '300px', sm: '400px', md: '550px' },
-              backgroundImage: `url(${accordionData[activeAccordion !== null ? activeAccordion : 0].image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
               borderRadius: 2,
               boxShadow: 3,
               transition: 'opacity 0.3s ease, transform 0.3s ease',
               minHeight: { xs: '300px', sm: '400px', md: '550px' },
               display: 'block',
+              position: 'relative',
+              overflow: 'hidden',
+              backgroundColor: theme.palette.grey[200],
             }}
-          />
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={accordionData[activeAccordion !== null ? activeAccordion : 0].image}
+              alt={accordionData[activeAccordion !== null ? activeAccordion : 0].title}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </Box>
         </Box>
 
         <Box

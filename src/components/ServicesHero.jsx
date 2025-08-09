@@ -44,7 +44,7 @@ const ServicesHero = () => {
           alignItems: 'center',
           justifyContent: 'center',
           mb: 4,
-          borderBottom: `5px solid ${theme.palette.secondary.main}`,
+          borderBottom: `6px solid ${theme.palette.secondary.main}`,
         }}
       >
           <Typography

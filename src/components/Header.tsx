@@ -158,8 +158,8 @@ const Header = () => {
                   fontWeight: 'bold',
                   color: theme.palette.text.secondary,
                   fontFamily: theme.typography.fontFamily,
-                  fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
-                  display: { xs: 'none', sm: 'block' }
+                  fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
+                  display: 'block'
                 }}
               >
                 PACIFIC MMA
@@ -189,7 +189,7 @@ const Header = () => {
                 sx={{
                   color: currentPath === '/' ? theme.palette.secondary.main : theme.palette.text.secondary,
                   fontWeight: theme.typography.button.fontWeight,
-                  fontSize: theme.typography.button.fontSize,
+                  fontSize: { md: '0.95rem', lg: '1rem' },
                   borderRadius: '20px',
                   px: 2,
                   minHeight: '40px',
@@ -208,7 +208,7 @@ const Header = () => {
                       ? theme.palette.secondary.main
                       : theme.palette.text.secondary,
                     fontWeight: theme.typography.button.fontWeight,
-                    fontSize: theme.typography.button.fontSize,
+                    fontSize: { md: '0.95rem', lg: '1rem' },
                     borderRadius: '20px',
                     px: 2,
                     minHeight: '40px',
@@ -291,7 +291,7 @@ const Header = () => {
                         ? theme.palette.secondary.main
                         : theme.palette.text.secondary,
                       fontWeight: theme.typography.button.fontWeight,
-                      fontSize: theme.typography.button.fontSize,
+                      fontSize: { md: '0.95rem', lg: '1rem' },
                       borderRadius: '20px',
                       px: 2,
                       minHeight: '40px',
